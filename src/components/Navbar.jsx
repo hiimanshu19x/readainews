@@ -155,24 +155,33 @@ export default function Navbar({
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-white/10 bg-[#09090c]/98 backdrop-blur-2xl px-4 py-4 flex flex-col gap-2 shadow-2xl animate-deal">
-          {navLinks.map((link) => (
-            <button
-              key={link.id}
-              onClick={() => handleNavClick(link.id)}
-              className={`text-left py-2.5 px-3.5 rounded-xl text-sm font-medium transition-all active:scale-98 cursor-pointer ${
-                activeTab === link.id
-                  ? 'bg-white text-black font-semibold shadow-sm'
-                  : 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
-              }`}
-            >
-              {link.name}
-            </button>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = activeTab === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => handleNavClick(link.id)}
+                className={`w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-sm transition-all active:scale-98 cursor-pointer ${
+                  isActive
+                    ? 'bg-zinc-800/90 text-white border border-white/20 font-semibold shadow-inner'
+                    : 'text-zinc-400 hover:bg-zinc-900/80 hover:text-white border border-transparent'
+                }`}
+              >
+                <span>{link.name}</span>
+                {isActive && (
+                  <span className="flex items-center gap-1 text-[11px] font-mono text-emerald-400 font-normal">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                    <span>Active</span>
+                  </span>
+                )}
+              </button>
+            );
+          })}
           <button
             onClick={handleGetStarted}
-            className="w-full text-center py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-all active:scale-98 mt-1 shadow-md cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-zinc-200 transition-all active:scale-98 mt-2 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer"
           >
-            Get started — Subscribe Free
+            <span>Get started — Subscribe Free</span>
           </button>
           <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-1">
             <button

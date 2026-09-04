@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, 
   Calendar, 
@@ -73,6 +73,18 @@ export default function WeeklyCollection({
 }) {
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [selectedWeek, setSelectedWeek] = useState('1st Week of Sept 2026');
+
+  // Always reset to the starting tab (1st Week of Sept collected best) when user clicks "This Week Collection"
+  useEffect(() => {
+    const handleNav = (e) => {
+      if (e.detail?.id === 'weekly-collection') {
+        setSelectedWeek('1st Week of Sept 2026');
+        setActiveCategory('ALL');
+      }
+    };
+    window.addEventListener('section-navigated', handleNav);
+    return () => window.removeEventListener('section-navigated', handleNav);
+  }, []);
 
   const currentWeekMeta = WEEKS_DATA.find(w => w.id === selectedWeek) || WEEKS_DATA[0];
 

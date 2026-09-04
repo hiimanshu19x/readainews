@@ -84,7 +84,7 @@ export default function Hero({ onStartReading, onSeePreview }) {
                 />
               </div>
               <span className="text-[11px] sm:text-xs text-zinc-400 font-medium">
-                Join <strong className="text-zinc-200">1k+</strong> builders, researchers and curious minds
+                Join <strong className="text-zinc-200">1,000+</strong> builders, researchers and curious minds
               </span>
             </div>
 

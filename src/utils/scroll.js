@@ -14,9 +14,9 @@ export function smoothScrollTo(elementId, playAudio = true) {
   if (!el) return;
 
   // Sticky header height: 56px on mobile, 64px on desktop.
-  // Breathing room cushion: 24px on mobile, 36px on desktop.
+  // Precise alignment so the section starts right below the sticky navbar.
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-  const headerOffset = isMobile ? 80 : 100;
+  const headerOffset = isMobile ? 62 : 72;
 
   const elementPosition = el.getBoundingClientRect().top;
   const targetPosition = elementPosition + window.pageYOffset - headerOffset;
