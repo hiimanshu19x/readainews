@@ -26,7 +26,11 @@ export default function NewsCard({
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {/* Thumbnail */}
           <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 bg-zinc-950">
-            <MeshThumbnail theme={article.meshTheme} className="w-full h-full" />
+            {article.imageUrl ? (
+              <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <MeshThumbnail theme={article.meshTheme} className="w-full h-full" />
+            )}
           </div>
 
           <div className="flex flex-col gap-1 min-w-0">
@@ -83,12 +87,22 @@ export default function NewsCard({
       style={{ animationDelay: `${animationDelay}ms` }}
       className={`group relative flex flex-col rounded-[22px] bg-[#0c0c0f] hover:bg-[#121217] active:scale-[0.98] border border-white/[0.08] hover:border-white/20 transition-all duration-300 cursor-pointer overflow-hidden shadow-lg h-full`}
     >
-      {/* 3D Abstract Mesh Art */}
+      {/* Article Preview Image */}
       <div className="relative w-full h-36 sm:h-44 overflow-hidden bg-zinc-950 border-b border-white/5 flex-shrink-0">
-        <MeshThumbnail 
-          theme={article.meshTheme} 
-          className="w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-out" 
-        />
+        {article.imageUrl ? (
+          <img 
+            src={article.imageUrl} 
+            alt={article.title} 
+            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+            loading="lazy"
+          />
+        ) : (
+          <MeshThumbnail 
+            theme={article.meshTheme} 
+            className="w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-out" 
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0f] via-transparent to-black/30 pointer-events-none" />
         
         {/* Source Badge Pill */}
         <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-[9px] sm:text-[10px] font-medium text-zinc-300 flex items-center gap-1.5 shadow-sm">

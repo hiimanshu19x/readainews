@@ -23,8 +23,10 @@ export default function App() {
   const [shuffleState, setShuffleState] = useState(() => {
     return {
       articles: allNewsArticles.slice(0, 5),
+      batchIndex: 1,
+      totalBatches: 3,
       isResetCycle: false,
-      remainingUnseen: allNewsArticles.length - 5,
+      remainingUnseen: 10,
       totalSeenToday: 5,
       totalPoolSize: allNewsArticles.length
     };
@@ -220,6 +222,8 @@ export default function App() {
           onSelectArticle={(article) => setSelectedArticle(article)}
           savedIds={savedIds}
           onToggleBookmark={handleToggleBookmark}
+          batchIndex={shuffleState.batchIndex || 1}
+          totalBatches={shuffleState.totalBatches || 3}
           remainingUnseen={shuffleState.remainingUnseen}
           totalSeenToday={shuffleState.totalSeenToday}
           totalPoolSize={shuffleState.totalPoolSize}

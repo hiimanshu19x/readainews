@@ -307,9 +307,19 @@ export default function WeeklyCollection({
                   onClick={() => { sound.playClick(); onSelectArticle(article); }}
                   className="group relative flex flex-col rounded-[22px] bg-[#0d0d10] hover:bg-[#131318] active:scale-[0.98] border border-white/10 hover:border-white/25 transition-all duration-300 cursor-pointer overflow-hidden shadow-lg"
                 >
-                  {/* Ranking Trophy Pill & Mesh Header */}
-                  <div className="relative w-full h-36 sm:h-44 overflow-hidden border-b border-white/5 flex-shrink-0">
-                    <MeshThumbnail theme={article.meshTheme} className="w-full h-full transform group-hover:scale-105 transition-transform duration-500" />
+                  {/* Article Preview Image Header */}
+                  <div className="relative w-full h-36 sm:h-44 overflow-hidden border-b border-white/5 flex-shrink-0 bg-zinc-950">
+                    {article.imageUrl ? (
+                      <img 
+                        src={article.imageUrl} 
+                        alt={article.title} 
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
+                        loading="lazy"
+                      />
+                    ) : (
+                      <MeshThumbnail theme={article.meshTheme} className="w-full h-full transform group-hover:scale-105 transition-transform duration-500" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d10] via-transparent to-black/30 pointer-events-none" />
                     
                     {/* Rank Badge */}
                     <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">

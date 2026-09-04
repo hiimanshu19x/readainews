@@ -32,9 +32,11 @@ export default function ShuffleSection({
   onSelectArticle,
   savedIds = [],
   onToggleBookmark,
-  remainingUnseen = 15,
+  batchIndex = 1,
+  totalBatches = 3,
+  remainingUnseen = 10,
   totalSeenToday = 5,
-  totalPoolSize = 20,
+  totalPoolSize = 15,
   isResetCycle = false,
   onResetTodayHistory,
   isLiveWire = false,
@@ -65,9 +67,9 @@ export default function ShuffleSection({
         if (prev < SCAN_STEPS.length - 1) return prev + 1;
         return prev;
       });
-    }, 260);
+    }, 240);
 
-    // Complete scan after 1.35 seconds, then deal cards one by one
+    // Complete scan after 1.2 seconds, then deal cards one by one
     setTimeout(() => {
       clearInterval(stepInterval);
       setIsScanning(false);
@@ -83,9 +85,9 @@ export default function ShuffleSection({
         setTimeout(() => {
           setDealtCount(i + 1);
           sound.playCardDeal(i);
-        }, i * 180);
+        }, i * 160);
       }
-    }, 1350);
+    }, 1200);
   };
 
   const filteredArticles = articles;
@@ -159,11 +161,12 @@ export default function ShuffleSection({
           {/* Shuffle Action Button & Status Counter */}
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             
-            {/* Today's Seen Counter */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 text-xs text-zinc-400">
-              <span>Seen: <strong className="text-white font-mono">{totalSeenToday}</strong></span>
-              <span className="text-zinc-600">/</span>
-              <span>Remaining: <strong className="text-emerald-400 font-mono">{remainingUnseen}</strong></span>
+            {/* 5 Best AI Stories Curated Set Badge */}
+            <div className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-full bg-zinc-900 border border-white/10 text-xs text-zinc-300 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Curated Set: <strong className="text-white font-mono">{batchIndex} of {totalBatches}</strong></span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-emerald-400 font-mono font-medium">5 Top Stories</span>
             </div>
 
             {/* View Mode Toggle (Desktop) */}
@@ -226,20 +229,6 @@ export default function ShuffleSection({
 
           </div>
         </div>
-
-        {/* Status bar with seen count and reset option on mobile/desktop */}
-        {totalSeenToday > 5 && (
-          <div className="flex items-center justify-end pb-2 mb-4 text-xs">
-            <button
-              onClick={onResetTodayHistory}
-              title="Reset seen stories"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-zinc-400 hover:text-white bg-zinc-900 border border-white/10 transition-colors text-[10px]"
-            >
-              <RotateCcw size={11} />
-              <span>Reset seen stories</span>
-            </button>
-          </div>
-        )}
 
         {/* COOL MAGNIFIER HUD SCANNER ANIMATION */}
         {isScanning && (
@@ -403,16 +392,17 @@ export default function ShuffleSection({
                   })}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredArticles.map((article) => (
-                    <NewsCard
-                      key={article.id}
-                      article={article}
-                      onSelect={onSelectArticle}
-                      isBookmarked={savedIds.includes(article.id)}
-                      onToggleBookmark={onToggleBookmark}
-                      viewMode="grid"
-                    />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 xl:gap-6">
+                  {filteredArticles.slice(0, 5).map((article, idx) => (
+                    <div key={article.id} className={idx === 4 ? "sm:col-span-2 lg:col-span-1" : ""}>
+                      <NewsCard
+                        article={article}
+                        onSelect={onSelectArticle}
+                        isBookmarked={savedIds.includes(article.id)}
+                        onToggleBookmark={onToggleBookmark}
+                        viewMode="grid"
+                      />
+                    </div>
                   ))}
                 </div>
               )}
@@ -423,11 +413,11 @@ export default function ShuffleSection({
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={14} className="text-emerald-400 flex-shrink-0" />
                 <span className="text-[11px] sm:text-xs">
-                  Showing <strong>{Math.min(dealtCount, filteredArticles.length)}</strong> distinct AI stories • <strong>Zero repeats today guaranteed</strong>
+                  Curated <strong>5 Premier AI Stories</strong> • <strong>Refreshed every 3 hours</strong>
                 </span>
               </div>
               <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-zinc-500">
-                <span>{remainingUnseen} unseen stories available today</span>
+                <span className="text-zinc-400">Tap "Shuffle Next 5" to rotate curated set</span>
                 <span>•</span>
                 <span>Tap card for full AI brief</span>
               </div>

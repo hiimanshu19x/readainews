@@ -50,9 +50,18 @@ export default function ArticleModal({
         {/* iOS Drag Handle on Mobile */}
         <div className="sm:hidden w-12 h-1.5 rounded-full bg-white/25 mx-auto mt-2.5 mb-1 cursor-pointer" onClick={() => onClose()} />
 
-        {/* Header Visual Mesh - compact on mobile */}
-        <div className="relative w-full h-32 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
-          <MeshThumbnail theme={article.meshTheme} className="w-full h-full" />
+        {/* Header Visual Preview Image */}
+        <div className="relative w-full h-36 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
+          {article.imageUrl ? (
+            <img 
+              src={article.imageUrl} 
+              alt={article.title} 
+              className="w-full h-full object-cover" 
+            />
+          ) : (
+            <MeshThumbnail theme={article.meshTheme} className="w-full h-full" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d12] via-transparent to-black/30 pointer-events-none" />
           
           {/* Close Button */}
           <button

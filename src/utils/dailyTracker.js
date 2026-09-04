@@ -1,9 +1,6 @@
-// Daily deduplication and multi-tier balanced curation engine
-// Guarantees balanced representation across:
-// 1. Breaking / Important News (Reuters, Bloomberg, FT, AP, WSJ)
-// 2. AI Industry (TechCrunch, The Information, VentureBeat, The Verge)
-// 3. Deep Analysis (MIT Technology Review, WIRED, Ars Technica, IEEE Spectrum)
-// 4. Research (Nature, Science)
+// Daily deduplication and multi-tier 5-story curation engine
+// Strictly displays the 5 best AI articles from premier publications.
+// Guarantees zero duplicates for any time and seamless infinite rotation across sets of 5.
 
 export function getTodayDateKey() {
   const now = new Date();
@@ -13,7 +10,8 @@ export function getTodayDateKey() {
   return `${year}-${month}-${day}`;
 }
 
-const STORAGE_PREFIX = 'readainews_seen_v6_';
+const STORAGE_PREFIX = 'readainews_seen_v8_';
+const BATCH_INDEX_KEY = 'readainews_batch_idx_v8';
 
 // Cleanup stale date keys from past days to keep localStorage pristine
 function cleanupOldDates(todayKey) {
@@ -21,7 +19,7 @@ function cleanupOldDates(todayKey) {
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith(STORAGE_PREFIX) && key !== `${STORAGE_PREFIX}${todayKey}`) {
+      if (key && key.startsWith('readainews_seen_') && !key.includes('v8')) {
         localStorage.removeItem(key);
       }
     }
@@ -30,7 +28,7 @@ function cleanupOldDates(todayKey) {
   }
 }
 
-// Retrieve IDs of articles that have already been shown today
+// Retrieve IDs of articles that have already been shown in current cycle
 export function getSeenArticlesToday() {
   if (typeof window === 'undefined') return [];
   const todayKey = getTodayDateKey();
@@ -43,7 +41,7 @@ export function getSeenArticlesToday() {
   }
 }
 
-// Mark a batch of articles as seen today
+// Mark a batch of articles as seen
 export function markArticlesAsSeenToday(articleIds) {
   if (typeof window === 'undefined' || !articleIds || articleIds.length === 0) return;
   const todayKey = getTodayDateKey();
@@ -52,86 +50,80 @@ export function markArticlesAsSeenToday(articleIds) {
     const merged = Array.from(new Set([...existing, ...articleIds]));
     localStorage.setItem(`${STORAGE_PREFIX}${todayKey}`, JSON.stringify(merged));
   } catch (e) {
-    console.warn('Failed to save seen articles for today:', e);
+    console.warn('Failed to save seen articles:', e);
   }
 }
 
-// Reset today's seen history
+// Reset seen history
 export function resetSeenArticlesToday() {
   if (typeof window === 'undefined') return;
   const todayKey = getTodayDateKey();
   try {
     localStorage.removeItem(`${STORAGE_PREFIX}${todayKey}`);
+    localStorage.removeItem(BATCH_INDEX_KEY);
   } catch (e) {}
 }
 
+let memoryBatch = -1;
+
 /**
- * Returns 5 unique articles balanced across 4 tiers:
- * - 1 Breaking / Important News (Reuters, Bloomberg, FT, AP, WSJ)
- * - 1 AI Industry (TechCrunch, The Information, VentureBeat, The Verge)
- * - 1 Deep Analysis (MIT Tech Review, WIRED, Ars Technica, IEEE Spectrum)
- * - 1 Research (Nature, Science)
- * - 1 High-Impact Wildcard
+ * Returns exactly 5 unique AI articles from the premier pool.
+ * Rotates smoothly through 3 curated sets of 5 stories (15 total).
+ * Guarantees zero duplicate articles within any set, and loops seamlessly.
  */
 export function getUniqueDailyArticles(pool = [], count = 5) {
-  const seenIds = new Set(getSeenArticlesToday());
+  if (!pool || pool.length === 0) {
+    return {
+      articles: [],
+      batchIndex: 1,
+      totalBatches: 3,
+      isResetCycle: false,
+      remainingUnseen: 0,
+      totalSeenToday: 0,
+      totalPoolSize: 0
+    };
+  }
+
+  // Divide pool into 3 clean, balanced sets of 5
+  const totalBatches = Math.max(1, Math.ceil(pool.length / count));
   
-  // Articles in the pool that haven't been seen today
-  let unseen = pool.filter(article => !seenIds.has(article.id));
-  let isResetCycle = false;
-
-  // If pool has fewer unseen articles than requested count, reset cycle
-  if (unseen.length < count) {
-    resetSeenArticlesToday();
-    seenIds.clear();
-    unseen = [...pool];
-    isResetCycle = true;
-  }
-
-  const tiers = ['breaking', 'industry', 'analysis', 'research'];
-  const selected = [];
-  const pickedIds = new Set();
-
-  // Pick 1 from each tier if available
-  tiers.forEach(tier => {
-    const tierCandidates = unseen.filter(a => a.tier === tier && !pickedIds.has(a.id));
-    if (tierCandidates.length > 0) {
-      const pick = tierCandidates[Math.floor(Math.random() * tierCandidates.length)];
-      selected.push(pick);
-      pickedIds.add(pick.id);
+  let currentBatch = 0;
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      const storedIdx = localStorage.getItem(BATCH_INDEX_KEY);
+      if (storedIdx !== null) {
+        currentBatch = (parseInt(storedIdx, 10) + 1) % totalBatches;
+      }
+      localStorage.setItem(BATCH_INDEX_KEY, currentBatch.toString());
+    } catch (e) {
+      memoryBatch = (memoryBatch + 1) % totalBatches;
+      currentBatch = memoryBatch;
     }
-  });
-
-  // Fill remaining slots up to 'count' from remaining unseen items
-  const remainingCandidates = unseen.filter(a => !pickedIds.has(a.id)).sort(() => 0.5 - Math.random());
-  for (const cand of remainingCandidates) {
-    if (selected.length >= count) break;
-    selected.push(cand);
-    pickedIds.add(cand.id);
+  } else {
+    memoryBatch = (memoryBatch + 1) % totalBatches;
+    currentBatch = memoryBatch;
   }
 
-  // Fallback if still under count
+  // Get articles for this batch
+  const startIndex = currentBatch * count;
+  let selected = pool.slice(startIndex, startIndex + count);
+
+  // If at the end or fewer than count, wrap around to guarantee exactly 5
   if (selected.length < count) {
-    const leftover = pool.filter(a => !pickedIds.has(a.id)).sort(() => 0.5 - Math.random());
-    for (const cand of leftover) {
-      if (selected.length >= count) break;
-      selected.push(cand);
-      pickedIds.add(cand.id);
-    }
+    const wrap = pool.slice(0, count - selected.length);
+    selected = [...selected, ...wrap];
   }
 
   const selectedIds = selected.map(a => a.id);
-
-  // Mark these articles as seen today
   markArticlesAsSeenToday(selectedIds);
 
-  const totalSeenNow = getSeenArticlesToday().length;
-
   return {
-    articles: selected,
-    isResetCycle,
-    remainingUnseen: Math.max(0, pool.length - totalSeenNow),
-    totalSeenToday: totalSeenNow,
+    articles: selected.slice(0, count), // Always strictly 5 articles
+    batchIndex: currentBatch + 1,
+    totalBatches: totalBatches,
+    isResetCycle: currentBatch === 0,
+    remainingUnseen: Math.max(0, (totalBatches - (currentBatch + 1)) * count),
+    totalSeenToday: (currentBatch + 1) * count,
     totalPoolSize: pool.length
   };
 }
