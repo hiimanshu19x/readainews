@@ -14,6 +14,7 @@ import { allNewsArticles } from './data/newsData';
 import { getUniqueDailyArticles, resetSeenArticlesToday } from './utils/dailyTracker';
 import { getDailyRefreshedArticles } from './utils/dailyRefresh';
 import { sound } from './utils/audio';
+import { smoothScrollTo } from './utils/scroll';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');
@@ -128,8 +129,7 @@ export default function App() {
 
   const handleStartReading = () => {
     setActiveTab('today');
-    const el = document.getElementById('shuffle-deck');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    smoothScrollTo('shuffle-deck');
   };
 
   const handleSeePreview = () => {
@@ -138,8 +138,7 @@ export default function App() {
 
   const handleExploreMore = () => {
     setActiveTab('weekly');
-    const el = document.getElementById('weekly-collection');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    smoothScrollTo('weekly-collection');
   };
 
   return (
@@ -168,17 +167,15 @@ export default function App() {
           onSeePreview={handleSeePreview}
         />
 
-        {/* Tab Navigation Pill on Mobile/Desktop */}
-        <div className="sticky top-14 sm:top-16 z-40 bg-[#050505]/90 backdrop-blur-xl py-2 sm:py-3 px-3 sm:px-4 border-b border-white/[0.07] flex justify-center transition-all">
+        {/* Tab Navigation Pill on Mobile/Desktop (relative so it never obstructs sections below) */}
+        <div className="relative z-20 bg-[#050505] py-3 px-3 sm:px-4 border-b border-white/[0.06] flex justify-center transition-all">
           <div className="inline-flex p-1 rounded-full bg-zinc-900/90 border border-white/10 shadow-inner">
             <button
               onClick={() => {
-                sound.playClick();
                 setActiveTab('today');
-                const el = document.getElementById('shuffle-deck');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                smoothScrollTo('shuffle-deck');
               }}
-              className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 ${
+              className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 cursor-pointer ${
                 activeTab === 'today'
                   ? 'bg-white text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
@@ -188,12 +185,10 @@ export default function App() {
             </button>
             <button
               onClick={() => {
-                sound.playClick();
                 setActiveTab('weekly');
-                const el = document.getElementById('weekly-collection');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                smoothScrollTo('weekly-collection');
               }}
-              className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 ${
+              className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 cursor-pointer ${
                 activeTab === 'weekly'
                   ? 'bg-white text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'

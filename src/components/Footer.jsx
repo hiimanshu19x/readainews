@@ -1,13 +1,13 @@
 import React from 'react';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import { sound } from '../utils/audio';
+import { smoothScrollTo } from '../utils/scroll';
 
 export default function Footer({ onNavigate, onOpenInfo }) {
   const handleNav = (id) => {
-    sound.playClick();
     onNavigate(id);
-    const el = document.getElementById(id === 'today' ? 'shuffle-deck' : id === 'weekly' ? 'weekly-collection' : id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    const targetId = id === 'today' ? 'shuffle-deck' : id === 'weekly' ? 'weekly-collection' : id;
+    smoothScrollTo(targetId, true);
   };
 
   const handleInfo = (key) => {

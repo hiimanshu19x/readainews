@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Zap, ShieldCheck, ExternalLink, Cpu } from 'lucide-react';
 import { sound } from '../utils/audio';
 
@@ -6,8 +6,8 @@ const features = [
   {
     icon: Zap,
     tag: 'INTELLIGENCE WIRE',
-    title: 'Real-Time Newsroom Scraping',
-    description: 'Continuously monitors verified tech newsrooms (TechCrunch, Wired, The Verge) to extract high-impact AI dispatches.'
+    title: '15-Publication Live Wire',
+    description: 'Continuously monitors 15 premier outlets across 4 tiers (Reuters, Bloomberg, FT, TechCrunch, MIT Tech Review, Nature).'
   },
   {
     icon: Cpu,
@@ -30,22 +30,41 @@ const features = [
 ];
 
 export default function FeatureGrid() {
+  const [highlighted, setHighlighted] = useState(false);
+
+  useEffect(() => {
+    const handleNav = (e) => {
+      if (e.detail?.id === 'features') {
+        setHighlighted(true);
+        setTimeout(() => setHighlighted(false), 2200);
+      }
+    };
+    window.addEventListener('section-navigated', handleNav);
+    return () => window.removeEventListener('section-navigated', handleNav);
+  }, []);
+
   return (
-    <section id="features" className="py-16 sm:py-20 bg-[#07070a] border-t border-white/[0.08] relative overflow-hidden">
-      
+    <section 
+      id="features" 
+      className="py-16 sm:py-24 bg-[#07070a] border-t border-white/[0.08] relative overflow-hidden scroll-mt-20 sm:scroll-mt-24 md:scroll-mt-28"
+    >
       {/* Subtle background ambient glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-64 bg-cyan-500/[0.02] blur-[120px] pointer-events-none" />
+      <div className={`absolute top-0 right-1/4 w-96 h-64 bg-cyan-500/[0.04] blur-[140px] pointer-events-none transition-opacity duration-700 ${
+        highlighted ? 'opacity-100' : 'opacity-40'
+      }`} />
       
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
-        <div className="flex flex-col items-start mb-10 sm:mb-12">
+        {/* Section Header with smooth highlight state */}
+        <div className={`flex flex-col items-start mb-10 sm:mb-12 p-4 sm:p-6 -mx-4 sm:-mx-6 rounded-2xl transition-all duration-700 ${
+          highlighted ? 'bg-cyan-950/20 ring-1 ring-cyan-500/30' : ''
+        }`}>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-white/10 text-[11px] font-mono font-semibold text-zinc-300 uppercase tracking-widest mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span>CORE ARCHITECTURE</span>
           </div>
 
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-2 sm:mb-3">
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight mb-2 sm:mb-3">
             Built for Signal. Engineered Against Noise.
           </h2>
           <p className="text-xs sm:text-base text-zinc-400 max-w-xl leading-relaxed">

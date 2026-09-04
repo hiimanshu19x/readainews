@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Search, Menu, X, Sparkles, Bookmark, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Menu, X, Bookmark } from 'lucide-react';
 import { sound } from '../utils/audio';
+import { smoothScrollTo } from '../utils/scroll';
 
 export default function Navbar({ 
   activeTab, 
@@ -18,31 +19,67 @@ export default function Navbar({
     { name: 'About', id: 'about' }
   ];
 
+  // Scroll spy: automatically sync active tab with viewport scroll position
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPos = window.pageYOffset + 140;
+          const sections = [
+            { id: 'today', el: document.getElementById('shuffle-deck') },
+            { id: 'weekly', el: document.getElementById('weekly-collection') },
+            { id: 'features', el: document.getElementById('features') },
+            { id: 'about', el: document.getElementById('about') }
+          ];
+
+          for (let i = sections.length - 1; i >= 0; i--) {
+            const { id, el } = sections[i];
+            if (el && el.offsetTop <= scrollPos) {
+              setActiveTab(id);
+              break;
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [setActiveTab]);
+
   const handleNavClick = (id) => {
-    sound.playClick();
     setActiveTab(id);
     setMobileMenuOpen(false);
 
-    if (id === 'features' || id === 'about') {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    } else if (id === 'today') {
-      const el = document.getElementById('shuffle-deck');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    } else if (id === 'weekly') {
-      const el = document.getElementById('weekly-collection');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
+    let targetId = id;
+    if (id === 'today') targetId = 'shuffle-deck';
+    else if (id === 'weekly') targetId = 'weekly-collection';
+
+    smoothScrollTo(targetId, true);
+  };
+
+  const handleGetStarted = () => {
+    sound.playClick();
+    setMobileMenuOpen(false);
+    smoothScrollTo('newsletter-section', false);
+    window.dispatchEvent(new CustomEvent('highlight-newsletter'));
+    setTimeout(() => {
+      const input = document.getElementById('newsletter-email-input');
+      if (input) input.focus({ preventScroll: true });
+    }, 600);
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#050505]/90 backdrop-blur-xl border-b border-white/[0.07] transition-all">
+    <header className="sticky top-0 z-50 w-full bg-[#050505]/95 backdrop-blur-2xl border-b border-white/[0.08] transition-all">
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
         
         {/* Logo */}
         <button 
           onClick={() => { sound.playClick(); setActiveTab('today'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          className="flex items-center gap-2 sm:gap-3 group text-left flex-shrink-0 active:scale-95 transition-transform"
+          className="flex items-center gap-2 sm:gap-3 group text-left flex-shrink-0 active:scale-95 transition-transform cursor-pointer"
         >
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-900 border border-white/20 flex items-center justify-center shadow-inner group-hover:border-white/50 transition-colors">
             <span className="font-bold text-white text-xs sm:text-sm tracking-tighter font-sans">N</span>
@@ -52,24 +89,21 @@ export default function Navbar({
           </span>
         </button>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm">
+        {/* Desktop Navigation Links with subtle pill highlight */}
+        <nav className="hidden md:flex items-center gap-2 lg:gap-3 text-sm">
           {navLinks.map((link) => {
             const isActive = activeTab === link.id;
             return (
               <button
                 key={link.id}
                 onClick={() => handleNavClick(link.id)}
-                className={`transition-colors font-normal relative py-1 ${
+                className={`px-3.5 py-1.5 rounded-full text-xs lg:text-sm transition-all relative cursor-pointer font-medium ${
                   isActive 
-                    ? 'text-white font-medium' 
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-white text-black font-semibold shadow-sm' 
+                    : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
                 {link.name}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-white rounded-full" />
-                )}
               </button>
             );
           })}
@@ -82,7 +116,7 @@ export default function Navbar({
           <button
             onClick={() => { sound.playClick(); onOpenSearch(); }}
             title="Search AI news"
-            className="p-1.5 sm:p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800/60 active:scale-90 transition-all border border-transparent hover:border-white/10"
+            className="p-1.5 sm:p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800/60 active:scale-90 transition-all border border-transparent hover:border-white/10 cursor-pointer"
             aria-label="Search"
           >
             <Search size={16} />
@@ -92,7 +126,7 @@ export default function Navbar({
           <button
             onClick={() => { sound.playClick(); onOpenSaved(); }}
             title="View Saved Stories"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-300 hover:text-white bg-zinc-900 border border-white/10 hover:border-white/25 transition-all"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-300 hover:text-white bg-zinc-900 border border-white/10 hover:border-white/25 transition-all cursor-pointer"
           >
             <Bookmark size={13} className={savedCount > 0 ? "fill-white text-white" : ""} />
             <span>Saved ({savedCount})</span>
@@ -100,19 +134,7 @@ export default function Navbar({
 
           {/* "Get started" Pill Button - scrolls to newsletter subscribe box properly framed */}
           <button
-            onClick={() => {
-              sound.playClick();
-              if (mobileMenuOpen) setMobileMenuOpen(false);
-              const el = document.getElementById('newsletter-section');
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                window.dispatchEvent(new CustomEvent('highlight-newsletter'));
-                setTimeout(() => {
-                  const input = document.getElementById('newsletter-email-input');
-                  if (input) input.focus({ preventScroll: true });
-                }, 500);
-              }
-            }}
+            onClick={handleGetStarted}
             className="whitespace-nowrap px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white text-black font-semibold text-xs sm:text-sm hover:bg-zinc-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] active:scale-95 flex-shrink-0 cursor-pointer"
           >
             Get started
@@ -121,7 +143,7 @@ export default function Navbar({
           {/* Mobile Menu Hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 active:scale-90 transition-all"
+            className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 active:scale-90 transition-all cursor-pointer"
             aria-label="Open menu"
           >
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -137,7 +159,7 @@ export default function Navbar({
             <button
               key={link.id}
               onClick={() => handleNavClick(link.id)}
-              className={`text-left py-2.5 px-3.5 rounded-xl text-sm font-medium transition-all active:scale-98 ${
+              className={`text-left py-2.5 px-3.5 rounded-xl text-sm font-medium transition-all active:scale-98 cursor-pointer ${
                 activeTab === link.id
                   ? 'bg-white text-black font-semibold shadow-sm'
                   : 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
@@ -147,19 +169,7 @@ export default function Navbar({
             </button>
           ))}
           <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              sound.playClick();
-              const el = document.getElementById('newsletter-section');
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                window.dispatchEvent(new CustomEvent('highlight-newsletter'));
-                setTimeout(() => {
-                  const input = document.getElementById('newsletter-email-input');
-                  if (input) input.focus({ preventScroll: true });
-                }, 500);
-              }
-            }}
+            onClick={handleGetStarted}
             className="w-full text-center py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-all active:scale-98 mt-1 shadow-md cursor-pointer"
           >
             Get started — Subscribe Free
@@ -167,7 +177,7 @@ export default function Navbar({
           <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-1">
             <button
               onClick={() => { setMobileMenuOpen(false); onOpenSaved(); }}
-              className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs text-zinc-300 hover:bg-zinc-900"
+              className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs text-zinc-300 hover:bg-zinc-900 cursor-pointer"
             >
               <Bookmark size={14} className={savedCount > 0 ? "fill-white text-white" : ""} />
               <span>Saved Stories ({savedCount})</span>

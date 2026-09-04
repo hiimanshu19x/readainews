@@ -1,18 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, ShieldCheck, Globe, CheckCircle2 } from 'lucide-react';
 import { sound } from '../utils/audio';
 
 export default function AboutSection({ onExploreToday }) {
+  const [highlighted, setHighlighted] = useState(false);
+
+  useEffect(() => {
+    const handleNav = (e) => {
+      if (e.detail?.id === 'about') {
+        setHighlighted(true);
+        setTimeout(() => setHighlighted(false), 2200);
+      }
+    };
+    window.addEventListener('section-navigated', handleNav);
+    return () => window.removeEventListener('section-navigated', handleNav);
+  }, []);
+
   return (
-    <section id="about" className="py-16 sm:py-24 bg-[#050505] border-t border-white/[0.08] relative overflow-hidden">
+    <section 
+      id="about" 
+      className="py-16 sm:py-24 bg-[#050505] border-t border-white/[0.08] relative overflow-hidden scroll-mt-20 sm:scroll-mt-24 md:scroll-mt-28"
+    >
       
       {/* Background radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-white/[0.015] blur-[140px] rounded-full pointer-events-none" />
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-white/[0.03] blur-[140px] rounded-full pointer-events-none transition-opacity duration-700 ${
+        highlighted ? 'opacity-100' : 'opacity-30'
+      }`} />
 
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Main Content Box */}
-        <div className="rounded-[28px] sm:rounded-3xl bg-gradient-to-b from-[#0c0c11] to-[#07070a] border border-white/[0.1] p-6 sm:p-12 shadow-2xl">
+        {/* Main Content Box with highlight ring */}
+        <div className={`rounded-[28px] sm:rounded-3xl bg-gradient-to-b from-[#0c0c11] to-[#07070a] border p-6 sm:p-12 shadow-2xl transition-all duration-700 ${
+          highlighted ? 'border-white/40 ring-1 ring-white/30 shadow-[0_0_60px_rgba(255,255,255,0.1)]' : 'border-white/[0.1]'
+        }`}>
           
           <div className="max-w-3xl">
             {/* Section Tag */}

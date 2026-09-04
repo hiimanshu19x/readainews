@@ -114,7 +114,7 @@ export default function ShuffleSection({
   };
 
   return (
-    <section id="shuffle-deck" className="relative py-8 sm:py-16 md:py-20 bg-[#070709] border-t border-white/[0.06] overflow-hidden">
+    <section id="shuffle-deck" className="relative py-8 sm:py-16 md:py-20 bg-[#070709] border-t border-white/[0.06] overflow-hidden scroll-mt-20 sm:scroll-mt-24 md:scroll-mt-28">
       
       {/* Background ambient lighting */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-white/[0.02] blur-3xl pointer-events-none" />
