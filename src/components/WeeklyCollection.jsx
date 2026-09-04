@@ -115,7 +115,7 @@ export default function WeeklyCollection({
   };
 
   return (
-    <section id="weekly-collection" className="pt-3.5 pb-10 sm:py-16 md:py-20 bg-[#09090c] border-t border-white/[0.08] scroll-mt-28 sm:scroll-mt-32 md:scroll-mt-36">
+    <section id="weekly-collection" className="pt-3.5 pb-10 sm:py-16 md:py-20 bg-[#09090c] border-t border-white/[0.08] scroll-mt-28 md:scroll-mt-20">
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
         
         {/* Section Header Banner */}

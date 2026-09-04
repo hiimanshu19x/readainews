@@ -152,50 +152,63 @@ export default function Navbar({
 
       </div>
 
-      {/* Mobile Drawer Menu - absolute to avoid shifting document flow during navigation */}
+      {/* Mobile Drawer Menu & Backdrop - completely opaque to prevent bleed-through */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 border-b border-white/10 bg-[#09090c]/98 backdrop-blur-2xl px-4 py-4 flex flex-col gap-2 shadow-2xl animate-deal z-50">
-          {navLinks.map((link) => {
-            const isActive = activeTab === link.id;
-            return (
-              <button
-                key={link.id}
-                onClick={() => handleNavClick(link.id)}
-                className={`w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-sm transition-all active:scale-98 cursor-pointer ${
-                  isActive
-                    ? 'bg-zinc-800/90 text-white border border-white/20 font-semibold shadow-inner'
-                    : 'text-zinc-400 hover:bg-zinc-900/80 hover:text-white border border-transparent'
-                }`}
-              >
-                <span>{link.name}</span>
-                {isActive && (
-                  <span className="flex items-center gap-1 text-[11px] font-mono text-emerald-400 font-normal">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                    <span>Active</span>
-                  </span>
-                )}
-              </button>
-            );
-          })}
-          <button
-            onClick={handleGetStarted}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-zinc-200 transition-all active:scale-98 mt-2 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer"
+        <>
+          {/* Backdrop overlay */}
+          <div 
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 top-14 bg-black/80 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+            aria-hidden="true"
+          />
+
+          {/* Solid Opaque Mobile Drawer */}
+          <div 
+            style={{ backgroundColor: '#09090c' }}
+            className="md:hidden absolute top-full left-0 right-0 border-b border-white/15 bg-[#09090c] px-4 py-4 flex flex-col gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-50 animate-deal"
           >
-            <span>Get started — Subscribe Free</span>
-          </button>
-          <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-1">
+            {navLinks.map((link) => {
+              const isActive = activeTab === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleNavClick(link.id)}
+                  className={`w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-sm transition-all active:scale-98 cursor-pointer ${
+                    isActive
+                      ? 'bg-zinc-800 text-white border border-white/20 font-semibold shadow-inner'
+                      : 'text-zinc-300 hover:bg-zinc-900 hover:text-white border border-transparent'
+                  }`}
+                >
+                  <span>{link.name}</span>
+                  {isActive && (
+                    <span className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      <span>Active</span>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
             <button
-              onClick={() => { setMobileMenuOpen(false); onOpenSaved(); }}
-              className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs text-zinc-300 hover:bg-zinc-900 cursor-pointer"
+              onClick={handleGetStarted}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-zinc-200 transition-all active:scale-98 mt-2 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer"
             >
-              <Bookmark size={14} className={savedCount > 0 ? "fill-white text-white" : ""} />
-              <span>Saved Stories ({savedCount})</span>
+              <span>Get started — Subscribe Free</span>
             </button>
-            <div className="text-[11px] text-zinc-500 font-mono">
-              ReadAiNews Mobile
+            <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-1">
+              <button
+                onClick={() => { setMobileMenuOpen(false); onOpenSaved(); }}
+                className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs text-zinc-300 hover:bg-zinc-900 cursor-pointer"
+              >
+                <Bookmark size={14} className={savedCount > 0 ? "fill-white text-white" : ""} />
+                <span>Saved Stories ({savedCount})</span>
+              </button>
+              <div className="text-[11px] text-zinc-500 font-mono">
+                ReadAiNews Mobile
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </header>
   );

@@ -167,15 +167,15 @@ export default function App() {
           onSeePreview={handleSeePreview}
         />
 
-        {/* Sticky Tab Navigation Pill on Mobile/Desktop matching screenshot */}
-        <div className="sticky top-14 sm:top-16 z-40 bg-[#050505]/95 backdrop-blur-xl py-2 sm:py-2.5 px-3 sm:px-4 border-b border-white/[0.08] flex justify-center transition-all shadow-md">
+        {/* Mobile-Only Sticky Tab Navigation Pill (Hidden on desktop/web view to avoid redundant stacked bars) */}
+        <div className="md:hidden sticky top-14 z-30 bg-[#050505]/95 backdrop-blur-xl py-2 px-3 border-b border-white/[0.08] flex justify-center transition-all shadow-md">
           <div className="inline-flex p-1 rounded-full bg-zinc-900/90 border border-white/10 shadow-inner">
             <button
               onClick={() => {
                 setActiveTab('today');
                 smoothScrollTo('shuffle-deck');
               }}
-              className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
                 activeTab === 'today'
                   ? 'bg-white text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
@@ -188,7 +188,7 @@ export default function App() {
                 setActiveTab('weekly');
                 smoothScrollTo('weekly-collection');
               }}
-              className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
                 activeTab === 'weekly'
                   ? 'bg-white text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'

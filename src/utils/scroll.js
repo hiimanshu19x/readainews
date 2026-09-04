@@ -13,10 +13,11 @@ export function smoothScrollTo(elementId, playAudio = true) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  // Combined sticky header height: Navbar (56px mobile / 64px desktop) + Sub-bar (~49px mobile / ~56px desktop)
-  // Aligns the start of the section directly beneath the sticky navigation on both mobile and web.
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-  const headerOffset = isMobile ? 106 : 122;
+  // Combined sticky header height:
+  // Desktop (>= 768px): Only top Navbar is sticky (64px) -> offset 74px provides perfect breathing room.
+  // Mobile (< 768px): Top Navbar (56px) + Mobile Sub-bar (~44px) -> offset 106px aligns exactly.
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const headerOffset = isMobile ? 106 : 74;
 
   const elementPosition = el.getBoundingClientRect().top;
   const targetPosition = elementPosition + window.pageYOffset - headerOffset;
