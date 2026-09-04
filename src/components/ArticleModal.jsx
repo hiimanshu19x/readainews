@@ -138,9 +138,9 @@ export default function ArticleModal({
               <FileText size={14} className="text-white" />
               <span>In-Depth Reporting ({article.source})</span>
             </div>
-            {article.content.split('\n\n').map((paragraph, idx) => (
+            {article.content.replace(/\\n/g, '\n').split(/\n\s*\n/).map((paragraph, idx) => (
               <p key={idx} className="text-zinc-300 leading-relaxed">
-                {paragraph}
+                {paragraph.trim()}
               </p>
             ))}
           </div>
