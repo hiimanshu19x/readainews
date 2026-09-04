@@ -36,10 +36,6 @@ export default function NewsCard({
           <div className="flex flex-col gap-1 min-w-0">
             {/* Meta row */}
             <div className="flex items-center gap-2 text-[10px] sm:text-xs text-zinc-400">
-              <span className="px-1.5 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/20 text-[9px] sm:text-[10px] font-semibold tracking-wider text-emerald-300 uppercase">
-                AI NEWS
-              </span>
-              <span>•</span>
               <span className="text-zinc-400">{article.timeAgo}</span>
             </div>
 
@@ -122,16 +118,11 @@ export default function NewsCard({
 
       {/* Card Body */}
       <div className="p-3.5 sm:p-4 xl:p-4.5 flex flex-col flex-1">
-        {/* Category & Date */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/20 text-[9px] sm:text-[10px] font-bold tracking-wider text-emerald-300 uppercase">
-            AI NEWS
-          </span>
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 shrink-0">
-            <span className="text-zinc-300 font-medium font-mono">{article.publishedDate ? 'Sep 4, 2026' : 'Sep 4, 2026'}</span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-zinc-500">{article.timeAgo?.replace('Today • ', '') || article.timeAgo}</span>
-          </div>
+        {/* Date & Time */}
+        <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 mb-2">
+          <span className="text-zinc-300 font-medium font-mono">{article.publishedDate ? 'Sep 4, 2026' : 'Sep 4, 2026'}</span>
+          <span className="text-zinc-600">•</span>
+          <span className="text-zinc-500">{article.timeAgo?.replace('Today • ', '') || article.timeAgo}</span>
         </div>
 
         {/* Title */}

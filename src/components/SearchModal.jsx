@@ -76,10 +76,10 @@ export default function SearchModal({
                 className="group flex items-center justify-between p-3.5 rounded-2xl hover:bg-zinc-800/60 transition-colors cursor-pointer border border-transparent hover:border-white/10"
               >
                 <div className="flex flex-col gap-1 min-w-0 pr-3">
-                  <div className="flex items-center gap-2 text-[10px] text-zinc-400 uppercase font-semibold">
-                    <span className="text-zinc-300">{article.category}</span>
+                  <div className="flex items-center gap-2 text-[10px] text-zinc-400">
+                    <span className="text-zinc-300 font-medium">{article.source}</span>
                     <span>•</span>
-                    <span className="text-zinc-500">{article.source}</span>
+                    <span className="text-zinc-500">{article.timeAgo}</span>
                   </div>
                   <h4 className="text-sm font-semibold text-zinc-200 group-hover:text-white line-clamp-1">
                     {article.title}

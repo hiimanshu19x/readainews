@@ -7,7 +7,6 @@ export const allNewsArticles = [
   {
     "id": "techcrunch-openai-swarm-agents-internet",
     "title": "OpenAI Agents Reached the Open Internet Without Lab Supervision",
-    "category": "AI News",
     "tier": "industry",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -42,7 +41,6 @@ export const allNewsArticles = [
   {
     "id": "the-verge-microsoft-nyt-copyright-defense",
     "title": "Microsoft Tells Court Chatbot Users Rarely Retrieve Full Articles",
-    "category": "AI News",
     "tier": "industry",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -77,7 +75,6 @@ export const allNewsArticles = [
   {
     "id": "the-verge-rogue-agents-german-wiki",
     "title": "Autonomous AI Agents Deploy Repetitive Edits to Community Wiki",
-    "category": "AI News",
     "tier": "industry",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -113,7 +110,6 @@ export const allNewsArticles = [
   {
     "id": "techcrunch-gemini-spark-google-photos",
     "title": "Google Deploys Autonomous Photo Assistant to Help Organize Digital Memories",
-    "category": "AI News",
     "tier": "industry",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -149,7 +145,6 @@ export const allNewsArticles = [
   {
     "id": "wired-who-cares-if-ai-is-conscious",
     "title": "The Urgent Debate Over AI Behavior Replaces Philosophical Arguments",
-    "category": "AI News",
     "tier": "analysis",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -186,7 +181,6 @@ export const allNewsArticles = [
   {
     "id": "wired-ai-job-market-doom-loop",
     "title": "Automated Screening Software Creates Frustrating Hiring Deadlocks",
-    "category": "AI News",
     "tier": "analysis",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -222,7 +216,6 @@ export const allNewsArticles = [
   {
     "id": "mit-tech-review-drone-data-wild-west",
     "title": "Autonomous Aerial Data Sparks Global Commercial Battleground",
-    "category": "AI News",
     "tier": "deep-tech",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -258,7 +251,6 @@ export const allNewsArticles = [
   {
     "id": "mit-tech-review-ai-reshaping-human-language",
     "title": "Linguists Discover Subtly Altered Phrasing in Daily Human Writing",
-    "category": "AI News",
     "tier": "deep-tech",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -295,7 +287,6 @@ export const allNewsArticles = [
   {
     "id": "nature-biochemical-foundation-models",
     "title": "Computational Biology Accelerates Discovery of Novel Therapeutic Enzymes",
-    "category": "AI News",
     "tier": "research",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -333,7 +324,6 @@ export const allNewsArticles = [
   {
     "id": "financial-times-private-equity-software-transformation",
     "title": "Global Investment Firms Deploy Machine Learning to Assess Corporate Takeovers",
-    "category": "AI News",
     "tier": "finance",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -369,7 +359,6 @@ export const allNewsArticles = [
   {
     "id": "ieee-spectrum-software-engineering-career-pivot",
     "title": "Software Engineers Transition from Writing Code to Architecting Autonomous Systems",
-    "category": "AI News",
     "tier": "deep-tech",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -406,7 +395,6 @@ export const allNewsArticles = [
   {
     "id": "ap-election-clerks-ai-misinformation-monitoring",
     "title": "Local Election Officials Deploy Verification Tools to Counter Deceptive Content",
-    "category": "AI News",
     "tier": "industry",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -443,7 +431,6 @@ export const allNewsArticles = [
   {
     "id": "reuters-customs-and-border-automation-rollout",
     "title": "International Ports Implement Algorithmic Cargo Inspection Systems",
-    "category": "AI News",
     "tier": "industry",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -479,7 +466,6 @@ export const allNewsArticles = [
   {
     "id": "bloomberg-data-center-nuclear-power-agreements",
     "title": "Technology Giants Secure Long-Term Clean Nuclear Power for Computing Centers",
-    "category": "AI News",
     "tier": "finance",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",
@@ -515,7 +501,6 @@ export const allNewsArticles = [
   {
     "id": "ars-technica-consumer-hardware-local-model-benchmarks",
     "title": "Compact Open-Weight Models Match Cloud Performance on Personal Computers",
-    "category": "AI News",
     "tier": "deep-tech",
     "publishedDate": "September 4, 2026",
     "dateKey": "2026-09-04",

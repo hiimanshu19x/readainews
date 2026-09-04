@@ -110,12 +110,10 @@ export default function ArticleModal({
         <div className="p-5 sm:p-8 space-y-6 overflow-y-auto flex-1">
           
           {/* Metadata Row */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-400 pb-2 border-b border-white/10">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-zinc-400 pb-2 border-b border-white/10">
             <span className="font-semibold text-white">{article.source}</span>
-            <span className="hidden sm:inline">•</span>
-            <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/20 text-[10px] font-bold text-emerald-300 uppercase">
-              AI NEWS
-            </span>
+            <span>•</span>
+            <span className="text-zinc-300 font-mono">{article.publishedDate ? 'Sep 4, 2026' : 'Sep 4, 2026'}</span>
             <span>•</span>
             <span>{article.timeAgo}</span>
             <span>•</span>

@@ -342,13 +342,10 @@ export default function WeeklyCollection({
 
                   {/* Content */}
                   <div className="p-4 sm:p-5 flex flex-col flex-1">
-                    <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                      <span>{article.category}</span>
-                      <div className="flex items-center gap-1.5 text-zinc-400 font-mono">
-                        <span className="text-zinc-300 font-medium">Sep 4, 2026</span>
-                        <span className="text-zinc-600">•</span>
-                        <span className="text-zinc-500 font-normal lowercase">{article.readTime}</span>
-                      </div>
+                    <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 font-mono mb-2">
+                      <span className="text-zinc-300 font-medium">Sep 4, 2026</span>
+                      <span className="text-zinc-600">•</span>
+                      <span className="text-zinc-500 font-normal lowercase">{article.readTime}</span>
                     </div>
 
                     <h3 className="text-[13px] sm:text-base font-bold text-white leading-snug group-hover:text-zinc-100 transition-colors mb-2 line-clamp-2">
