@@ -13,10 +13,10 @@ export function smoothScrollTo(elementId, playAudio = true) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  // Combined sticky header height: Navbar (56px mobile / 64px desktop) + Sub-bar (~48px) + clearance
-  // Ensures section headings and content start perfectly below the two-tier sticky navigation.
+  // Combined sticky header height: Navbar (56px mobile / 64px desktop) + Sub-bar (~49px mobile / ~56px desktop)
+  // Aligns the start of the section directly beneath the sticky navigation on both mobile and web.
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-  const headerOffset = isMobile ? 116 : 126;
+  const headerOffset = isMobile ? 106 : 122;
 
   const elementPosition = el.getBoundingClientRect().top;
   const targetPosition = elementPosition + window.pageYOffset - headerOffset;

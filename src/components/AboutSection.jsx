@@ -19,7 +19,7 @@ export default function AboutSection({ onExploreToday }) {
   return (
     <section 
       id="about" 
-      className="py-16 sm:py-24 bg-[#050505] border-t border-white/[0.08] relative overflow-hidden scroll-mt-28 sm:scroll-mt-32 md:scroll-mt-36"
+      className="pt-4 pb-16 sm:py-24 bg-[#050505] border-t border-white/[0.08] relative overflow-hidden scroll-mt-28 sm:scroll-mt-32 md:scroll-mt-36"
     >
       
       {/* Background radial glow */}

@@ -152,9 +152,9 @@ export default function Navbar({
 
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu - absolute to avoid shifting document flow during navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-white/10 bg-[#09090c]/98 backdrop-blur-2xl px-4 py-4 flex flex-col gap-2 shadow-2xl animate-deal">
+        <div className="md:hidden absolute top-full left-0 right-0 border-b border-white/10 bg-[#09090c]/98 backdrop-blur-2xl px-4 py-4 flex flex-col gap-2 shadow-2xl animate-deal z-50">
           {navLinks.map((link) => {
             const isActive = activeTab === link.id;
             return (

@@ -46,7 +46,7 @@ export default function FeatureGrid() {
   return (
     <section 
       id="features" 
-      className="py-16 sm:py-24 bg-[#07070a] border-t border-white/[0.08] relative overflow-hidden scroll-mt-28 sm:scroll-mt-32 md:scroll-mt-36"
+      className="pt-4 pb-16 sm:py-24 bg-[#07070a] border-t border-white/[0.08] relative overflow-hidden scroll-mt-28 sm:scroll-mt-32 md:scroll-mt-36"
     >
       {/* Subtle background ambient glow */}
       <div className={`absolute top-0 right-1/4 w-96 h-64 bg-cyan-500/[0.04] blur-[140px] pointer-events-none transition-opacity duration-700 ${
