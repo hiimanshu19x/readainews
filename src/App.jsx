@@ -167,8 +167,8 @@ export default function App() {
           onSeePreview={handleSeePreview}
         />
 
-        {/* Tab Navigation Pill on Mobile/Desktop (relative so it never obstructs sections below) */}
-        <div className="relative z-20 bg-[#050505] py-3 px-3 sm:px-4 border-b border-white/[0.06] flex justify-center transition-all">
+        {/* Sticky Tab Navigation Pill on Mobile/Desktop matching screenshot */}
+        <div className="sticky top-14 sm:top-16 z-40 bg-[#050505]/95 backdrop-blur-xl py-2 sm:py-2.5 px-3 sm:px-4 border-b border-white/[0.08] flex justify-center transition-all shadow-md">
           <div className="inline-flex p-1 rounded-full bg-zinc-900/90 border border-white/10 shadow-inner">
             <button
               onClick={() => {
