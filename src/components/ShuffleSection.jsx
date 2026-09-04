@@ -88,11 +88,7 @@ export default function ShuffleSection({
     }, 1350);
   };
 
-  const categories = ['ALL', 'BREAKING NEWS', 'AI INDUSTRY', 'DEEP ANALYSIS', 'RESEARCH'];
-
-  const filteredArticles = filterCategory === 'ALL'
-    ? articles
-    : articles.filter(a => a.category.toUpperCase().includes(filterCategory) || filterCategory.includes(a.category.toUpperCase()));
+  const filteredArticles = articles;
 
   // Mobile carousel scroll tracker
   const handleCarouselScroll = (e) => {
@@ -131,9 +127,16 @@ export default function ShuffleSection({
               </span>
               <span className="text-zinc-600">•</span>
               
-              {/* Daily Deduplication Guarantee Badge */}
+              {/* 3-Hour Auto-Refresh Badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-[10px] font-mono text-cyan-300">
-                <ShieldCheck size={11} className="text-cyan-400" />
+                <Clock size={11} className="text-cyan-400" />
+                <span>Refreshed Every 3 Hours</span>
+              </div>
+
+              <span className="text-zinc-600">•</span>
+              {/* Daily Deduplication Guarantee Badge */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/30 text-[10px] font-mono text-emerald-300">
+                <ShieldCheck size={11} className="text-emerald-400" />
                 <span>Zero-Repeat Guarantee</span>
               </div>
 
@@ -141,15 +144,15 @@ export default function ShuffleSection({
               {/* Top Publications Badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px] font-mono text-zinc-200">
                 <Globe size={11} className="text-emerald-400" />
-                <span>15 Premier Outlets Across 4 Tiers</span>
+                <span>15 Premier Outlets</span>
               </div>
             </div>
 
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
-              Top 5 AI Stories for Today
+              Top 5 AI Stories
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-xl">
-              Curated and AI-synthesized across 15 premier outlets: Breaking News, AI Industry, Deep Analysis, and Research. Zero repeats guaranteed.
+              Fresh AI news from the world's best 15 publications, automatically refreshed every 3 hours with zero duplicates.
             </p>
           </div>
 
@@ -158,7 +161,7 @@ export default function ShuffleSection({
             
             {/* Today's Seen Counter */}
             <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 text-xs text-zinc-400">
-              <span>Seen today: <strong className="text-white font-mono">{totalSeenToday}</strong></span>
+              <span>Seen: <strong className="text-white font-mono">{totalSeenToday}</strong></span>
               <span className="text-zinc-600">/</span>
               <span>Remaining: <strong className="text-emerald-400 font-mono">{remainingUnseen}</strong></span>
             </div>
@@ -195,11 +198,11 @@ export default function ShuffleSection({
             <button
               onClick={onRefreshLiveWire}
               disabled={isRefreshingLive}
-              title="Scrape latest AI dispatches from internet & X"
+              title="Refresh latest AI dispatches"
               className="flex items-center gap-1.5 px-3.5 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-white/15 text-xs text-zinc-300 hover:text-white transition-all active:scale-95 flex-shrink-0"
             >
               <Globe size={13} className="text-cyan-400" />
-              <span>{isRefreshingLive ? "Scraping Web..." : "Live Web Refresh"}</span>
+              <span>{isRefreshingLive ? "Refreshing..." : "Refresh Feed"}</span>
               <RefreshCw size={11} className={isRefreshingLive ? "animate-spin text-cyan-400" : "text-zinc-500"} />
             </button>
 
@@ -217,42 +220,26 @@ export default function ShuffleSection({
                 size={15} 
                 className={`transition-transform duration-700 ${isScanning ? 'animate-spin' : 'group-hover:rotate-180'}`} 
               />
-              <span>{isScanning ? "Scanning Web..." : "Shuffle Today's Top 5"}</span>
+              <span>{isScanning ? "Refreshing..." : "Shuffle Next 5"}</span>
               <Sparkles size={13} className="text-amber-500 animate-pulse" />
             </button>
 
           </div>
         </div>
 
-        {/* Category Filter Pills & Mobile Stats */}
-        <div className="flex items-center justify-between gap-3 pb-3 mb-6 overflow-x-auto no-scrollbar text-xs">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => { sound.playClick(); setFilterCategory(cat); }}
-                className={`px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all border text-[11px] sm:text-xs ${
-                  filterCategory === cat
-                    ? 'bg-zinc-100 text-black border-white shadow-sm'
-                    : 'bg-zinc-900/80 text-zinc-400 border-white/5 hover:border-white/20 hover:text-white'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {totalSeenToday > 5 && (
+        {/* Status bar with seen count and reset option on mobile/desktop */}
+        {totalSeenToday > 5 && (
+          <div className="flex items-center justify-end pb-2 mb-4 text-xs">
             <button
               onClick={onResetTodayHistory}
-              title="Reset seen stories for today"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors flex-shrink-0 text-[10px]"
+              title="Reset seen stories"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-zinc-400 hover:text-white bg-zinc-900 border border-white/10 transition-colors text-[10px]"
             >
               <RotateCcw size={11} />
-              <span>Reset today</span>
+              <span>Reset seen stories</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* COOL MAGNIFIER HUD SCANNER ANIMATION */}
         {isScanning && (

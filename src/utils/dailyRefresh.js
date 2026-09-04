@@ -1,75 +1,74 @@
 import { allNewsArticles } from '../data/newsData';
-import { getTodayDateKey, getUniqueDailyArticles } from './dailyTracker';
+import { getUniqueDailyArticles } from './dailyTracker';
 
-const BATCH_STORAGE_KEY = 'readainews_today_batch_v6_';
-const REFRESH_DATE_KEY = 'readainews_last_refresh_date_v6';
+const BATCH_STORAGE_KEY = 'readainews_3hr_batch_v7_';
+const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v7';
+const THREE_HOURS_MS = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
 
 /**
- * Ensures the website gets a refreshed shot of articles from the top 15 premier publications every day.
- * Automatically guarantees balanced representation across:
- * - Breaking / Important News (Reuters, Bloomberg, FT, AP, WSJ)
- * - AI Industry (TechCrunch, The Information, VentureBeat, The Verge)
- * - Deep Analysis (MIT Technology Review, WIRED, Ars Technica, IEEE Spectrum)
- * - Research (Nature, Science)
+ * Automatically refreshes the top curated AI news every 3 hours from the 15 premier publications.
+ * Guarantees zero duplicates for any time using persistent seen-article history.
  */
 export async function getDailyRefreshedArticles(forceLive = false) {
-  const todayKey = getTodayDateKey();
-  
   if (typeof window === 'undefined') {
-    return { articles: allNewsArticles.slice(0, 5), isLive: false, dateKey: todayKey };
+    return { articles: allNewsArticles.slice(0, 5), isLive: false };
   }
 
-  const lastRefreshDate = localStorage.getItem(REFRESH_DATE_KEY);
-  const cachedBatch = localStorage.getItem(`${BATCH_STORAGE_KEY}${todayKey}`);
+  const now = Date.now();
+  const lastRefreshTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
+  const timeSinceLastRefresh = now - lastRefreshTime;
+  const isExpired = timeSinceLastRefresh >= THREE_HOURS_MS;
 
-  // Purge any stale cache with legacy IDs or mismatched links
-  if (cachedBatch) {
-    try {
-      const parsed = JSON.parse(cachedBatch);
-      const isLegacy = Array.isArray(parsed) && parsed.some(a => a.id?.startsWith('live-') || !a.tier);
-      if (isLegacy) {
-        localStorage.removeItem(`${BATCH_STORAGE_KEY}${todayKey}`);
-      }
-    } catch (e) {
-      localStorage.removeItem(`${BATCH_STORAGE_KEY}${todayKey}`);
-    }
-  }
-
-  // If we already have today's verified batch cached and not forcing a live refresh
-  if (!forceLive && lastRefreshDate === todayKey) {
-    const freshCached = localStorage.getItem(`${BATCH_STORAGE_KEY}${todayKey}`);
-    if (freshCached) {
+  // If not forcing refresh, and cached batch exists and is under 3 hours old, return cached
+  if (!forceLive && !isExpired && lastRefreshTime > 0) {
+    const cachedBatch = localStorage.getItem(BATCH_STORAGE_KEY);
+    if (cachedBatch) {
       try {
-        const parsed = JSON.parse(freshCached);
-        if (Array.isArray(parsed) && parsed.length >= 5 && parsed[0]?.sourceUrl && parsed[0]?.tier) {
+        const parsed = JSON.parse(cachedBatch);
+        if (Array.isArray(parsed) && parsed.length >= 5) {
           return {
             articles: parsed,
             isLive: true,
-            dateKey: todayKey,
-            isCachedToday: true
+            isCachedToday: true,
+            nextRefreshInMs: THREE_HOURS_MS - timeSinceLastRefresh
           };
         }
       } catch (e) {
-        console.warn('Cache read failed:', e);
+        console.warn('Cache read error:', e);
       }
     }
   }
 
-  // Pick balanced 5 articles across the 4 tiers using the daily tracker
+  // Generate a fresh 5-story batch with strict zero-repeat guarantee
   const { articles: selectedBatch } = getUniqueDailyArticles(allNewsArticles, 5);
 
-  // Save today's refreshed batch & update last refresh date
+  // Save new 3-hour batch and update timestamp
   try {
-    localStorage.setItem(REFRESH_DATE_KEY, todayKey);
-    localStorage.setItem(`${BATCH_STORAGE_KEY}${todayKey}`, JSON.stringify(selectedBatch));
+    localStorage.setItem(REFRESH_TIMESTAMP_KEY, now.toString());
+    localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify(selectedBatch));
   } catch (e) {
-    console.warn('Cache write failed:', e);
+    console.warn('Cache write error:', e);
   }
 
   return {
     articles: selectedBatch,
     isLive: true,
-    dateKey: todayKey,
-    isCachedToday: false
+    isCachedToday: false,
+    nextRefreshInMs: THREE_HOURS_MS
   };
+}
+
+/**
+ * Returns remaining time until next automated 3-hour refresh in minutes
+ */
+export function getNextRefreshCountdown() {
+  if (typeof window === 'undefined') return { hours: 3, minutes: 0 };
+  const now = Date.now();
+  const lastRefreshTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
+  const diff = THREE_HOURS_MS - (now - lastRefreshTime);
+  if (diff <= 0) return { hours: 0, minutes: 0 };
+  const totalMins = Math.floor(diff / 60000);
+  const hours = Math.floor(totalMins / 60);
+  const minutes = totalMins % 60;
+  return { hours, minutes };
 }

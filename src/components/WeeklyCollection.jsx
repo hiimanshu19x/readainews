@@ -90,16 +90,7 @@ export default function WeeklyCollection({
 
   // Filter weekly best items (past collected week)
   const weeklyArticles = articles.filter(a => a.isWeeklyBest);
-
-  const categories = ['ALL', 'BREAKING NEWS', 'AI INDUSTRY', 'DEEP ANALYSIS', 'RESEARCH'];
-
-  const filtered = activeCategory === 'ALL'
-    ? weeklyArticles
-    : weeklyArticles.filter(a => 
-        a.category?.toUpperCase() === activeCategory || 
-        a.category?.toUpperCase().includes(activeCategory) || 
-        activeCategory.includes(a.category?.toUpperCase())
-      );
+  const filtered = weeklyArticles;
 
   const handleScrollToNewsletter = () => {
     sound.playClick();
@@ -225,28 +216,6 @@ export default function WeeklyCollection({
               {currentWeekMeta.dateRange}
             </div>
           </div>
-
-          {/* Category Filter Pills (Visible on Unlocked Past Week) */}
-          {!currentWeekMeta.isLocked && (
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5 overflow-x-auto no-scrollbar text-xs">
-              <span className="text-zinc-500 flex items-center gap-1 mr-1 font-medium text-[11px] flex-shrink-0">
-                <Filter size={12} /> Filter:
-              </span>
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => { sound.playClick(); setActiveCategory(cat); }}
-                  className={`px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all border text-[11px] ${
-                    activeCategory === cat
-                      ? 'bg-white text-black border-white shadow-sm font-semibold'
-                      : 'bg-zinc-900 text-zinc-400 border-white/5 hover:border-white/20 hover:text-white'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* CONDITION 1: LOCKED PREVIEW STATE (For 2nd, 3rd, 4th Weeks of Sept 2026) */}

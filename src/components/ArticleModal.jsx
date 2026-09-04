@@ -104,8 +104,8 @@ export default function ArticleModal({
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-400 pb-2 border-b border-white/10">
             <span className="font-semibold text-white">{article.source}</span>
             <span className="hidden sm:inline">•</span>
-            <span className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-bold text-zinc-300 uppercase">
-              {article.category}
+            <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/20 text-[10px] font-bold text-emerald-300 uppercase">
+              AI NEWS
             </span>
             <span>•</span>
             <span>{article.timeAgo}</span>

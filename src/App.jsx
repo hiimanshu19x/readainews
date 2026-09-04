@@ -68,7 +68,7 @@ export default function App() {
       }
     } catch (e) {}
 
-    // Auto-check for fresh daily shot on mount
+    // Auto-check for fresh 3-hour shot on mount
     getDailyRefreshedArticles(false).then((res) => {
       if (res && res.articles && res.articles.length >= 5) {
         setShuffleState(prev => ({
@@ -78,6 +78,20 @@ export default function App() {
         setIsLiveWire(true);
       }
     });
+
+    // Check every 10 minutes to auto-refresh when the 3-hour period elapses
+    const interval = setInterval(() => {
+      getDailyRefreshedArticles(false).then((res) => {
+        if (res && res.articles && !res.isCachedToday) {
+          setShuffleState(prev => ({
+            ...prev,
+            articles: res.articles
+          }));
+        }
+      });
+    }, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Force live scrape refresh from web
