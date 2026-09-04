@@ -5,7 +5,6 @@ import {
   Trophy, 
   Bookmark, 
   ArrowRight, 
-  Filter, 
   ChevronDown, 
   Lock, 
   Clock, 
@@ -71,7 +70,6 @@ export default function WeeklyCollection({
   savedIds = [], 
   onToggleBookmark 
 }) {
-  const [activeCategory, setActiveCategory] = useState('ALL');
   const [selectedWeek, setSelectedWeek] = useState('1st Week of Sept 2026');
 
   // Always reset to the starting tab (1st Week of Sept collected best) when user clicks "This Week Collection"
@@ -79,7 +77,6 @@ export default function WeeklyCollection({
     const handleNav = (e) => {
       if (e.detail?.id === 'weekly-collection') {
         setSelectedWeek('1st Week of Sept 2026');
-        setActiveCategory('ALL');
       }
     };
     window.addEventListener('section-navigated', handleNav);

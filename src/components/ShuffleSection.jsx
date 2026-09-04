@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
-  RefreshCw
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 import NewsCard from './NewsCard';
 import { sound } from '../utils/audio';
@@ -44,7 +45,6 @@ export default function ShuffleSection({
   const [scanStepIndex, setScanStepIndex] = useState(0);
   const [dealtCount, setDealtCount] = useState(5);
   const [viewMode, setViewMode] = useState('spread'); // 'spread' | 'grid'
-  const [filterCategory, setFilterCategory] = useState('ALL');
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const carouselRef = useRef(null);
 
