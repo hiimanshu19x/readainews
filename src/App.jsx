@@ -3,6 +3,8 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ShuffleSection from './components/ShuffleSection';
 import WeeklyCollection from './components/WeeklyCollection';
+import FeatureGrid from './components/FeatureGrid';
+import AboutSection from './components/AboutSection';
 import NewsletterCta from './components/NewsletterCta';
 import Footer from './components/Footer';
 import ArticleModal from './components/ArticleModal';
@@ -226,6 +228,12 @@ export default function App() {
           savedIds={savedIds}
           onToggleBookmark={handleToggleBookmark}
         />
+
+        {/* Premium Short Segment: Features */}
+        <FeatureGrid />
+
+        {/* Premium Short Segment: About */}
+        <AboutSection onExploreToday={handleStartReading} />
 
         {/* Newsletter Dark CTA Card with Earth Horizon Curvature */}
         <NewsletterCta />

@@ -1,57 +1,86 @@
-import React from 'react';
-import { Zap, Target, FileText, Smartphone } from 'lucide-react';
+﻿import React from 'react';
+import { Zap, ShieldCheck, ExternalLink, Cpu } from 'lucide-react';
 import { sound } from '../utils/audio';
 
 const features = [
   {
     icon: Zap,
-    title: 'AI-curated',
-    description: 'Latest and most important stories, filtered by AI.'
+    tag: 'INTELLIGENCE WIRE',
+    title: 'Real-Time Newsroom Scraping',
+    description: 'Continuously monitors verified tech newsrooms (TechCrunch, Wired, The Verge) to extract high-impact AI dispatches.'
   },
   {
-    icon: Target,
-    title: 'Laser focused',
-    description: 'Only AI and technology. No distractions.'
+    icon: Cpu,
+    tag: 'EXECUTIVE SYNTHESIS',
+    title: '220+ Word AI-Crafted Briefs',
+    description: 'Every story is broken down into an executive summary, 3 technical takeaways, and "Why It Matters" for builders and investors.'
   },
   {
-    icon: FileText,
-    title: 'Clear summaries',
-    description: 'Get the essence in seconds, not minutes.'
+    icon: ExternalLink,
+    tag: 'SOURCE VERIFIED',
+    title: 'Direct Canonical Outbound Links',
+    description: 'No paywalls or broken search pages. Click directly to the full original investigative piece on the publisher’s website.'
   },
   {
-    icon: Smartphone,
-    title: 'Read anywhere',
-    description: 'A seamless experience across all your devices.'
+    icon: ShieldCheck,
+    tag: 'DEDUPLICATION',
+    title: 'Zero Duplicate Daily Ledger',
+    description: 'Stateful browser registry ensures you never see the same article twice on the same calendar day.'
   }
 ];
 
 export default function FeatureGrid() {
   return (
-    <section id="features" className="py-20 md:py-24 bg-white text-zinc-900 border-t border-b border-zinc-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="py-16 sm:py-20 bg-[#07070a] border-t border-white/[0.08] relative overflow-hidden">
+      
+      {/* Subtle background ambient glow */}
+      <div className="absolute top-0 right-1/4 w-96 h-64 bg-cyan-500/[0.02] blur-[120px] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-6">
-          {features.map((feature, idx) => {
-            const Icon = feature.icon;
+        {/* Section Header */}
+        <div className="flex flex-col items-start mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-white/10 text-[11px] font-mono font-semibold text-zinc-300 uppercase tracking-widest mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            <span>CORE ARCHITECTURE</span>
+          </div>
+
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-2 sm:mb-3">
+            Built for Signal. Engineered Against Noise.
+          </h2>
+          <p className="text-xs sm:text-base text-zinc-400 max-w-xl leading-relaxed">
+            ReadAiNews combines autonomous ingestion with generative journalism to deliver the purest daily AI intelligence feed.
+          </p>
+        </div>
+
+        {/* 4 Feature Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {features.map((item, idx) => {
+            const Icon = item.icon;
             return (
               <div 
                 key={idx}
                 onMouseEnter={() => sound.playClick()}
-                className="group flex flex-col items-start p-6 rounded-2xl bg-zinc-50/50 hover:bg-zinc-100/80 border border-zinc-200/80 transition-all duration-300"
+                className="group relative flex flex-col p-5 sm:p-6 rounded-2xl bg-[#0d0d12] hover:bg-[#13131a] border border-white/[0.08] hover:border-white/20 transition-all duration-300 shadow-lg"
               >
-                {/* Icon inside pill container matching screenshot */}
-                <div className="w-12 h-12 rounded-xl bg-white border border-zinc-200/90 shadow-sm flex items-center justify-center mb-5 text-zinc-900 group-hover:scale-110 group-hover:bg-black group-hover:text-white group-hover:border-black transition-all duration-300">
-                  <Icon size={20} strokeWidth={1.75} />
+                {/* Accent icon */}
+                <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-white/10 flex items-center justify-center mb-4 text-white group-hover:border-cyan-500/40 group-hover:scale-105 transition-all shadow-inner">
+                  <Icon size={18} className="text-zinc-300 group-hover:text-cyan-400 transition-colors" />
                 </div>
 
-                {/* Feature Title */}
-                <h3 className="text-lg font-bold text-zinc-950 tracking-tight mb-2">
-                  {feature.title}
+                {/* Micro Tag */}
+                <span className="text-[10px] font-mono tracking-wider font-semibold text-zinc-400 mb-1.5 uppercase">
+                  {item.tag}
+                </span>
+
+                {/* Title */}
+                <h3 className="text-sm sm:text-base font-bold text-white mb-2 leading-snug group-hover:text-zinc-100 transition-colors">
+                  {item.title}
                 </h3>
 
-                {/* Feature Description */}
-                <p className="text-sm text-zinc-600 leading-relaxed">
-                  {feature.description}
+                {/* Description */}
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  {item.description}
                 </p>
               </div>
             );
