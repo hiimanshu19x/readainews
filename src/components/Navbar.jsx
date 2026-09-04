@@ -98,14 +98,22 @@ export default function Navbar({
             <span>Saved ({savedCount})</span>
           </button>
 
-          {/* "Get started" Pill Button - strictly whitespace-nowrap and mobile-optimized */}
+          {/* "Get started" Pill Button - scrolls to newsletter subscribe box properly framed */}
           <button
             onClick={() => {
               sound.playClick();
-              const cta = document.getElementById('newsletter-section');
-              if (cta) cta.scrollIntoView({ behavior: 'smooth' });
+              if (mobileMenuOpen) setMobileMenuOpen(false);
+              const el = document.getElementById('newsletter-section');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                window.dispatchEvent(new CustomEvent('highlight-newsletter'));
+                setTimeout(() => {
+                  const input = document.getElementById('newsletter-email-input');
+                  if (input) input.focus({ preventScroll: true });
+                }, 500);
+              }
             }}
-            className="whitespace-nowrap px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white text-black font-semibold text-xs sm:text-sm hover:bg-zinc-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] active:scale-95 flex-shrink-0"
+            className="whitespace-nowrap px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white text-black font-semibold text-xs sm:text-sm hover:bg-zinc-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] active:scale-95 flex-shrink-0 cursor-pointer"
           >
             Get started
           </button>
@@ -138,6 +146,24 @@ export default function Navbar({
               {link.name}
             </button>
           ))}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              sound.playClick();
+              const el = document.getElementById('newsletter-section');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                window.dispatchEvent(new CustomEvent('highlight-newsletter'));
+                setTimeout(() => {
+                  const input = document.getElementById('newsletter-email-input');
+                  if (input) input.focus({ preventScroll: true });
+                }, 500);
+              }
+            }}
+            className="w-full text-center py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-all active:scale-98 mt-1 shadow-md cursor-pointer"
+          >
+            Get started — Subscribe Free
+          </button>
           <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-1">
             <button
               onClick={() => { setMobileMenuOpen(false); onOpenSaved(); }}

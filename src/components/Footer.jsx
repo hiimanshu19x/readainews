@@ -63,7 +63,7 @@ export default function Footer({ onNavigate, onOpenInfo }) {
                 </li>
                 <li>
                   <a href="#newsletter-section" className="hover:text-white transition-colors">
-                    Daily Newsletter
+                    Bi-Weekly Newsletter (2x/week)
                   </a>
                 </li>
                 <li>
