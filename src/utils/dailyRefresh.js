@@ -1,8 +1,8 @@
 import { allNewsArticles } from '../data/newsData';
 import { getTodayDateKey, getUniqueDailyArticles } from './dailyTracker';
 
-const BATCH_STORAGE_KEY = 'readainews_today_batch_v5_';
-const REFRESH_DATE_KEY = 'readainews_last_refresh_date_v5';
+const BATCH_STORAGE_KEY = 'readainews_today_batch_v6_';
+const REFRESH_DATE_KEY = 'readainews_last_refresh_date_v6';
 
 /**
  * Ensures the website gets a refreshed shot of articles from the top 15 premier publications every day.

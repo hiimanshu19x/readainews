@@ -21,7 +21,7 @@ const WEEKS_DATA = [
   {
     id: '1st Week of Sept 2026',
     shortLabel: '1st Week of Sept',
-    dateRange: 'Sept 1 – Sept 7, 2026',
+    dateRange: 'Sept 1 - Sept 7, 2026',
     status: 'collected',
     isLocked: false,
     badgeText: 'Past Week · Collected',
@@ -30,7 +30,7 @@ const WEEKS_DATA = [
   {
     id: '2nd Week of Sept 2026',
     shortLabel: '2nd Week of Sept',
-    dateRange: 'Sept 8 – Sept 14, 2026',
+    dateRange: 'Sept 8 - Sept 14, 2026',
     status: 'locked',
     isLocked: true,
     badgeText: 'Upcoming · Locked',
@@ -42,7 +42,7 @@ const WEEKS_DATA = [
   {
     id: '3rd Week of Sept 2026',
     shortLabel: '3rd Week of Sept',
-    dateRange: 'Sept 15 – Sept 21, 2026',
+    dateRange: 'Sept 15 - Sept 21, 2026',
     status: 'locked',
     isLocked: true,
     badgeText: 'Upcoming · Locked',
@@ -54,7 +54,7 @@ const WEEKS_DATA = [
   {
     id: '4th Week of Sept 2026',
     shortLabel: '4th Week of Sept',
-    dateRange: 'Sept 22 – Sept 28, 2026',
+    dateRange: 'Sept 22 - Sept 28, 2026',
     status: 'locked',
     isLocked: true,
     badgeText: 'Upcoming · Locked',

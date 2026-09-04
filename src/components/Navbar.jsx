@@ -193,7 +193,7 @@ export default function Navbar({
               onClick={handleGetStarted}
               className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-zinc-200 transition-all active:scale-98 mt-2 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer"
             >
-              <span>Get started — Subscribe Free</span>
+              <span>Get started - Subscribe Free</span>
             </button>
             <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-1">
               <button

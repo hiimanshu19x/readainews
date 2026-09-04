@@ -158,7 +158,24 @@ export default function MeshThumbnail({ theme = 'ribbon', className = 'w-full h-
       );
 
     case 'lattice':
-    default:
+    default: {
+      // Map named themes to subtle accent colors for visual variety
+      const accentMap = {
+        rose: '#f43f5e',
+        blue: '#3b82f6',
+        teal: '#14b8a6',
+        violet: '#8b5cf6',
+        orange: '#f97316',
+        emerald: '#10b981',
+        cyan: '#06b6d4',
+        indigo: '#6366f1',
+        purple: '#a855f7',
+        amber: '#f59e0b',
+        lattice: '#ffffff',
+      };
+      const accent = accentMap[theme] || '#ffffff';
+      const accentOpacity = theme === 'lattice' ? '0.8' : '0.7';
+
       return (
         <div className={`relative overflow-hidden bg-gradient-to-b from-[#16161a] to-[#09090b] flex items-center justify-center ${className}`}>
           <svg viewBox="0 0 400 240" className="w-full h-full object-cover">
@@ -168,7 +185,7 @@ export default function MeshThumbnail({ theme = 'ribbon', className = 'w-full h-
               const y = 40 + Math.floor(i / 4) * 50;
               return (
                 <g key={i}>
-                  <circle cx={x} cy={y} r="3" fill="#ffffff" opacity="0.8" />
+                  <circle cx={x} cy={y} r="3" fill={accent} opacity={accentOpacity} />
                   {i < 12 && (
                     <line x1={x} y1={y} x2={x} y2={y + 50} stroke="#71717a" strokeWidth="0.8" opacity="0.3" />
                   )}
@@ -176,7 +193,7 @@ export default function MeshThumbnail({ theme = 'ribbon', className = 'w-full h-
                     <line x1={x} y1={y} x2={x + 90} y2={y} stroke="#71717a" strokeWidth="0.8" opacity="0.3" />
                   )}
                   {i < 12 && i % 4 < 3 && (
-                    <line x1={x} y1={y} x2={x + 90} y2={y + 50} stroke="#ffffff" strokeWidth="0.5" opacity="0.15" />
+                    <line x1={x} y1={y} x2={x + 90} y2={y + 50} stroke={accent} strokeWidth="0.5" opacity="0.15" />
                   )}
                 </g>
               );
@@ -185,5 +202,6 @@ export default function MeshThumbnail({ theme = 'ribbon', className = 'w-full h-
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
         </div>
       );
+    }
   }
 }

@@ -32,7 +32,7 @@ export default function Hero({ onStartReading, onSeePreview }) {
 
             {/* Body Description */}
             <p className="text-sm sm:text-base md:text-lg text-zinc-400 font-normal leading-relaxed max-w-xl mb-6 sm:mb-8">
-              We read everything, so you don't have to. ReadAiNews uses AI to find, filter, and summarize the most important stories in AI and technology — no noise, no clickbait, just what matters.
+              We read everything, so you don't have to. ReadAiNews uses AI to find, filter, and summarize the most important stories in AI and technology. No noise, no clickbait, just what matters.
             </p>
 
             {/* Pill Buttons: Mobile-First Responsive Stack */}
@@ -44,7 +44,7 @@ export default function Hero({ onStartReading, onSeePreview }) {
                 }}
                 className="group flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 active:scale-95 transition-all shadow-[0_0_25px_rgba(255,255,255,0.2)]"
               >
-                <span>Start reading — it's free</span>
+                <span>Start reading - it's free</span>
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </button>
 
@@ -143,12 +143,12 @@ export default function Hero({ onStartReading, onSeePreview }) {
 
                 {/* Headline */}
                 <h3 className="text-sm sm:text-base font-bold text-white leading-snug mb-2">
-                  OpenAI releases Frontier reasoning upgrades with test-time compute
+                  OpenAI releases new reasoning upgrades with step-by-step verification
                 </h3>
 
                 {/* Snippet */}
                 <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed mb-3 sm:mb-4 line-clamp-2">
-                  A significant leap in reasoning, tool use, and reliability — here's what's new and why it matters.
+                  A major improvement in reasoning, everyday tool use, and reliability. Here is what is new and why it matters.
                 </p>
 
                 {/* Card Footer */}

@@ -13,7 +13,7 @@ export function getTodayDateKey() {
   return `${year}-${month}-${day}`;
 }
 
-const STORAGE_PREFIX = 'readainews_seen_v5_';
+const STORAGE_PREFIX = 'readainews_seen_v6_';
 
 // Cleanup stale date keys from past days to keep localStorage pristine
 function cleanupOldDates(todayKey) {

@@ -46,7 +46,7 @@ export default function AboutSection({ onExploreToday }) {
             </h2>
 
             <p className="text-xs sm:text-base text-zinc-300 leading-relaxed mb-6 font-normal">
-              In an era where thousands of speculative tweets, vendor marketing claims, and recycled newsletters drown out genuine innovation, ReadAiNews isolates the signal. Every morning, our engine curates the 5 most consequential artificial intelligence breakthroughs directly from premier newsrooms—synthesizing them into 220+ word technical briefings with key takeaways, strategic context, and direct canonical links to the original investigative pieces.
+              In an era where thousands of speculative tweets, vendor marketing claims, and recycled newsletters drown out genuine innovation, ReadAiNews isolates the signal. Every morning, our engine curates the 5 most consequential artificial intelligence breakthroughs directly from premier newsrooms, synthesizing them into clear briefings with key takeaways, strategic context, and direct links to the original articles.
             </p>
 
             {/* 3 Metric Pills */}

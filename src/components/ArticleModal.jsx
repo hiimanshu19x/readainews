@@ -7,8 +7,7 @@ import {
   Check, 
   Sparkles, 
   Clock, 
-  FileText,
-  Calendar
+  FileText
 } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
@@ -51,8 +50,8 @@ export default function ArticleModal({
         {/* iOS Drag Handle on Mobile */}
         <div className="sm:hidden w-12 h-1.5 rounded-full bg-white/25 mx-auto mt-2.5 mb-1 cursor-pointer" onClick={() => onClose()} />
 
-        {/* Header Visual Mesh */}
-        <div className="relative w-full h-44 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
+        {/* Header Visual Mesh - compact on mobile */}
+        <div className="relative w-full h-32 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
           <MeshThumbnail theme={article.meshTheme} className="w-full h-full" />
           
           {/* Close Button */}
@@ -78,12 +77,6 @@ export default function ArticleModal({
             <ExternalLink size={10} className="text-zinc-400 group-hover:text-white transition-colors" />
           </a>
 
-          {/* Date Badge */}
-          <div className="absolute top-3 left-28 sm:top-4 sm:left-36 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-[10px] sm:text-xs text-zinc-300 flex items-center gap-1.5 shadow-md">
-            <Calendar size={11} className="text-zinc-400" />
-            <span>{article.publishedDate || "September 4, 2026"}</span>
-          </div>
-
           {/* Quick Header Actions */}
           <div className="absolute bottom-2.5 right-3 sm:bottom-3 sm:right-4 flex items-center gap-2">
             <button
@@ -108,20 +101,19 @@ export default function ArticleModal({
         <div className="p-5 sm:p-8 space-y-6 overflow-y-auto flex-1">
           
           {/* Metadata Row */}
-          <div className="flex items-center justify-between text-xs text-zinc-400 pb-2 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-white">{article.source}</span>
-              <span>•</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-bold text-zinc-300 uppercase">
-                {article.category}
-              </span>
-              <span>•</span>
-              <span>{article.timeAgo}</span>
-            </div>
-            <div className="flex items-center gap-1 text-zinc-400">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-400 pb-2 border-b border-white/10">
+            <span className="font-semibold text-white">{article.source}</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-bold text-zinc-300 uppercase">
+              {article.category}
+            </span>
+            <span>•</span>
+            <span>{article.timeAgo}</span>
+            <span>•</span>
+            <span className="flex items-center gap-1 text-zinc-400">
               <Clock size={12} />
-              <span>{article.readTime}</span>
-            </div>
+              {article.readTime}
+            </span>
           </div>
 
           {/* Headline */}
@@ -184,14 +176,14 @@ export default function ArticleModal({
             </div>
           )}
 
-          {/* PRIMARY SOURCE MENTION AT THE BOTTOM */}
-          <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
+          {/* PRIMARY SOURCE - clear link to original article */}
+          <div className="pt-4 border-t border-white/10 space-y-3 pb-4">
             <div className="text-xs text-zinc-400">
               <div className="flex items-center gap-1.5">
-                <span>Primary Source:</span>
+                <span>Source:</span>
                 <strong className="text-white font-semibold">{article.source}</strong>
               </div>
-              <span className="text-[11px] text-zinc-500">Opens the full original article piece on {article.source}</span>
+              <span className="text-[11px] text-zinc-500">Opens the AI section on {article.source}</span>
             </div>
 
             <a
@@ -199,10 +191,10 @@ export default function ArticleModal({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => sound.playClick()}
-              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 active:scale-95 transition-all shadow-md"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 active:scale-95 transition-all shadow-md"
             >
-              <span>Read Original on {article.source}</span>
-              <ExternalLink size={12} />
+              <span>Read on {article.source}</span>
+              <ExternalLink size={13} />
             </a>
           </div>
 
