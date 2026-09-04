@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Sparkles, ArrowRight, ShieldCheck, Globe, CheckCircle2 } from 'lucide-react';
 import { sound } from '../utils/audio';
 
@@ -58,6 +58,43 @@ export default function AboutSection({ onExploreToday }) {
                 <div>
                   <div className="text-xs font-bold text-white">De-hyped Analysis</div>
                   <div className="text-[10px] text-zinc-400">Built for engineers</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 15 Premier Outlets Across 4 Tiers */}
+            <div className="mb-8 p-4 rounded-2xl bg-black/40 border border-white/[0.08]">
+              <div className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-3">
+                Monitored Intelligence Outlets (15 Premier Sources Across 4 Tiers)
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[11px]">
+                <div className="space-y-1">
+                  <div className="text-zinc-300 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                    <span>Breaking / Important</span>
+                  </div>
+                  <div className="text-zinc-500 leading-snug">Reuters, Bloomberg, Financial Times, AP, WSJ</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-zinc-300 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    <span>AI Industry</span>
+                  </div>
+                  <div className="text-zinc-500 leading-snug">TechCrunch, The Information, VentureBeat, The Verge</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-zinc-300 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                    <span>Deep Analysis</span>
+                  </div>
+                  <div className="text-zinc-500 leading-snug">MIT Tech Review, WIRED, Ars Technica, IEEE Spectrum</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-zinc-300 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>Research</span>
+                  </div>
+                  <div className="text-zinc-500 leading-snug">Nature, Science</div>
                 </div>
               </div>
             </div>

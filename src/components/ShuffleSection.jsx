@@ -18,11 +18,11 @@ import NewsCard from './NewsCard';
 import { sound } from '../utils/audio';
 
 const SCAN_STEPS = [
-  "Connecting to global intelligence wire & top newsrooms...",
-  "Scanning TechCrunch, Wired, MIT Tech Review, Bloomberg & The Verge...",
-  "Isolating verified breaking AI dispatches for September 4, 2026...",
-  "Discarding speculative noise & filtering marketing fluff...",
-  "Synthesizing 5 fresh AI-curated briefs with direct publication links..."
+  "Connecting to global intelligence wire across 15 premier publications...",
+  "Scanning Reuters, Bloomberg, Financial Times, AP & WSJ for breaking dispatches...",
+  "Analyzing industry developments from TechCrunch, The Information, VentureBeat & The Verge...",
+  "Synthesizing deep technical analyses from MIT Tech Review, WIRED, Ars Technica & IEEE Spectrum...",
+  "Verifying peer-reviewed scientific breakthroughs in Nature & Science..."
 ];
 
 export default function ShuffleSection({
@@ -88,7 +88,7 @@ export default function ShuffleSection({
     }, 1350);
   };
 
-  const categories = ['ALL', 'AI MODELS', 'ROBOTICS', 'TECH BIG TECH', 'OPEN SOURCE', 'SCIENCE & AI'];
+  const categories = ['ALL', 'BREAKING NEWS', 'AI INDUSTRY', 'DEEP ANALYSIS', 'RESEARCH'];
 
   const filteredArticles = filterCategory === 'ALL'
     ? articles
@@ -141,7 +141,7 @@ export default function ShuffleSection({
               {/* Top Publications Badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px] font-mono text-zinc-200">
                 <Globe size={11} className="text-emerald-400" />
-                <span>Reuters • Bloomberg • TechCrunch • The Verge</span>
+                <span>15 Premier Outlets Across 4 Tiers</span>
               </div>
             </div>
 
@@ -149,7 +149,7 @@ export default function ShuffleSection({
               Top 5 AI Stories for Today
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-xl">
-              Freshly scraped and AI-crafted from top global news publications for September 4, 2026. Zero repeats guaranteed for today.
+              Curated and AI-synthesized across 15 premier outlets: Breaking News, AI Industry, Deep Analysis, and Research. Zero repeats guaranteed.
             </p>
           </div>
 

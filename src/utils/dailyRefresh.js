@@ -1,13 +1,16 @@
-import { fetchLiveWebAiNews } from './liveScraper';
 import { allNewsArticles } from '../data/newsData';
 import { getTodayDateKey, getUniqueDailyArticles } from './dailyTracker';
 
-const BATCH_STORAGE_KEY = 'readainews_today_batch_v4_';
-const REFRESH_DATE_KEY = 'readainews_last_refresh_date_v4';
+const BATCH_STORAGE_KEY = 'readainews_today_batch_v5_';
+const REFRESH_DATE_KEY = 'readainews_last_refresh_date_v5';
 
 /**
- * Ensures the website gets a refreshed shot of articles from top tier publications every day.
- * Automatically guarantees 5 distinct top news outlets (TechCrunch, Wired, MIT Tech Review, Bloomberg, The Verge).
+ * Ensures the website gets a refreshed shot of articles from the top 15 premier publications every day.
+ * Automatically guarantees balanced representation across:
+ * - Breaking / Important News (Reuters, Bloomberg, FT, AP, WSJ)
+ * - AI Industry (TechCrunch, The Information, VentureBeat, The Verge)
+ * - Deep Analysis (MIT Technology Review, WIRED, Ars Technica, IEEE Spectrum)
+ * - Research (Nature, Science)
  */
 export async function getDailyRefreshedArticles(forceLive = false) {
   const todayKey = getTodayDateKey();
@@ -19,12 +22,12 @@ export async function getDailyRefreshedArticles(forceLive = false) {
   const lastRefreshDate = localStorage.getItem(REFRESH_DATE_KEY);
   const cachedBatch = localStorage.getItem(`${BATCH_STORAGE_KEY}${todayKey}`);
 
-  // Purge any stale cache with live- HackerNews IDs or mismatched links
+  // Purge any stale cache with legacy IDs or mismatched links
   if (cachedBatch) {
     try {
       const parsed = JSON.parse(cachedBatch);
-      const hasLegacyHn = Array.isArray(parsed) && parsed.some(a => a.id?.startsWith('live-') || a.source?.includes('Hacker News') || a.sourceUrl?.includes('ycombinator'));
-      if (hasLegacyHn) {
+      const isLegacy = Array.isArray(parsed) && parsed.some(a => a.id?.startsWith('live-') || !a.tier);
+      if (isLegacy) {
         localStorage.removeItem(`${BATCH_STORAGE_KEY}${todayKey}`);
       }
     } catch (e) {
@@ -38,7 +41,7 @@ export async function getDailyRefreshedArticles(forceLive = false) {
     if (freshCached) {
       try {
         const parsed = JSON.parse(freshCached);
-        if (Array.isArray(parsed) && parsed.length >= 5 && parsed[0]?.sourceUrl && !parsed[0].id?.startsWith('live-')) {
+        if (Array.isArray(parsed) && parsed.length >= 5 && parsed[0]?.sourceUrl && parsed[0]?.tier) {
           return {
             articles: parsed,
             isLive: true,
@@ -52,19 +55,19 @@ export async function getDailyRefreshedArticles(forceLive = false) {
     }
   }
 
-  // Primary top-tier curated news pool for today: 5 distinct publications
-  const topFive = allNewsArticles.slice(0, 5);
+  // Pick balanced 5 articles across the 4 tiers using the daily tracker
+  const { articles: selectedBatch } = getUniqueDailyArticles(allNewsArticles, 5);
 
   // Save today's refreshed batch & update last refresh date
   try {
     localStorage.setItem(REFRESH_DATE_KEY, todayKey);
-    localStorage.setItem(`${BATCH_STORAGE_KEY}${todayKey}`, JSON.stringify(topFive));
+    localStorage.setItem(`${BATCH_STORAGE_KEY}${todayKey}`, JSON.stringify(selectedBatch));
   } catch (e) {
     console.warn('Cache write failed:', e);
   }
 
   return {
-    articles: topFive,
+    articles: selectedBatch,
     isLive: true,
     dateKey: todayKey,
     isCachedToday: false

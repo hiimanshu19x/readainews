@@ -1,4 +1,9 @@
-// Daily deduplication engine to guarantee the same news never appears twice on the same day
+// Daily deduplication and multi-tier balanced curation engine
+// Guarantees balanced representation across:
+// 1. Breaking / Important News (Reuters, Bloomberg, FT, AP, WSJ)
+// 2. AI Industry (TechCrunch, The Information, VentureBeat, The Verge)
+// 3. Deep Analysis (MIT Technology Review, WIRED, Ars Technica, IEEE Spectrum)
+// 4. Research (Nature, Science)
 
 export function getTodayDateKey() {
   const now = new Date();
@@ -8,7 +13,7 @@ export function getTodayDateKey() {
   return `${year}-${month}-${day}`;
 }
 
-const STORAGE_PREFIX = 'readainews_seen_v4_';
+const STORAGE_PREFIX = 'readainews_seen_v5_';
 
 // Cleanup stale date keys from past days to keep localStorage pristine
 function cleanupOldDates(todayKey) {
@@ -51,7 +56,7 @@ export function markArticlesAsSeenToday(articleIds) {
   }
 }
 
-// Reset today's seen history (for manual testing or when entire pool is exhausted)
+// Reset today's seen history
 export function resetSeenArticlesToday() {
   if (typeof window === 'undefined') return;
   const todayKey = getTodayDateKey();
@@ -61,8 +66,12 @@ export function resetSeenArticlesToday() {
 }
 
 /**
- * Returns 5 unique articles that have NEVER been shown today.
- * If user exhausts all available stories, it gracefully resets the cycle and informs the user.
+ * Returns 5 unique articles balanced across 4 tiers:
+ * - 1 Breaking / Important News (Reuters, Bloomberg, FT, AP, WSJ)
+ * - 1 AI Industry (TechCrunch, The Information, VentureBeat, The Verge)
+ * - 1 Deep Analysis (MIT Tech Review, WIRED, Ars Technica, IEEE Spectrum)
+ * - 1 Research (Nature, Science)
+ * - 1 High-Impact Wildcard
  */
 export function getUniqueDailyArticles(pool = [], count = 5) {
   const seenIds = new Set(getSeenArticlesToday());
@@ -79,12 +88,41 @@ export function getUniqueDailyArticles(pool = [], count = 5) {
     isResetCycle = true;
   }
 
-  // Shuffle the unseen articles
-  const shuffled = [...unseen].sort(() => 0.5 - Math.random());
-  const selected = shuffled.slice(0, count);
+  const tiers = ['breaking', 'industry', 'analysis', 'research'];
+  const selected = [];
+  const pickedIds = new Set();
+
+  // Pick 1 from each tier if available
+  tiers.forEach(tier => {
+    const tierCandidates = unseen.filter(a => a.tier === tier && !pickedIds.has(a.id));
+    if (tierCandidates.length > 0) {
+      const pick = tierCandidates[Math.floor(Math.random() * tierCandidates.length)];
+      selected.push(pick);
+      pickedIds.add(pick.id);
+    }
+  });
+
+  // Fill remaining slots up to 'count' from remaining unseen items
+  const remainingCandidates = unseen.filter(a => !pickedIds.has(a.id)).sort(() => 0.5 - Math.random());
+  for (const cand of remainingCandidates) {
+    if (selected.length >= count) break;
+    selected.push(cand);
+    pickedIds.add(cand.id);
+  }
+
+  // Fallback if still under count
+  if (selected.length < count) {
+    const leftover = pool.filter(a => !pickedIds.has(a.id)).sort(() => 0.5 - Math.random());
+    for (const cand of leftover) {
+      if (selected.length >= count) break;
+      selected.push(cand);
+      pickedIds.add(cand.id);
+    }
+  }
+
   const selectedIds = selected.map(a => a.id);
 
-  // Mark these 5 articles as seen today so they won't appear again today
+  // Mark these articles as seen today
   markArticlesAsSeenToday(selectedIds);
 
   const totalSeenNow = getSeenArticlesToday().length;
