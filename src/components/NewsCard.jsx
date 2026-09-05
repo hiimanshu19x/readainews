@@ -2,6 +2,7 @@ import React from 'react';
 import { Bookmark, ArrowRight, Clock, ExternalLink } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
+import { formatLocalShortDate } from '../utils/timeZone';
 
 export default function NewsCard({ 
   article, 
@@ -120,7 +121,7 @@ export default function NewsCard({
       <div className="p-3.5 sm:p-4 xl:p-4.5 flex flex-col flex-1">
         {/* Date & Time */}
         <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 mb-2">
-          <span className="text-zinc-300 font-medium font-mono">{article.publishedDate ? 'Sep 4, 2026' : 'Sep 4, 2026'}</span>
+          <span className="text-zinc-300 font-medium font-mono">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
           <span className="text-zinc-600">•</span>
           <span className="text-zinc-500">{article.timeAgo?.replace('Today • ', '') || article.timeAgo}</span>
         </div>

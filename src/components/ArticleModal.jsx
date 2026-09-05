@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
+import { formatLocalFullDate } from '../utils/timeZone';
 
 export default function ArticleModal({ 
   article, 
@@ -113,7 +114,7 @@ export default function ArticleModal({
           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-zinc-400 pb-2 border-b border-white/10">
             <span className="font-semibold text-white">{article.source}</span>
             <span>•</span>
-            <span className="text-zinc-300 font-mono">{article.publishedDate ? 'Sep 4, 2026' : 'Sep 4, 2026'}</span>
+            <span className="text-zinc-300 font-mono">{formatLocalFullDate(article.dateKey || article.publishedDate)}</span>
             <span>•</span>
             <span>{article.timeAgo}</span>
             <span>•</span>
@@ -190,7 +191,7 @@ export default function ArticleModal({
                 <span>Source:</span>
                 <strong className="text-white font-semibold">{article.source}</strong>
               </div>
-              <span className="text-[11px] text-zinc-500">Opens the AI section on {article.source}</span>
+              <span className="text-[11px] text-zinc-500">Opens original article on {article.source}</span>
             </div>
 
             <a

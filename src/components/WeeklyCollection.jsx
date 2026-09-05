@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
+import { formatLocalShortDate, getUserTimeZoneAbbr } from '../utils/timeZone';
+
+const tz = getUserTimeZoneAbbr() || 'Local';
 
 const WEEKS_DATA = [
   {
@@ -33,7 +36,7 @@ const WEEKS_DATA = [
     status: 'locked',
     isLocked: true,
     badgeText: 'Upcoming · Locked',
-    unlockDate: 'Sunday, Sept 14, 2026 at 23:59 UTC',
+    unlockDate: `Sunday, Sept 14, 2026 at 11:59 PM ${tz}`,
     progressPercent: 42,
     progressLabel: 'Ingesting Daily Wire Feeds',
     description: 'Currently collecting daily stories across Reuters, Bloomberg, TechCrunch, MIT Tech Review, and Nature. The final ranked edition unlocks when the 7-day cycle finishes.'
@@ -45,7 +48,7 @@ const WEEKS_DATA = [
     status: 'locked',
     isLocked: true,
     badgeText: 'Upcoming · Locked',
-    unlockDate: 'Sunday, Sept 21, 2026 at 23:59 UTC',
+    unlockDate: `Sunday, Sept 21, 2026 at 11:59 PM ${tz}`,
     progressPercent: 0,
     progressLabel: 'Scheduled Pipeline',
     description: 'Upcoming third weekly edition for September 2026. Automated pipeline will activate following the completion of Week 2.'
@@ -57,7 +60,7 @@ const WEEKS_DATA = [
     status: 'locked',
     isLocked: true,
     badgeText: 'Upcoming · Locked',
-    unlockDate: 'Sunday, Sept 28, 2026 at 23:59 UTC',
+    unlockDate: `Sunday, Sept 28, 2026 at 11:59 PM ${tz}`,
     progressPercent: 0,
     progressLabel: 'Scheduled Pipeline',
     description: 'Upcoming fourth weekly edition for September 2026. Will compile the month-end AI intelligence wrap-up.'
@@ -343,7 +346,7 @@ export default function WeeklyCollection({
                   {/* Content */}
                   <div className="p-4 sm:p-5 flex flex-col flex-1">
                     <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 font-mono mb-2">
-                      <span className="text-zinc-300 font-medium">Sep 4, 2026</span>
+                      <span className="text-zinc-300 font-medium">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
                       <span className="text-zinc-600">•</span>
                       <span className="text-zinc-500 font-normal lowercase">{article.readTime}</span>
                     </div>

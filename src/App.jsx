@@ -58,10 +58,10 @@ export default function App() {
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (key && (
-            key.startsWith('readainews_today_batch_2') || 
-            key.startsWith('readainews_seen_2') ||
-            (key.startsWith('readainews_today_batch_') && !key.includes('_v4_')) ||
-            (key.startsWith('readainews_seen_') && !key.includes('_v4_'))
+            key.startsWith('readainews_today_batch_') ||
+            (key.startsWith('readainews_3hr_batch_')) ||
+            (key.startsWith('readainews_seen_') && !key.includes('_v9_')) ||
+            (key.startsWith('readainews_1hr_batch_') && !key.includes('_v9_'))
           )) {
             keysToRemove.push(key);
           }
@@ -70,7 +70,7 @@ export default function App() {
       }
     } catch (e) {}
 
-    // Auto-check for fresh 3-hour shot on mount
+    // Auto-check for fresh 1-hour shot on mount
     getDailyRefreshedArticles(false).then((res) => {
       if (res && res.articles && res.articles.length >= 5) {
         setShuffleState(prev => ({
@@ -81,7 +81,7 @@ export default function App() {
       }
     });
 
-    // Check every 10 minutes to auto-refresh when the 3-hour period elapses
+    // Check every 1 minute to auto-refresh when the 1-hour period elapses
     const interval = setInterval(() => {
       getDailyRefreshedArticles(false).then((res) => {
         if (res && res.articles && !res.isCachedToday) {
@@ -91,7 +91,7 @@ export default function App() {
           }));
         }
       });
-    }, 10 * 60 * 1000);
+    }, 60 * 1000);
 
     return () => clearInterval(interval);
   }, []);

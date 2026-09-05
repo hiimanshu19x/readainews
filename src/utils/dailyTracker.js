@@ -1,17 +1,14 @@
 // Daily deduplication and multi-tier 5-story curation engine
 // Strictly displays the 5 best AI articles from premier publications.
 // Guarantees zero duplicates for any time and seamless infinite rotation across sets of 5.
+import { getTodayLocalKey } from './timeZone';
 
 export function getTodayDateKey() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return getTodayLocalKey();
 }
 
-const STORAGE_PREFIX = 'readainews_seen_v8_';
-const BATCH_INDEX_KEY = 'readainews_batch_idx_v8';
+const STORAGE_PREFIX = 'readainews_seen_v9_';
+const BATCH_INDEX_KEY = 'readainews_batch_idx_v9';
 
 // Cleanup stale date keys from past days to keep localStorage pristine
 function cleanupOldDates(todayKey) {
@@ -19,7 +16,7 @@ function cleanupOldDates(todayKey) {
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('readainews_seen_') && !key.includes('v8')) {
+      if (key && key.startsWith('readainews_seen_') && !key.includes('v9')) {
         localStorage.removeItem(key);
       }
     }

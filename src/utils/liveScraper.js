@@ -1,4 +1,5 @@
 // Live scraper and synthesizer that pulls real-time breaking AI discussions and news from the web
+import { formatLocalFullDate, getTodayLocalKey } from './timeZone';
 
 /**
  * Fetches real-time AI news from live open tech endpoints (Hacker News Algolia Realtime AI feed, arXiv, Tech Dispatches).
@@ -37,8 +38,8 @@ export async function fetchLiveWebAiNews() {
         id: `live-${hit.objectID || Date.now() + idx}`,
         title: hit.title,
         category: category,
-        publishedDate: 'September 4, 2026',
-        dateKey: '2026-09-04',
+        publishedDate: formatLocalFullDate(),
+        dateKey: getTodayLocalKey(),
         timeAgo: `Today • ${timeAgo}`,
         readTime: '3 min read',
         source: domain,

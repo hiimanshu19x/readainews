@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import NewsCard from './NewsCard';
 import { sound } from '../utils/audio';
+import { formatLocalFullDate, getUserTimeZoneAbbr } from '../utils/timeZone';
 
 const SCAN_STEPS = [
   "Connecting to global intelligence wire across 15 premier publications...",
@@ -125,14 +126,14 @@ export default function ShuffleSection({
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-zinc-300 uppercase">
-                TODAY'S SELECTION • SEPTEMBER 4, 2026
+                TODAY'S SELECTION • {formatLocalFullDate().toUpperCase()}
               </span>
               <span className="text-zinc-600">•</span>
               
-              {/* 3-Hour Auto-Refresh Badge */}
+              {/* 1-Hour Auto-Refresh Badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-[10px] font-mono text-cyan-300">
                 <Clock size={11} className="text-cyan-400" />
-                <span>Refreshed Every 3 Hours</span>
+                <span>Refreshed Every 1 Hour • {getUserTimeZoneAbbr() || 'Local'}</span>
               </div>
 
               <span className="text-zinc-600">•</span>
@@ -154,7 +155,7 @@ export default function ShuffleSection({
               Top 5 AI Stories
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-xl">
-              Fresh AI news from the world's best 15 publications, automatically refreshed every 3 hours with zero duplicates.
+              Fresh AI news from the world's best 15 publications, automatically refreshed every 1 hour in your local time with zero duplicates.
             </p>
           </div>
 
@@ -413,7 +414,7 @@ export default function ShuffleSection({
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={14} className="text-emerald-400 flex-shrink-0" />
                 <span className="text-[11px] sm:text-xs">
-                  Curated <strong>5 Premier AI Stories</strong> • <strong>Refreshed every 3 hours</strong>
+                  Curated <strong>5 Premier AI Stories</strong> • <strong>Refreshed every 1 hour</strong>
                 </span>
               </div>
               <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-zinc-500">

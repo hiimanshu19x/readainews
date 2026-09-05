@@ -95,7 +95,7 @@ export default function InfoModal({ modalType, onClose }) {
                   Automatic Midnight Rotation
                 </h4>
                 <p className="text-xs text-zinc-400 leading-relaxed">
-                  At 00:00:00 UTC, the daily ledger automatically cycles, clearing stale IDs from past dates to keep your browser memory pristine while retrieving a brand new batch of breaking stories for the new date.
+                  At midnight in your local timezone, the daily ledger automatically cycles, clearing stale IDs from past dates to keep your browser memory pristine while retrieving a brand new batch of breaking stories for the new date.
                 </p>
               </div>
             </div>
@@ -113,7 +113,7 @@ export default function InfoModal({ modalType, onClose }) {
               Privacy Policy
             </h2>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              Effective Date: September 4, 2026. ReadAiNews is built on a simple premise: you should be able to read high-signal artificial intelligence news without being tracked across the web.
+              Effective Date: September 5, 2026. ReadAiNews is built on a simple premise: you should be able to read high-signal artificial intelligence news without being tracked across the web.
             </p>
 
             <div className="space-y-3.5 text-xs text-zinc-300 leading-relaxed">
