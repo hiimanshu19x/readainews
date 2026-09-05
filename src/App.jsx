@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ShuffleSection from './components/ShuffleSection';
@@ -12,7 +12,7 @@ import SearchModal from './components/SearchModal';
 import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
 import { getDailyPreviewArticle } from './utils/dailyRefresh';
-import { fetchTodayFreshNews, getBatchOfArticles, getHourlyBatchIndex } from './utils/clientNewsFetcher';
+import { fetchTodayFreshNews, getBatchOfArticles } from './utils/clientNewsFetcher';
 import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
@@ -43,12 +43,12 @@ export default function App() {
     return ensureStrictlyUniqueImages(allNewsArticles);
   });
 
-  // Daily featured preview article that strictly updates once per day
+  // Daily featured preview article for the Hero banner
   const [dailyPreviewArticle, setDailyPreviewArticle] = useState(() => {
-    return getDailyPreviewArticle(allNewsArticles);
+    return getDailyPreviewArticle(allNewsArticles) || allNewsArticles[0];
   });
 
-  // Today's complete fresh pool (< 24h old)
+  // Today's complete fresh pool (< 24h old) - Initialized with 26 verified live stories
   const [freshPool, setFreshPool] = useState(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -68,13 +68,30 @@ export default function App() {
         }
       }
     } catch (e) {}
-    return [];
+    return ensureStrictlyUniqueImages(allNewsArticles);
   });
 
-  // Active batch index (1..totalBatches)
-  const [batchIndex, setBatchIndex] = useState(() => {
-    return getHourlyBatchIndex(25, 5);
-  });
+  // Track the current calendar hour to drive automatic hourly rotation
+  const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
+  
+  // User manual shuffle offset (clicking Refresh advances through batches)
+  const [manualBatchOffset, setManualBatchOffset] = useState(0);
+
+  // Total batches in the pool (e.g. 26 articles / 5 = 6 batches)
+  const totalBatches = useMemo(() => {
+    return Math.max(1, Math.ceil((freshPool.length || 5) / 5));
+  }, [freshPool.length]);
+
+  // Compute active batch index (1..totalBatches): changes every hour, or when user clicks Refresh
+  const batchIndex = useMemo(() => {
+    const baseIndex = currentHour % totalBatches;
+    return ((baseIndex + manualBatchOffset) % totalBatches) + 1;
+  }, [currentHour, manualBatchOffset, totalBatches]);
+
+  // The 5 active stories for the current hourly batch
+  const currentBatchArticles = useMemo(() => {
+    return getBatchOfArticles(freshPool, batchIndex, 5);
+  }, [freshPool, batchIndex]);
 
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [savedIds, setSavedIds] = useState([]);
@@ -84,14 +101,8 @@ export default function App() {
   const [isLiveWire, setIsLiveWire] = useState(true);
   const [isRefreshingLive, setIsRefreshingLive] = useState(false);
 
-  // Total batches available in today's fresh pool
-  const totalBatches = Math.max(1, Math.ceil((freshPool.length || 5) / 5));
-
-  // Current 5 articles for the active batch
-  const currentBatchArticles = getBatchOfArticles(freshPool, batchIndex, 5);
-
-  // Fetch & publish brand new live AI articles onto the website (strict 24-hour freshness)
-  const handleRefreshToday = async (force = true, advanceBatch = true) => {
+  // Fetch & publish live AI articles onto the website
+  const handleRefreshToday = async (force = true) => {
     setIsRefreshingLive(true);
     try {
       const freshArticlesPool = await fetchTodayFreshNews(force);
@@ -99,15 +110,7 @@ export default function App() {
       if (Array.isArray(freshArticlesPool) && freshArticlesPool.length > 0) {
         setFreshPool(freshArticlesPool);
 
-        const newTotalBatches = Math.max(1, Math.ceil(freshArticlesPool.length / 5));
-
-        if (advanceBatch) {
-          setBatchIndex(prev => (prev % newTotalBatches) + 1);
-        } else {
-          setBatchIndex(getHourlyBatchIndex(freshArticlesPool.length, 5));
-        }
-
-        // Update allArticles master repository with full pool
+        // Update allArticles repository with full fresh pool
         setAllArticles(prev => {
           const prevFiltered = prev.filter(p => !freshArticlesPool.some(f => f.id === p.id || f.canonicalUrl === p.canonicalUrl));
           const combined = ensureStrictlyUniqueImages([...freshArticlesPool, ...prevFiltered]);
@@ -117,7 +120,7 @@ export default function App() {
           return combined;
         });
 
-        // Set daily preview to the #1 ranked fresh story if available
+        // Update daily preview if new breaking #1 story arrived
         if (freshArticlesPool[0]) {
           setDailyPreviewArticle(freshArticlesPool[0]);
         }
@@ -129,7 +132,13 @@ export default function App() {
     }
   };
 
-  // Load saved bookmarks & manage automated background refresh cycle
+  // User manual click on "Refresh" / "Scan Wire": advances to next batch of 5 fresh stories immediately
+  const handleUserShuffle = async () => {
+    setManualBatchOffset(prev => prev + 1);
+    await handleRefreshToday(true);
+  };
+
+  // Load saved bookmarks & manage automated hourly background refresh cycle
   useEffect(() => {
     try {
       const stored = localStorage.getItem('readainews_saved_ids');
@@ -140,7 +149,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Purge legacy caches from previous versions prior to v14
+    // Clean up legacy storage keys from previous versions
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -160,26 +169,32 @@ export default function App() {
     } catch (e) {}
 
     // Check if current pool is missing or older than 1 hour; if so, fetch fresh news
-    const checkAndRefresh = async () => {
+    const checkAndRefreshHourly = async () => {
       const now = Date.now();
+      const thisHour = new Date().getHours();
+      
+      // Auto-update to new stories whenever the hour changes
+      if (thisHour !== currentHour) {
+        setCurrentHour(thisHour);
+        setManualBatchOffset(0); // Reset to the new hour's scheduled batch
+        await handleRefreshToday(true);
+        return;
+      }
+
       const lastTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
       const isExpired = (now - lastTime) >= ONE_HOUR_MS;
       
-      if (isExpired || lastTime === 0 || freshPool.length === 0) {
-        await handleRefreshToday(true, false);
-      } else {
-        // Auto-advance batch if the hour rolled over
-        const expectedBatch = getHourlyBatchIndex(freshPool.length, 5);
-        setBatchIndex(expectedBatch);
+      if (isExpired || lastTime === 0) {
+        await handleRefreshToday(true);
       }
     };
 
-    checkAndRefresh();
+    checkAndRefreshHourly();
 
-    // Check periodically to auto-refresh exactly when 1 hour elapses or hour changes
-    const interval = setInterval(checkAndRefresh, 60 * 1000);
+    // Check every 30 seconds to detect hour rollover immediately
+    const interval = setInterval(checkAndRefreshHourly, 30 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentHour]);
 
   // Toggle bookmark & sync with localStorage
   const handleToggleBookmark = (id) => {
@@ -275,7 +290,7 @@ export default function App() {
         {/* Today's Top 5 Interactive Deck Section with Live Refresh & 1-Hour Automated Cycle */}
         <ShuffleSection
           articles={currentBatchArticles}
-          onShuffle={() => handleRefreshToday(true, true)}
+          onShuffle={handleUserShuffle}
           onSelectArticle={(article) => setSelectedArticle(article)}
           savedIds={savedIds}
           onToggleBookmark={handleToggleBookmark}
@@ -287,7 +302,7 @@ export default function App() {
           isResetCycle={false}
           isLiveWire={isLiveWire}
           isRefreshingLive={isRefreshingLive}
-          onRefreshLiveWire={() => handleRefreshToday(true, true)}
+          onRefreshLiveWire={handleUserShuffle}
         />
 
         {/* This Week Collection Tab (Rolling 7-Day Curated Archive) */}
