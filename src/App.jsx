@@ -195,7 +195,22 @@ export default function App() {
 
     // Check every 30 seconds to detect hour rollover and update hourly stories automatically
     const interval = setInterval(checkAndRefreshHourly, 30 * 1000);
-    return () => clearInterval(interval);
+
+    // Instant sync when user unlocks phone or switches back to tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAndRefreshHourly();
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', checkAndRefreshHourly);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', checkAndRefreshHourly);
+    };
   }, [currentHour]);
 
 
