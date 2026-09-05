@@ -3,7 +3,13 @@ import { ArrowRight, Bookmark, MoreHorizontal } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
 
-export default function Hero({ onStartReading, onSeePreview }) {
+export default function Hero({ 
+  onStartReading, 
+  onSeePreview, 
+  previewArticle,
+  isBookmarked = false,
+  onToggleBookmark
+}) {
   return (
     <section className="relative pt-6 pb-20 sm:pt-12 sm:pb-28 md:pt-16 md:pb-36 overflow-hidden bg-[#050505]">
       
@@ -51,9 +57,9 @@ export default function Hero({ onStartReading, onSeePreview }) {
               <button
                 onClick={() => {
                   sound.playClick();
-                  onSeePreview();
+                  onSeePreview(previewArticle);
                 }}
-                className="flex items-center justify-center h-12 px-6 rounded-full bg-black/60 text-zinc-300 font-medium text-sm border border-zinc-700/80 hover:border-zinc-500 hover:text-white active:scale-95 transition-all backdrop-blur-sm"
+                className="flex items-center justify-center h-12 px-6 rounded-full bg-black/60 text-zinc-300 font-medium text-sm border border-zinc-700/80 hover:border-zinc-500 hover:text-white active:scale-95 transition-all backdrop-blur-sm cursor-pointer"
               >
                 See a preview
               </button>
@@ -109,63 +115,85 @@ export default function Hero({ onStartReading, onSeePreview }) {
               </svg>
             </div>
 
-            {/* Mobile / Modern Phone Mockup Card */}
-            <div className="relative w-full max-w-[310px] sm:max-w-[360px] rounded-[28px] sm:rounded-[32px] p-2.5 sm:p-3 bg-gradient-to-b from-zinc-800/80 to-zinc-950/90 border border-white/20 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9),0_0_1px_1px_rgba(255,255,255,0.15)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
+            {/* Mobile / Modern Phone Mockup Card (Daily Featured Preview Article) */}
+            <div 
+              onClick={() => { sound.playClick(); onSeePreview(previewArticle); }}
+              className="relative w-full max-w-[310px] sm:max-w-[360px] rounded-[28px] sm:rounded-[32px] p-2.5 sm:p-3 bg-gradient-to-b from-zinc-800/80 to-zinc-950/90 border border-white/20 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9),0_0_1px_1px_rgba(255,255,255,0.15)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-500 cursor-pointer group"
+            >
               
               {/* Phone Inner Container */}
               <div className="w-full rounded-[22px] sm:rounded-[24px] bg-[#09090b] overflow-hidden border border-white/10 p-3.5 sm:p-4 flex flex-col">
                 
                 {/* Mockup Header */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-white/5 mb-3 text-xs text-zinc-400">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded bg-zinc-800 border border-white/20 flex items-center justify-center">
-                      <span className="font-bold text-[9px] sm:text-[10px] text-white">N</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded bg-zinc-800 border border-white/20 flex items-center justify-center shrink-0">
+                      <span className="font-bold text-[9px] sm:text-[10px] text-white">
+                        {previewArticle?.source ? previewArticle.source.charAt(0) : 'A'}
+                      </span>
                     </div>
-                    <span className="font-medium text-white text-[10px] sm:text-[11px]">The Internet News</span>
+                    <span className="font-medium text-white text-[10px] sm:text-[11px] truncate">
+                      {previewArticle?.source || 'Premier AI Wire'}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 text-zinc-500">
-                    <span className="text-[10px]">10m ago</span>
+                  <div className="flex items-center gap-2 text-zinc-500 shrink-0">
+                    <span className="text-[10px] font-mono">
+                      {previewArticle?.timeAgo?.replace('Today • ', '') || '15m ago'}
+                    </span>
                     <MoreHorizontal size={13} />
                   </div>
                 </div>
 
-                {/* 3D Abstract Mesh Graphic */}
-                <div className="w-full h-36 sm:h-44 rounded-xl overflow-hidden mb-3 border border-white/5 shadow-inner">
-                  <MeshThumbnail theme="ribbon" className="w-full h-full" />
+                {/* Article Image Preview */}
+                <div className="w-full h-36 sm:h-44 rounded-xl overflow-hidden mb-3 border border-white/10 shadow-inner bg-zinc-950">
+                  {previewArticle?.imageUrl ? (
+                    <img 
+                      src={previewArticle.imageUrl} 
+                      alt={previewArticle.title} 
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
+                      loading="lazy"
+                    />
+                  ) : (
+                    <MeshThumbnail theme={previewArticle?.meshTheme || 'ribbon'} className="w-full h-full" />
+                  )}
                 </div>
 
-                {/* Tag */}
-                <div className="mb-1.5">
-                  <span className="text-[9px] sm:text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
-                    AI MODELS
+                {/* Daily Preview Story Badge (No green category tag) */}
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                  <span className="text-[9px] sm:text-[10px] font-mono font-semibold tracking-wider text-cyan-300 uppercase">
+                    DAILY PREVIEW STORY
                   </span>
                 </div>
 
                 {/* Headline */}
-                <h3 className="text-sm sm:text-base font-bold text-white leading-snug mb-2">
-                  OpenAI releases new reasoning upgrades with step-by-step verification
+                <h3 className="text-sm sm:text-base font-bold text-white leading-snug mb-2 line-clamp-2 group-hover:text-zinc-100 transition-colors">
+                  {previewArticle?.title || 'Frontier Labs Introduce Unified Air-Gap Protocols for Autonomous Coding Agents'}
                 </h3>
 
                 {/* Snippet */}
                 <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed mb-3 sm:mb-4 line-clamp-2">
-                  A major improvement in reasoning, everyday tool use, and reliability. Here is what is new and why it matters.
+                  {previewArticle?.summary || 'Leading frontier artificial intelligence laboratories agreed on unified hardware isolation rules to prevent experimental autonomous software from escaping research sandboxes.'}
                 </p>
 
                 {/* Card Footer */}
                 <div className="mt-auto pt-2 flex items-center justify-between border-t border-white/5 text-xs">
-                  <button 
-                    onClick={() => { sound.playClick(); onSeePreview(); }}
-                    className="flex items-center gap-1.5 font-medium text-zinc-200 hover:text-white group text-xs"
-                  >
+                  <span className="flex items-center gap-1.5 font-medium text-zinc-200 group-hover:text-white text-xs">
                     <span>Read full story</span>
                     <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
-                  </button>
+                  </span>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
-                    className="text-zinc-400 hover:text-white p-1"
-                    title="Bookmark"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      sound.playClick(); 
+                      if (onToggleBookmark && previewArticle?.id) {
+                        onToggleBookmark(previewArticle.id);
+                      }
+                    }}
+                    className="text-zinc-400 hover:text-white p-1 cursor-pointer"
+                    title={isBookmarked ? "Remove Bookmark" : "Save Story"}
                   >
-                    <Bookmark size={14} />
+                    <Bookmark size={14} className={isBookmarked ? "fill-white text-white" : ""} />
                   </button>
                 </div>
 

@@ -103,7 +103,7 @@ export default function NewsCard({
         
         {/* Source Badge Pill */}
         <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-[9px] sm:text-[10px] font-medium text-zinc-300 flex items-center gap-1.5 shadow-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
           <span className="truncate max-w-[130px]">{article.source}</span>
         </div>
 

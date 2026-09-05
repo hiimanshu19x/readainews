@@ -1,5 +1,6 @@
 import { allNewsArticles } from '../data/newsData';
 import { getUniqueDailyArticles } from './dailyTracker';
+import { getTodayLocalKey } from './timeZone';
 
 const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v9_';
 const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v9';
@@ -71,4 +72,56 @@ export function getNextRefreshCountdown() {
   const hours = Math.floor(totalMins / 60);
   const minutes = totalMins % 60;
   return { hours, minutes };
+}
+
+const PREVIEW_STORAGE_PREFIX = 'readainews_preview_article_v9_';
+
+/**
+ * Returns the featured preview article that strictly updates ONCE PER DAY.
+ * Persists for the local calendar date and automatically updates when a new day arrives.
+ */
+export function getDailyPreviewArticle(pool = allNewsArticles) {
+  if (!pool || pool.length === 0) return null;
+
+  const todayKey = getTodayLocalKey();
+
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      // Clean up stale preview caches from past dates
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('readainews_preview_article_') && !key.endsWith(todayKey)) {
+          localStorage.removeItem(key);
+        }
+      }
+
+      // Check if already selected for today
+      const cached = localStorage.getItem(`${PREVIEW_STORAGE_PREFIX}${todayKey}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.id) {
+          const match = pool.find(a => a.id === parsed.id);
+          if (match) return match;
+        }
+      }
+    } catch (e) {
+      console.warn('Preview cache read error:', e);
+    }
+  }
+
+  // Deterministically select the featured article of the day
+  let dayHash = 0;
+  for (let i = 0; i < todayKey.length; i++) {
+    dayHash = (dayHash * 31 + todayKey.charCodeAt(i)) & 0xffffffff;
+  }
+  const dayIndex = Math.abs(dayHash) % pool.length;
+  const selected = pool.find(a => a.featured) || pool[dayIndex] || pool[0];
+
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(`${PREVIEW_STORAGE_PREFIX}${todayKey}`, JSON.stringify(selected));
+    } catch (e) {}
+  }
+
+  return selected;
 }

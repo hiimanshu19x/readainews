@@ -12,12 +12,17 @@ import SearchModal from './components/SearchModal';
 import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
 import { getUniqueDailyArticles, resetSeenArticlesToday } from './utils/dailyTracker';
-import { getDailyRefreshedArticles } from './utils/dailyRefresh';
+import { getDailyRefreshedArticles, getDailyPreviewArticle } from './utils/dailyRefresh';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');
+  
+  // Daily featured preview article that strictly updates once per day
+  const [dailyPreviewArticle, setDailyPreviewArticle] = useState(() => {
+    return getDailyPreviewArticle(allNewsArticles);
+  });
   
   // Initialize with top 5 distinct publication stories for today
   const [shuffleState, setShuffleState] = useState(() => {
@@ -148,8 +153,8 @@ export default function App() {
     smoothScrollTo('shuffle-deck');
   };
 
-  const handleSeePreview = () => {
-    setSelectedArticle(shuffleState.articles[0] || allNewsArticles[0]);
+  const handleSeePreview = (article = null) => {
+    setSelectedArticle(article || dailyPreviewArticle || allNewsArticles[0]);
   };
 
   const handleExploreMore = () => {
@@ -181,6 +186,9 @@ export default function App() {
         <Hero
           onStartReading={handleStartReading}
           onSeePreview={handleSeePreview}
+          previewArticle={dailyPreviewArticle}
+          isBookmarked={savedIds.includes(dailyPreviewArticle?.id)}
+          onToggleBookmark={handleToggleBookmark}
         />
 
         {/* Mobile-Only Sticky Tab Navigation Pill (Hidden on desktop/web view to avoid redundant stacked bars) */}

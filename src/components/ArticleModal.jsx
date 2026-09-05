@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
-import { formatLocalFullDate } from '../utils/timeZone';
+import { formatLocalShortDate } from '../utils/timeZone';
 
 export default function ArticleModal({ 
   article, 
@@ -82,7 +82,7 @@ export default function ArticleModal({
             title={`Open original article on ${article.source}`}
             className="absolute top-3 left-3 sm:top-4 sm:left-4 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs text-white font-semibold flex items-center gap-1.5 shadow-md hover:bg-black hover:border-white/30 transition-all group"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
             <span>{article.source}</span>
             <ExternalLink size={10} className="text-zinc-400 group-hover:text-white transition-colors" />
           </a>
@@ -111,17 +111,19 @@ export default function ArticleModal({
         <div className="p-5 sm:p-8 space-y-6 overflow-y-auto flex-1">
           
           {/* Metadata Row */}
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-zinc-400 pb-2 border-b border-white/10">
-            <span className="font-semibold text-white">{article.source}</span>
-            <span>•</span>
-            <span className="text-zinc-300 font-mono">{formatLocalFullDate(article.dateKey || article.publishedDate)}</span>
-            <span>•</span>
-            <span>{article.timeAgo}</span>
-            <span>•</span>
-            <span className="flex items-center gap-1 text-zinc-400">
-              <Clock size={12} />
-              {article.readTime}
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-y-2.5 pb-3 border-b border-white/10 text-xs text-zinc-400">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <span className="font-semibold text-white">{article.source}</span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-zinc-300 font-mono">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-zinc-400 font-mono">{article.timeAgo?.replace('Today • ', '') || article.timeAgo}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900 border border-white/10 text-[11px] font-mono text-zinc-300 shrink-0">
+              <Clock size={11} className="text-zinc-400" />
+              <span>{article.readTime}</span>
+            </div>
           </div>
 
           {/* Headline */}
