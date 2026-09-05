@@ -12,9 +12,9 @@ import { TRUSTED_AI_SOURCES } from './sourceRegistry.js';
 import { ensureStrictlyUniqueImages } from './imageEngine.js';
 import { isTodayInTz, getUserTimeZone, getLocalDateKey } from './timeZone.js';
 
-export const STORAGE_KEY_POOL = 'readainews_fresh_pool_v16';
-export const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v16';
-export const STORAGE_KEY_HOUR = 'readainews_fresh_hour_v16';
+export const STORAGE_KEY_POOL = 'readainews_fresh_pool_v17';
+export const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v17';
+export const STORAGE_KEY_HOUR = 'readainews_fresh_hour_v17';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
@@ -79,7 +79,38 @@ export async function fetchTodayFreshNews(force = false) {
     }
   }
 
-  // Attempt 1: Fetch from /api/news Vercel Serverless Function
+  // Helper to safely parse and process API news response
+  const processApiResponse = (data) => {
+    if (data && data.success && Array.isArray(data.articles)) {
+      // STRICT CALENDAR DATE FILTER: Retain articles published TODAY
+      const todayArticles = data.articles.filter(a => isTodayInTz(a.publishedEpoch, tz));
+      
+      let poolForToday = todayArticles;
+      if (poolForToday.length < 5) {
+        const recentFallback = data.articles.filter(a => {
+          const age = now - (a.publishedEpoch || 0);
+          return age >= 0 && age <= 12 * 3600 * 1000;
+        });
+        poolForToday = recentFallback.length >= poolForToday.length ? recentFallback : data.articles.slice(0, 5);
+      }
+      
+      const finalPool = ensureStrictlyUniqueImages(poolForToday);
+      
+      if (typeof window !== 'undefined' && finalPool.length > 0) {
+        try {
+          localStorage.setItem(STORAGE_KEY_POOL, JSON.stringify(finalPool));
+          localStorage.setItem(STORAGE_KEY_TIMESTAMP, now.toString());
+          localStorage.setItem(STORAGE_KEY_HOUR, currentHourOfToday.toString());
+        } catch (e) {}
+      }
+      
+      console.log(`[ReadAiNews] Received ${finalPool.length} articles for Today's feed from API`);
+      return finalPool;
+    }
+    return null;
+  };
+
+  // Attempt 1: Fetch from relative /api/news Vercel Serverless Function
   try {
     const url = `/api/news?force=${force ? 'true' : 'false'}&_t=${now}`;
     const res = await fetch(url, {
@@ -88,41 +119,38 @@ export async function fetchTodayFreshNews(force = false) {
     });
     
     if (res.ok) {
-      const data = await res.json();
-      if (data.success && Array.isArray(data.articles)) {
-        // STRICT CALENDAR DATE FILTER:
-        // Retain articles published TODAY (since 00:00 local time).
-        const todayArticles = data.articles.filter(a => isTodayInTz(a.publishedEpoch, tz));
-        
-        let poolForToday = todayArticles;
-        // If early morning and fewer than 5 articles published today, allow freshest < 12h as fallback
-        if (poolForToday.length < 5) {
-          const recentFallback = data.articles.filter(a => {
-            const age = now - (a.publishedEpoch || 0);
-            return age >= 0 && age <= 12 * 3600 * 1000;
-          });
-          poolForToday = recentFallback.length >= poolForToday.length ? recentFallback : data.articles.slice(0, 5);
-        }
-        
-        const finalPool = ensureStrictlyUniqueImages(poolForToday);
-        
-        if (typeof window !== 'undefined' && finalPool.length > 0) {
-          try {
-            localStorage.setItem(STORAGE_KEY_POOL, JSON.stringify(finalPool));
-            localStorage.setItem(STORAGE_KEY_TIMESTAMP, now.toString());
-            localStorage.setItem(STORAGE_KEY_HOUR, currentHourOfToday.toString());
-          } catch (e) {}
-        }
-        
-        console.log(`[ReadAiNews] Received ${finalPool.length} articles for Today's feed from /api/news (all from today: ${todayArticles.length >= 5})`);
-        return finalPool;
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        const pool = processApiResponse(data);
+        if (pool && pool.length > 0) return pool;
       }
     }
   } catch (err) {
-    console.warn('[ReadAiNews] /api/news fetch failed, falling back to client-side pipeline:', err.message);
+    console.warn('[ReadAiNews] /api/news fetch failed:', err.message);
   }
 
-  // Attempt 2: Client-side direct pipeline for local development or API fallback
+  // Attempt 2: Direct fetch from production API (essential for local dev & preview)
+  try {
+    const prodUrl = `https://readainews.vercel.app/api/news?force=${force ? 'true' : 'false'}&_t=${now}`;
+    const res = await fetch(prodUrl, {
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store'
+    });
+    
+    if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        const pool = processApiResponse(data);
+        if (pool && pool.length > 0) return pool;
+      }
+    }
+  } catch (err) {
+    console.warn('[ReadAiNews] Production API fallback failed:', err.message);
+  }
+
+  // Attempt 3: Client-side direct pipeline for local development or API fallback
   try {
     console.log('[ReadAiNews] Running client-side RSS pipeline...');
     const candidateArticles = [];

@@ -13,16 +13,14 @@ import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
 import { getDailyPreviewArticle } from './utils/dailyRefresh';
 import { isTodayInTz, getUserTimeZone } from './utils/timeZone';
-import { fetchTodayFreshNews, getBatchOfArticles, getHourlyBatchIndex } from './utils/clientNewsFetcher';
+import { fetchTodayFreshNews, getBatchOfArticles } from './utils/clientNewsFetcher';
 import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v16';
-const POOL_STORAGE_KEY = 'readainews_fresh_pool_v16';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v16';
-const HOURLY_TRACKER_KEY = 'readainews_fresh_hour_v16';
-const ONE_HOUR_MS = 60 * 60 * 1000;
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v17';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v17';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v17';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');
@@ -78,20 +76,18 @@ export default function App() {
   // User manual shuffle offset (clicking Refresh cycles through batches of fresh stories)
   const [manualBatchOffset, setManualBatchOffset] = useState(0);
 
-  // Total batches in the pool (e.g. 10 articles / 5 = 2 batches)
+  // Total batches in the pool (e.g. 14 articles / 5 = 3 batches)
   const totalBatches = useMemo(() => {
     return Math.max(1, Math.ceil((freshPool.length || 5) / 5));
   }, [freshPool.length]);
 
-  // Hourly base offset so that every hour automatically advances the batch even without manual click
-  const hourlyBaseIndex = useMemo(() => {
-    return getHourlyBatchIndex(freshPool.length, 5) - 1;
-  }, [freshPool.length, currentHour]);
-
   // Active batch index (1..totalBatches)
+  // Default is Batch 1 (the 5 freshest breaking news stories of the day)
+  // Clicking Refresh cycles through batches 2, 3, etc.
+  // When a new hour arrives, manualBatchOffset resets to 0 to show the new hourly edition!
   const batchIndex = useMemo(() => {
-    return ((manualBatchOffset + hourlyBaseIndex) % totalBatches) + 1;
-  }, [manualBatchOffset, hourlyBaseIndex, totalBatches]);
+    return (manualBatchOffset % totalBatches) + 1;
+  }, [manualBatchOffset, totalBatches]);
 
   // The 5 active stories for the current batch
   const currentBatchArticles = useMemo(() => {
@@ -155,7 +151,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Clean up legacy storage keys from previous versions prior to v16
+    // Clean up legacy storage keys from previous versions prior to v17
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -165,7 +161,7 @@ export default function App() {
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
             key.startsWith('readainews_fresh_today_') ||
-            (key.startsWith('readainews_') && !key.includes('_v16') && !key.includes('readainews_saved_ids'))
+            (key.startsWith('readainews_') && !key.includes('_v17') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }
@@ -174,9 +170,11 @@ export default function App() {
       }
     } catch (e) {}
 
-    // Check if current pool is missing or from a previous hour; if so, fetch fresh wire updates
+    // Unconditionally revalidate wire feed on page mount in background (SWR pattern)
+    handleRefreshToday(true);
+
+    // Auto-update to new stories whenever the hour changes or periodically
     const checkAndRefreshHourly = async () => {
-      const now = Date.now();
       const thisHour = new Date().getHours();
       
       // Auto-update to new stories whenever the hour changes
@@ -187,16 +185,13 @@ export default function App() {
         return;
       }
 
-      const lastHour = parseInt(localStorage.getItem(HOURLY_TRACKER_KEY) || '-1', 10);
+      // Revalidate wire feed in background every 15 minutes
+      const now = Date.now();
       const lastTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
-      const isExpired = (now - lastTime) >= ONE_HOUR_MS || lastHour !== thisHour;
-      
-      if (isExpired || lastTime === 0) {
-        await handleRefreshToday(true);
+      if ((now - lastTime) >= 15 * 60 * 1000) {
+        await handleRefreshToday(false);
       }
     };
-
-    checkAndRefreshHourly();
 
     // Check every 30 seconds to detect hour rollover and update hourly stories automatically
     const interval = setInterval(checkAndRefreshHourly, 30 * 1000);
