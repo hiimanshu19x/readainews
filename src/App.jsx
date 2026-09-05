@@ -17,9 +17,9 @@ import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v14';
-const POOL_STORAGE_KEY = 'readainews_fresh_pool_v14';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v14';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v15';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v15';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v15';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export default function App() {
@@ -43,12 +43,12 @@ export default function App() {
     return ensureStrictlyUniqueImages(allNewsArticles);
   });
 
-  // Daily featured preview article for the Hero banner
+  // Daily featured preview article for the Hero banner (defaults to today's #1 breaking story)
   const [dailyPreviewArticle, setDailyPreviewArticle] = useState(() => {
-    return getDailyPreviewArticle(allNewsArticles) || allNewsArticles[0];
+    return allNewsArticles[0] || getDailyPreviewArticle(allNewsArticles);
   });
 
-  // Today's complete fresh pool (< 24h old) - Initialized with 26 verified live stories
+  // Today's complete fresh pool (< 24h old) - Initialized with verified live stories
   const [freshPool, setFreshPool] = useState(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -71,24 +71,23 @@ export default function App() {
     return ensureStrictlyUniqueImages(allNewsArticles);
   });
 
-  // Track the current calendar hour to drive automatic hourly rotation
+  // Track the current calendar hour to drive automatic hourly updates
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   
-  // User manual shuffle offset (clicking Refresh advances through batches)
+  // User manual shuffle offset (clicking Refresh cycles through batches of fresh stories)
   const [manualBatchOffset, setManualBatchOffset] = useState(0);
 
-  // Total batches in the pool (e.g. 26 articles / 5 = 6 batches)
+  // Total batches in the pool (e.g. 23 articles / 5 = 5 batches)
   const totalBatches = useMemo(() => {
     return Math.max(1, Math.ceil((freshPool.length || 5) / 5));
   }, [freshPool.length]);
 
-  // Compute active batch index (1..totalBatches): changes every hour, or when user clicks Refresh
+  // Active batch index (1..totalBatches): starts at 1 (today's newest breaking stories)
   const batchIndex = useMemo(() => {
-    const baseIndex = currentHour % totalBatches;
-    return ((baseIndex + manualBatchOffset) % totalBatches) + 1;
-  }, [currentHour, manualBatchOffset, totalBatches]);
+    return (manualBatchOffset % totalBatches) + 1;
+  }, [manualBatchOffset, totalBatches]);
 
-  // The 5 active stories for the current hourly batch
+  // The 5 active stories for the current batch
   const currentBatchArticles = useMemo(() => {
     return getBatchOfArticles(freshPool, batchIndex, 5);
   }, [freshPool, batchIndex]);
@@ -149,7 +148,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Clean up legacy storage keys from previous versions
+    // Clean up legacy storage keys from previous versions prior to v15
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -159,7 +158,8 @@ export default function App() {
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
             key.startsWith('readainews_fresh_today_') ||
-            (key.startsWith('readainews_') && !key.includes('_v14') && !key.includes('readainews_saved_ids'))
+            key.startsWith('readainews_fresh_pool_v1') && !key.includes('_v15') ||
+            (key.startsWith('readainews_') && !key.includes('_v15') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }
@@ -176,7 +176,7 @@ export default function App() {
       // Auto-update to new stories whenever the hour changes
       if (thisHour !== currentHour) {
         setCurrentHour(thisHour);
-        setManualBatchOffset(0); // Reset to the new hour's scheduled batch
+        setManualBatchOffset(0); // Reset to top batch with newest breaking stories of the new hour
         await handleRefreshToday(true);
         return;
       }
@@ -191,7 +191,7 @@ export default function App() {
 
     checkAndRefreshHourly();
 
-    // Check every 30 seconds to detect hour rollover immediately
+    // Check every 30 seconds to detect hour rollover and update hourly stories automatically
     const interval = setInterval(checkAndRefreshHourly, 30 * 1000);
     return () => clearInterval(interval);
   }, [currentHour]);

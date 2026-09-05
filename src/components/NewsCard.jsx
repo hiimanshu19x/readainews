@@ -51,7 +51,7 @@ export default function NewsCard({
 
             {/* Headline */}
             <h4 className="text-xs sm:text-base font-bold text-white group-hover:text-zinc-100 transition-colors line-clamp-2 leading-snug">
-              {article.title}
+              {article.title?.replace(/&#(\d+);/g, (_, c) => String.fromCharCode(Number(c))).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#39;/g, "'")}
             </h4>
 
             {/* Source mention at bottom (Direct Outbound Link) */}
@@ -132,14 +132,18 @@ export default function NewsCard({
       <div className="p-3.5 sm:p-4 xl:p-4.5 flex flex-col flex-1">
         {/* Date & Time */}
         <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 mb-2">
-          <span className="text-zinc-300 font-medium font-mono">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
+          <span className="text-zinc-300 font-medium font-mono">
+            {article.timeAgo?.includes('Today') ? 'Today' : formatLocalShortDate(article.publishedEpoch || article.publishedDate)}
+          </span>
           <span className="text-zinc-600">•</span>
-          <span className="text-zinc-500">{article.timeAgo?.replace('Today • ', '') || article.timeAgo}</span>
+          <span className="text-zinc-400 font-mono">
+            {article.timeAgo?.replace('Today • ', '') || article.timeAgo}
+          </span>
         </div>
 
         {/* Title */}
         <h3 className="text-[13px] sm:text-base font-bold text-white leading-snug group-hover:text-zinc-100 transition-colors mb-2 line-clamp-2">
-          {article.title}
+          {article.title?.replace(/&#(\d+);/g, (_, c) => String.fromCharCode(Number(c))).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#39;/g, "'")}
         </h3>
 
         {/* AI Crafted Summary */}

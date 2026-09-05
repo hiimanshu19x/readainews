@@ -245,6 +245,36 @@ export function deduplicateArticles(articles = []) {
 }
 
 /**
+ * Decodes all HTML numeric entities, hex entities, and common symbols cleanly.
+ */
+export function decodeHtmlEntities(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .replace(/^<!\[CDATA\[(.*)\]\]>$/s, '$1')
+    .replace(/&#(\d+);/g, (_, code) => {
+      const num = Number(code);
+      if (num === 8216 || num === 8217) return "'";
+      if (num === 8220 || num === 8221) return '"';
+      if (num === 8211) return '-';
+      if (num === 8212) return ' ';
+      return String.fromCharCode(num);
+    })
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#039;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/[—–]/g, ' ')
+    .replace(/--/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
  * Normalizes raw XML item into structured Article schema.
  */
 export function parseXmlItem(itemXml, isAtom, sourceMeta) {
@@ -258,21 +288,7 @@ export function parseXmlItem(itemXml, isAtom, sourceMeta) {
     return match ? match[1].trim() : '';
   };
 
-  let title = getTag('title')
-    .replace(/^<!\[CDATA\[(.*)\]\]>$/s, '$1')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#8217;/g, "'")
-    .replace(/&#8220;/g, '"')
-    .replace(/&#8221;/g, '"')
-    .replace(/&#8211;/g, '-')
-    .replace(/&#8212;/g, ' ')
-    .replace(/[—–]/g, ' ')
-    .replace(/--/g, ' ')
-    .trim();
+  let title = decodeHtmlEntities(getTag('title'));
 
   let link = '';
   if (isAtom) {
@@ -293,18 +309,8 @@ export function parseXmlItem(itemXml, isAtom, sourceMeta) {
   
   const parsedDate = parsePublicationDate(rawDate);
 
-  let desc = getTag('description') || getTag('summary') || getTag('content:encoded') || getTag('content');
-  desc = desc
-    .replace(/^<!\[CDATA\[(.*)\]\]>$/s, '$1')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#8217;/g, "'")
-    .replace(/[—–]/g, ' ')
-    .replace(/--/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  let rawDesc = getTag('description') || getTag('summary') || getTag('content:encoded') || getTag('content');
+  let desc = decodeHtmlEntities(rawDesc.replace(/<[^>]*>/g, ' '));
 
   let imageUrl = getAttr('enclosure', 'url') || 
                  getAttr('media:content', 'url') || 
@@ -564,14 +570,23 @@ export function executeNewsPipeline(rawCandidateArticles, options = {}) {
       score -= 5.0;
     }
     
-    // Freshness boost: breaking articles published in the last 1-4 hours receive highest priority
+    // Freshness boost:
+    // Stories published in the last 1 hour: +35 points (GUARANTEED TOP FOR CURRENT HOUR!)
+    // Stories published in the last 3 hours: +22 points
+    // Stories published in the last 6 hours: +14 points
+    // Stories published in the last 12 hours: +7 points
+    // Stories published earlier today (< 18 hours): +3 points
     const ageHrs = (nowUtc - article.publishedEpoch) / 3600000;
-    if (ageHrs < 2) {
-      score += 6.0;
+    if (ageHrs < 1) {
+      score += 35.0;
+    } else if (ageHrs < 3) {
+      score += 22.0;
     } else if (ageHrs < 6) {
-      score += 3.5;
+      score += 14.0;
     } else if (ageHrs < 12) {
-      score += 1.5;
+      score += 7.0;
+    } else if (ageHrs < 18) {
+      score += 3.0;
     }
     
     return { ...article, score };
