@@ -6,9 +6,9 @@
 
 export function getUserTimeZone() {
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
   } catch (e) {
-    return 'UTC';
+    return 'Asia/Kolkata';
   }
 }
 
@@ -16,21 +16,104 @@ export function getUserTimeZoneAbbr() {
   try {
     const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date());
     const tzPart = parts.find(p => p.type === 'timeZoneName');
-    return tzPart ? tzPart.value : '';
+    return tzPart ? tzPart.value : 'IST';
   } catch (e) {
-    return '';
+    return 'IST';
+  }
+}
+
+/**
+ * Returns date key formatted as YYYY-MM-DD in the specified timezone.
+ */
+export function getLocalDateKey(d = new Date(), timeZone = getUserTimeZone()) {
+  try {
+    const date = typeof d === 'number' ? new Date(d) : (d instanceof Date ? d : new Date(d));
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(date);
+  } catch (e) {
+    const date = d instanceof Date ? d : new Date(d);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
 
 /**
  * Returns today's date key formatted as YYYY-MM-DD in the USER's LOCAL timezone.
  */
-export function getTodayLocalKey(d = new Date()) {
-  const date = d instanceof Date ? d : new Date(d);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+export function getTodayLocalKey(d = new Date(), timeZone = getUserTimeZone()) {
+  return getLocalDateKey(d, timeZone);
+}
+
+/**
+ * Checks whether an epoch falls strictly on today's calendar date in the given timezone.
+ */
+export function isTodayInTz(epochMs, timeZone = getUserTimeZone()) {
+  if (!epochMs) return false;
+  const nowKey = getLocalDateKey(Date.now(), timeZone);
+  const articleKey = getLocalDateKey(epochMs, timeZone);
+  return nowKey === articleKey;
+}
+
+/**
+ * Checks whether an epoch falls strictly on yesterday's calendar date in the given timezone.
+ */
+export function isYesterdayInTz(epochMs, timeZone = getUserTimeZone()) {
+  if (!epochMs) return false;
+  const yesterdayKey = getLocalDateKey(Date.now() - 24 * 3600 * 1000, timeZone);
+  const articleKey = getLocalDateKey(epochMs, timeZone);
+  return yesterdayKey === articleKey;
+}
+
+/**
+ * Formats accurate, non-contradictory card badges for any article:
+ * - If published today: { dayLabel: 'Today', timeAgo: '25m ago' | '3h ago' }
+ * - If published yesterday: { dayLabel: 'Yesterday', timeAgo: '17h ago' | '23h ago' }
+ * - If older: { dayLabel: 'Sep 3', timeAgo: '2d ago' }
+ */
+export function formatCardDateBadges(epochOrDate, nowUtc = Date.now(), timeZone = getUserTimeZone()) {
+  if (!epochOrDate) return { dayLabel: 'Recent', timeAgo: '' };
+  
+  let epoch = epochOrDate;
+  if (typeof epochOrDate === 'string') {
+    const parsed = new Date(epochOrDate).getTime();
+    epoch = isNaN(parsed) ? 0 : parsed;
+  }
+  if (!epoch) return { dayLabel: 'Recent', timeAgo: '' };
+
+  const ageMs = Math.max(0, nowUtc - epoch);
+  const mins = Math.floor(ageMs / 60000);
+  const hrs = Math.floor(mins / 60);
+  const days = Math.floor(hrs / 24);
+
+  let timeAgo = '';
+  if (mins < 60) {
+    timeAgo = `${Math.max(1, mins)}m ago`;
+  } else if (hrs < 24) {
+    timeAgo = `${hrs}h ago`;
+  } else {
+    timeAgo = `${days}d ago`;
+  }
+
+  let dayLabel = 'Today';
+  if (isTodayInTz(epoch, timeZone)) {
+    dayLabel = 'Today';
+  } else if (isYesterdayInTz(epoch, timeZone)) {
+    dayLabel = 'Yesterday';
+  } else {
+    dayLabel = formatLocalShortDate(epoch);
+  }
+
+  return {
+    dayLabel,
+    timeAgo,
+    fullLabel: `${dayLabel} • ${timeAgo}`
+  };
 }
 
 /**
@@ -73,3 +156,4 @@ export function formatLocalDateTime(d = new Date()) {
     timeZoneName: 'short'
   });
 }
+

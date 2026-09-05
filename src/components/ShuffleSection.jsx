@@ -42,7 +42,8 @@ export default function ShuffleSection({
   onResetTodayHistory,
   isLiveWire = false,
   isRefreshingLive = false,
-  onRefreshLiveWire
+  onRefreshLiveWire,
+  currentHour
 }) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanStepIndex, setScanStepIndex] = useState(0);
@@ -133,7 +134,11 @@ export default function ShuffleSection({
               {/* 1-Hour Auto-Refresh Badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-[10px] font-mono text-cyan-300">
                 <Clock size={11} className="text-cyan-400" />
-                <span>Refreshed Every 1 Hour • {getUserTimeZoneAbbr() || 'Local'}</span>
+                <span>
+                  {typeof currentHour === 'number'
+                    ? `Hourly Edition (${String(currentHour).padStart(2, '0')}:00 ${getUserTimeZoneAbbr() || 'Local'}) • Auto-Sync Hourly`
+                    : `Refreshed Every 1 Hour • ${getUserTimeZoneAbbr() || 'Local'}`}
+                </span>
               </div>
 
               <span className="text-zinc-600">•</span>

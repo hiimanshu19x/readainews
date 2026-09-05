@@ -12,6 +12,7 @@
  */
 
 import { getOrAssignUniqueImage, ensureStrictlyUniqueImages } from './imageEngine.js';
+import { formatCardDateBadges, isTodayInTz, getLocalDateKey } from './timeZone.js';
 
 /**
  * Normalizes a URL to its canonical form by removing query tracking params and trailing slashes.
@@ -260,14 +261,20 @@ export function decodeHtmlEntities(str) {
       return String.fromCharCode(num);
     })
     .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
+    .replace(/&lsquo;/gi, "'")
+    .replace(/&rsquo;/gi, "'")
+    .replace(/&ldquo;/gi, '"')
+    .replace(/&rdquo;/gi, '"')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
     .replace(/&#039;/g, "'")
     .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&mdash;/gi, ' ')
+    .replace(/&ndash;/gi, '-')
     .replace(/[—–]/g, ' ')
     .replace(/--/g, ' ')
     .replace(/\s+/g, ' ')
@@ -371,17 +378,13 @@ export function parseFeedXml(xmlText, sourceMeta) {
 }
 
 /**
- * Formats a relative dynamic time-ago string in the Asia/Kolkata editorial day perspective.
+ * Formats a relative dynamic time-ago string in the specified timezone (default: Asia/Kolkata).
+ * Guarantees that articles published yesterday are NEVER labeled as 'Today'.
  */
-export function formatRelativeTimeAgo(publishedEpoch, nowUtc = Date.now()) {
-  const ageMs = Math.max(0, nowUtc - publishedEpoch);
-  const mins = Math.floor(ageMs / 60000);
-  const hrs = Math.floor(mins / 60);
-  
-  if (mins < 60) {
-    return `Today • ${Math.max(2, mins)}m ago`;
-  }
-  return `Today • ${hrs}h ago`;
+export function formatRelativeTimeAgo(publishedEpoch, nowUtc = Date.now(), timeZone = 'Asia/Kolkata') {
+  if (!publishedEpoch) return 'Recent';
+  const { fullLabel } = formatCardDateBadges(publishedEpoch, nowUtc, timeZone);
+  return fullLabel;
 }
 
 /**
@@ -389,8 +392,8 @@ export function formatRelativeTimeAgo(publishedEpoch, nowUtc = Date.now()) {
  */
 export function calibrateJournalisticArticle(candidate, rank = 1) {
   const sourceName = candidate.source;
-  const title = candidate.title;
-  const excerpt = candidate.description || 'technical advancements in artificial intelligence and enterprise computing';
+  const title = decodeHtmlEntities(candidate.title);
+  const excerpt = decodeHtmlEntities(candidate.description || 'technical advancements in artificial intelligence and enterprise computing');
   
   const p1 = `According to comprehensive reporting published today by ${sourceName}, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on ${title}.`;
   
@@ -410,7 +413,7 @@ export function calibrateJournalisticArticle(candidate, rank = 1) {
     if (!trimmed.endsWith('.')) trimmed += '.';
     fullText = trimmed;
   } else if (words.length < 181) {
-    const filler = "Technical evaluators continue tracking performance metrics to ensure enterprise compliance and system reliability across modern artificial intelligence infrastructures.";
+    const filler = "Technical evaluators continue tracking rigorous performance metrics to guarantee strict enterprise compliance, deterministic safety benchmarks, and verified software resilience across modern computing architectures.";
     fullText = fullText + ' ' + filler;
     words = fullText.split(/\s+/).filter(Boolean);
     if (words.length > 199) {
@@ -442,14 +445,14 @@ export function calibrateJournalisticArticle(candidate, rank = 1) {
 
   return {
     id: candidate.id,
-    title: candidate.title,
+    title: title,
     tier: "industry",
     context: candidate.category || "frontier_models",
     publishedDate: formattedDate,
     publishedAt: candidate.publishedAt,
     publishedEpoch: candidate.publishedEpoch,
     dateKey: dateKey,
-    timeAgo: formatRelativeTimeAgo(candidate.publishedEpoch),
+    timeAgo: formatRelativeTimeAgo(candidate.publishedEpoch, Date.now(), 'Asia/Kolkata'),
     readTime: "3 min read",
     source: candidate.source,
     sourceUrl: candidate.canonicalUrl,
@@ -457,7 +460,7 @@ export function calibrateJournalisticArticle(candidate, rank = 1) {
     meshTheme: meshTheme,
     featured: rank === 1,
     imageUrl: candidate.imageUrl,
-    summary: `${sourceName} reports on ${title}, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.`,
+    summary: decodeHtmlEntities(`${sourceName} reports on ${title}, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.`),
     paragraphs: paragraphs,
     keyTakeaways: [
       `${sourceName} highlights crucial technical milestones regarding ${title.slice(0, 55)}...`,
@@ -474,6 +477,7 @@ export function calibrateJournalisticArticle(candidate, rank = 1) {
     isLiveScraped: true
   };
 }
+
 
 /**
  * COMPLETE PIPELINE:
@@ -588,9 +592,16 @@ export function executeNewsPipeline(rawCandidateArticles, options = {}) {
     } else if (ageHrs < 18) {
       score += 3.0;
     }
+
+    // Calendar day boost: strictly prioritize articles published on today's calendar date in local timezone
+    const timeZone = options.timeZone || 'Asia/Kolkata';
+    if (isTodayInTz(article.publishedEpoch, timeZone)) {
+      score += 18.0;
+    }
     
     return { ...article, score };
   });
+
   
   scored.sort((a, b) => b.score - a.score);
   

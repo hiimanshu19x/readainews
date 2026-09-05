@@ -2,6 +2,8 @@ import React from 'react';
 import { ArrowRight, Bookmark, MoreHorizontal } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
+import { formatCardDateBadges } from '../utils/timeZone';
+import { decodeHtmlEntities } from '../utils/newsPipeline';
 
 export default function Hero({ 
   onStartReading, 
@@ -10,6 +12,7 @@ export default function Hero({
   isBookmarked = false,
   onToggleBookmark
 }) {
+  const previewBadges = formatCardDateBadges(previewArticle?.publishedEpoch || previewArticle?.publishedDate);
   return (
     <section className="relative pt-6 pb-20 sm:pt-12 sm:pb-28 md:pt-16 md:pb-36 overflow-hidden bg-[#050505]">
       
@@ -138,7 +141,7 @@ export default function Hero({
                   </div>
                   <div className="flex items-center gap-2 text-zinc-500 shrink-0">
                     <span className="text-[10px] font-mono">
-                      {previewArticle?.timeAgo?.replace('Today • ', '') || '15m ago'}
+                      {previewBadges.timeAgo || '15m ago'}
                     </span>
                     <MoreHorizontal size={13} />
                   </div>
@@ -168,12 +171,12 @@ export default function Hero({
 
                 {/* Headline */}
                 <h3 className="text-sm sm:text-base font-bold text-white leading-snug mb-2 line-clamp-2 group-hover:text-zinc-100 transition-colors">
-                  {previewArticle?.title || 'Frontier Labs Introduce Unified Air-Gap Protocols for Autonomous Coding Agents'}
+                  {decodeHtmlEntities(previewArticle?.title || 'Frontier Labs Introduce Unified Air-Gap Protocols for Autonomous Coding Agents')}
                 </h3>
 
                 {/* Snippet */}
                 <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed mb-3 sm:mb-4 line-clamp-2">
-                  {previewArticle?.summary || 'Leading frontier artificial intelligence laboratories agreed on unified hardware isolation rules to prevent experimental autonomous software from escaping research sandboxes.'}
+                  {decodeHtmlEntities(previewArticle?.summary || 'Leading frontier artificial intelligence laboratories agreed on unified hardware isolation rules to prevent experimental autonomous software from escaping research sandboxes.')}
                 </p>
 
                 {/* Card Footer */}

@@ -16,7 +16,8 @@ import {
 import ContextualThumbnail from './ContextualThumbnail';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
-import { formatLocalShortDate } from '../utils/timeZone';
+import { formatLocalShortDate, formatCardDateBadges } from '../utils/timeZone';
+import { decodeHtmlEntities } from '../utils/newsPipeline';
 
 export default function ArticleModal({ 
   article, 
@@ -26,6 +27,7 @@ export default function ArticleModal({
 }) {
   const [copied, setCopied] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const { dayLabel, timeAgo } = formatCardDateBadges(article?.publishedEpoch || article?.publishedDate);
 
   if (!article) return null;
 
@@ -125,17 +127,17 @@ export default function ArticleModal({
               </span>
               <span className="text-zinc-600 font-mono shrink-0">•</span>
               <span className="text-zinc-300 font-mono text-[11px] sm:text-xs shrink-0 whitespace-nowrap">
-                {formatLocalShortDate(article.dateKey || article.publishedDate)}
+                {dayLabel}
               </span>
               <span className="text-zinc-600 font-mono shrink-0 hidden sm:inline">•</span>
               <span className="text-zinc-400 font-mono text-[11px] sm:text-xs shrink-0 hidden sm:inline whitespace-nowrap">
-                {article.timeAgo?.replace('Today • ', '') || article.timeAgo}
+                {timeAgo}
               </span>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-zinc-400 font-mono text-[11px] sm:hidden whitespace-nowrap">
-                {article.timeAgo?.replace('Today • ', '') || article.timeAgo}
+                {timeAgo}
               </span>
               <div className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-zinc-900 border border-white/10 text-[10px] sm:text-[11px] font-mono text-zinc-300">
                 <Clock size={11} className="text-zinc-400" />
@@ -146,7 +148,7 @@ export default function ArticleModal({
 
           {/* Headline */}
           <h2 className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-white leading-tight tracking-tight">
-            {article.title}
+            {decodeHtmlEntities(article.title)}
           </h2>
 
           {/* Executive Summary Callout */}
@@ -156,7 +158,7 @@ export default function ArticleModal({
               <span>Executive Briefing</span>
             </div>
             <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-medium">
-              {article.summary}
+              {decodeHtmlEntities(article.summary)}
             </p>
           </div>
 

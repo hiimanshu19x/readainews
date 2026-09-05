@@ -63,6 +63,7 @@ export default async function handler(req, res) {
   const winners = executeNewsPipeline(allCandidates, {
     nowUtc: Date.now(),
     maxArticles: 50,
+    timeZone: 'Asia/Kolkata',
     logger: console
   });
 

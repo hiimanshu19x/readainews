@@ -12,14 +12,16 @@ import SearchModal from './components/SearchModal';
 import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
 import { getDailyPreviewArticle } from './utils/dailyRefresh';
-import { fetchTodayFreshNews, getBatchOfArticles } from './utils/clientNewsFetcher';
+import { isTodayInTz, getUserTimeZone } from './utils/timeZone';
+import { fetchTodayFreshNews, getBatchOfArticles, getHourlyBatchIndex } from './utils/clientNewsFetcher';
 import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v15';
-const POOL_STORAGE_KEY = 'readainews_fresh_pool_v15';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v15';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v16';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v16';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v16';
+const HOURLY_TRACKER_KEY = 'readainews_fresh_hour_v16';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export default function App() {
@@ -48,7 +50,7 @@ export default function App() {
     return allNewsArticles[0] || getDailyPreviewArticle(allNewsArticles);
   });
 
-  // Today's complete fresh pool (< 24h old) - Initialized with verified live stories
+  // Today's complete fresh pool (strictly articles published TODAY on current calendar date)
   const [freshPool, setFreshPool] = useState(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -56,19 +58,18 @@ export default function App() {
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const now = Date.now();
-            const freshOnly = parsed.filter(a => {
-              const age = now - (a.publishedEpoch || 0);
-              return age >= 0 && age <= 24 * 3600 * 1000;
-            });
-            if (freshOnly.length > 0) {
-              return ensureStrictlyUniqueImages(freshOnly);
+            const tz = getUserTimeZone();
+            const todayOnly = parsed.filter(a => isTodayInTz(a.publishedEpoch, tz));
+            if (todayOnly.length >= 5) {
+              return ensureStrictlyUniqueImages(todayOnly);
             }
           }
         }
       }
     } catch (e) {}
-    return ensureStrictlyUniqueImages(allNewsArticles);
+    const tz = getUserTimeZone();
+    const todayDefault = allNewsArticles.filter(a => isTodayInTz(a.publishedEpoch, tz));
+    return ensureStrictlyUniqueImages(todayDefault.length >= 5 ? todayDefault : allNewsArticles.slice(0, 10));
   });
 
   // Track the current calendar hour to drive automatic hourly updates
@@ -77,15 +78,20 @@ export default function App() {
   // User manual shuffle offset (clicking Refresh cycles through batches of fresh stories)
   const [manualBatchOffset, setManualBatchOffset] = useState(0);
 
-  // Total batches in the pool (e.g. 23 articles / 5 = 5 batches)
+  // Total batches in the pool (e.g. 10 articles / 5 = 2 batches)
   const totalBatches = useMemo(() => {
     return Math.max(1, Math.ceil((freshPool.length || 5) / 5));
   }, [freshPool.length]);
 
-  // Active batch index (1..totalBatches): starts at 1 (today's newest breaking stories)
+  // Hourly base offset so that every hour automatically advances the batch even without manual click
+  const hourlyBaseIndex = useMemo(() => {
+    return getHourlyBatchIndex(freshPool.length, 5) - 1;
+  }, [freshPool.length, currentHour]);
+
+  // Active batch index (1..totalBatches)
   const batchIndex = useMemo(() => {
-    return (manualBatchOffset % totalBatches) + 1;
-  }, [manualBatchOffset, totalBatches]);
+    return ((manualBatchOffset + hourlyBaseIndex) % totalBatches) + 1;
+  }, [manualBatchOffset, hourlyBaseIndex, totalBatches]);
 
   // The 5 active stories for the current batch
   const currentBatchArticles = useMemo(() => {
@@ -131,6 +137,7 @@ export default function App() {
     }
   };
 
+
   // User manual click on "Refresh" / "Scan Wire": advances to next batch of 5 fresh stories immediately
   const handleUserShuffle = async () => {
     setManualBatchOffset(prev => prev + 1);
@@ -148,7 +155,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Clean up legacy storage keys from previous versions prior to v15
+    // Clean up legacy storage keys from previous versions prior to v16
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -158,8 +165,7 @@ export default function App() {
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
             key.startsWith('readainews_fresh_today_') ||
-            key.startsWith('readainews_fresh_pool_v1') && !key.includes('_v15') ||
-            (key.startsWith('readainews_') && !key.includes('_v15') && !key.includes('readainews_saved_ids'))
+            (key.startsWith('readainews_') && !key.includes('_v16') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }
@@ -168,7 +174,7 @@ export default function App() {
       }
     } catch (e) {}
 
-    // Check if current pool is missing or older than 1 hour; if so, fetch fresh news
+    // Check if current pool is missing or from a previous hour; if so, fetch fresh wire updates
     const checkAndRefreshHourly = async () => {
       const now = Date.now();
       const thisHour = new Date().getHours();
@@ -176,13 +182,14 @@ export default function App() {
       // Auto-update to new stories whenever the hour changes
       if (thisHour !== currentHour) {
         setCurrentHour(thisHour);
-        setManualBatchOffset(0); // Reset to top batch with newest breaking stories of the new hour
+        setManualBatchOffset(0); // Reset manual offset so top breaking news of the new hour takes priority
         await handleRefreshToday(true);
         return;
       }
 
+      const lastHour = parseInt(localStorage.getItem(HOURLY_TRACKER_KEY) || '-1', 10);
       const lastTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
-      const isExpired = (now - lastTime) >= ONE_HOUR_MS;
+      const isExpired = (now - lastTime) >= ONE_HOUR_MS || lastHour !== thisHour;
       
       if (isExpired || lastTime === 0) {
         await handleRefreshToday(true);
@@ -195,6 +202,7 @@ export default function App() {
     const interval = setInterval(checkAndRefreshHourly, 30 * 1000);
     return () => clearInterval(interval);
   }, [currentHour]);
+
 
   // Toggle bookmark & sync with localStorage
   const handleToggleBookmark = (id) => {
@@ -303,6 +311,7 @@ export default function App() {
           isLiveWire={isLiveWire}
           isRefreshingLive={isRefreshingLive}
           onRefreshLiveWire={handleUserShuffle}
+          currentHour={currentHour}
         />
 
         {/* This Week Collection Tab (Rolling 7-Day Curated Archive) */}

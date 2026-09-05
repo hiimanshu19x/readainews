@@ -3,7 +3,8 @@ import { Bookmark, ArrowRight, Clock, ExternalLink } from 'lucide-react';
 import ContextualThumbnail from './ContextualThumbnail';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
-import { formatLocalShortDate } from '../utils/timeZone';
+import { formatLocalShortDate, formatCardDateBadges } from '../utils/timeZone';
+import { decodeHtmlEntities } from '../utils/newsPipeline';
 
 export default function NewsCard({ 
   article, 
@@ -14,6 +15,7 @@ export default function NewsCard({
   animationDelay = 0 
 }) {
   const [imgError, setImgError] = useState(false);
+  const { dayLabel, timeAgo } = formatCardDateBadges(article?.publishedEpoch || article?.publishedDate);
 
   const handleBookmark = (e) => {
     e.stopPropagation();
@@ -45,13 +47,15 @@ export default function NewsCard({
 
           <div className="flex flex-col gap-1 min-w-0">
             {/* Meta row */}
-            <div className="flex items-center gap-2 text-[10px] sm:text-xs text-zinc-400">
-              <span className="text-zinc-400">{article.timeAgo}</span>
+            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-zinc-400">
+              <span className="text-zinc-300 font-medium font-mono">{dayLabel}</span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-zinc-400 font-mono">{timeAgo}</span>
             </div>
 
             {/* Headline */}
             <h4 className="text-xs sm:text-base font-bold text-white group-hover:text-zinc-100 transition-colors line-clamp-2 leading-snug">
-              {article.title?.replace(/&#(\d+);/g, (_, c) => String.fromCharCode(Number(c))).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#39;/g, "'")}
+              {decodeHtmlEntities(article.title)}
             </h4>
 
             {/* Source mention at bottom (Direct Outbound Link) */}
@@ -133,22 +137,22 @@ export default function NewsCard({
         {/* Date & Time */}
         <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 mb-2">
           <span className="text-zinc-300 font-medium font-mono">
-            {article.timeAgo?.includes('Today') ? 'Today' : formatLocalShortDate(article.publishedEpoch || article.publishedDate)}
+            {dayLabel}
           </span>
           <span className="text-zinc-600">•</span>
           <span className="text-zinc-400 font-mono">
-            {article.timeAgo?.replace('Today • ', '') || article.timeAgo}
+            {timeAgo}
           </span>
         </div>
 
         {/* Title */}
         <h3 className="text-[13px] sm:text-base font-bold text-white leading-snug group-hover:text-zinc-100 transition-colors mb-2 line-clamp-2">
-          {article.title?.replace(/&#(\d+);/g, (_, c) => String.fromCharCode(Number(c))).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#39;/g, "'")}
+          {decodeHtmlEntities(article.title)}
         </h3>
 
         {/* AI Crafted Summary */}
         <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-4">
-          {article.summary}
+          {decodeHtmlEntities(article.summary)}
         </p>
 
         {/* Bottom Metadata & Source Mention */}

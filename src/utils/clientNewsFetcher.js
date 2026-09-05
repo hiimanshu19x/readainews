@@ -3,15 +3,18 @@
  * 
  * Fetches fresh AI news pool from /api/news (Vercel serverless function).
  * Provides graceful client-side fallback if the API route is unreachable.
- * Strictly guarantees that ONLY articles published within the last 24 hours are returned for Today's News.
+ * Strictly guarantees that ONLY articles published TODAY (on today's calendar date
+ * in the user's timezone) are returned for Today's News feed.
  */
 
 import { executeNewsPipeline, parseFeedXml } from './newsPipeline.js';
 import { TRUSTED_AI_SOURCES } from './sourceRegistry.js';
 import { ensureStrictlyUniqueImages } from './imageEngine.js';
+import { isTodayInTz, getUserTimeZone, getLocalDateKey } from './timeZone.js';
 
-const STORAGE_KEY_POOL = 'readainews_fresh_pool_v14';
-const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v14';
+export const STORAGE_KEY_POOL = 'readainews_fresh_pool_v16';
+export const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v16';
+export const STORAGE_KEY_HOUR = 'readainews_fresh_hour_v16';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
@@ -21,7 +24,7 @@ export function getBatchOfArticles(pool = [], batchIndex = 1, batchSize = 5) {
   if (!Array.isArray(pool) || pool.length === 0) return [];
   if (pool.length <= batchSize) return pool;
 
-  const totalBatches = Math.ceil(pool.length / batchSize);
+  const totalBatches = Math.max(1, Math.ceil(pool.length / batchSize));
   const normalizedIndex = ((batchIndex - 1) % totalBatches) + 1;
   const start = (normalizedIndex - 1) * batchSize;
   const slice = pool.slice(start, start + batchSize);
@@ -35,37 +38,39 @@ export function getBatchOfArticles(pool = [], batchIndex = 1, batchSize = 5) {
 }
 
 /**
- * Calculates current default hourly batch index (1..totalBatches) based on elapsed hours.
+ * Calculates current default hourly batch index (1..totalBatches) based on current hour of day.
  */
-export function getHourlyBatchIndex(poolSize = 25, batchSize = 5) {
+export function getHourlyBatchIndex(poolSize = 13, batchSize = 5) {
   const totalBatches = Math.max(1, Math.ceil(poolSize / batchSize));
-  const hourOfDay = Math.floor(Date.now() / (3600 * 1000));
+  const hourOfDay = new Date().getHours();
   return (hourOfDay % totalBatches) + 1;
 }
 
 /**
- * Fetches the full pool of fresh AI news (< 24h old) for Today's News.
+ * Fetches the full pool of fresh AI news published TODAY for Today's News.
  */
 export async function fetchTodayFreshNews(force = false) {
   const now = Date.now();
+  const tz = getUserTimeZone();
+  const currentHourOfToday = new Date().getHours();
   
-  // Check client-side cached fresh pool if not forcing refresh
+  // Check client-side cached fresh pool if not forcing refresh and hour hasn't changed
   if (!force && typeof window !== 'undefined') {
     try {
+      const lastHour = parseInt(localStorage.getItem(STORAGE_KEY_HOUR) || '-1', 10);
       const lastTime = parseInt(localStorage.getItem(STORAGE_KEY_TIMESTAMP) || '0', 10);
-      const isStillFresh = (now - lastTime) < ONE_HOUR_MS;
-      if (isStillFresh) {
+      const isSameHour = lastHour === currentHourOfToday;
+      const isWithinHour = (now - lastTime) < ONE_HOUR_MS;
+      
+      if (isSameHour && isWithinHour) {
         const cachedRaw = localStorage.getItem(STORAGE_KEY_POOL);
         if (cachedRaw) {
           const cached = JSON.parse(cachedRaw);
-          // Verify cached items are strictly within 24h
-          const valid = cached.filter(a => {
-            const age = now - (a.publishedEpoch || 0);
-            return age >= 0 && age <= 24 * 3600 * 1000;
-          });
-          if (valid.length > 0) {
-            console.log(`[ReadAiNews] Using cached fresh pool (${valid.length} articles)`);
-            return ensureStrictlyUniqueImages(valid);
+          // Strictly verify cached items are from TODAY in user's timezone
+          const todayOnly = cached.filter(a => isTodayInTz(a.publishedEpoch, tz));
+          if (todayOnly.length >= 5) {
+            console.log(`[ReadAiNews] Using cached fresh pool (${todayOnly.length} articles from today)`);
+            return ensureStrictlyUniqueImages(todayOnly);
           }
         }
       }
@@ -85,22 +90,31 @@ export async function fetchTodayFreshNews(force = false) {
     if (res.ok) {
       const data = await res.json();
       if (data.success && Array.isArray(data.articles)) {
-        // Enforce 24h filter client-side as an extra safety guard
-        const strictlyFresh = data.articles.filter(a => {
-          const age = now - (a.publishedEpoch || 0);
-          return age >= 0 && age <= 24 * 3600 * 1000;
-        });
+        // STRICT CALENDAR DATE FILTER:
+        // Retain articles published TODAY (since 00:00 local time).
+        const todayArticles = data.articles.filter(a => isTodayInTz(a.publishedEpoch, tz));
         
-        const finalPool = ensureStrictlyUniqueImages(strictlyFresh);
+        let poolForToday = todayArticles;
+        // If early morning and fewer than 5 articles published today, allow freshest < 12h as fallback
+        if (poolForToday.length < 5) {
+          const recentFallback = data.articles.filter(a => {
+            const age = now - (a.publishedEpoch || 0);
+            return age >= 0 && age <= 12 * 3600 * 1000;
+          });
+          poolForToday = recentFallback.length >= poolForToday.length ? recentFallback : data.articles.slice(0, 5);
+        }
+        
+        const finalPool = ensureStrictlyUniqueImages(poolForToday);
         
         if (typeof window !== 'undefined' && finalPool.length > 0) {
           try {
             localStorage.setItem(STORAGE_KEY_POOL, JSON.stringify(finalPool));
             localStorage.setItem(STORAGE_KEY_TIMESTAMP, now.toString());
+            localStorage.setItem(STORAGE_KEY_HOUR, currentHourOfToday.toString());
           } catch (e) {}
         }
         
-        console.log(`[ReadAiNews] Received ${finalPool.length} fresh articles pool from /api/news`);
+        console.log(`[ReadAiNews] Received ${finalPool.length} articles for Today's feed from /api/news (all from today: ${todayArticles.length >= 5})`);
         return finalPool;
       }
     }
@@ -132,15 +146,19 @@ export async function fetchTodayFreshNews(force = false) {
       const winners = executeNewsPipeline(candidateArticles, {
         nowUtc: now,
         maxArticles: 50,
+        timeZone: tz,
         logger: console
       });
       
-      const finalPool = ensureStrictlyUniqueImages(winners);
+      const todayArticles = winners.filter(a => isTodayInTz(a.publishedEpoch, tz));
+      const pool = todayArticles.length >= 5 ? todayArticles : winners.slice(0, 5);
+      const finalPool = ensureStrictlyUniqueImages(pool);
       
       if (typeof window !== 'undefined' && finalPool.length > 0) {
         try {
           localStorage.setItem(STORAGE_KEY_POOL, JSON.stringify(finalPool));
           localStorage.setItem(STORAGE_KEY_TIMESTAMP, now.toString());
+          localStorage.setItem(STORAGE_KEY_HOUR, currentHourOfToday.toString());
         } catch (e) {}
       }
       
@@ -169,3 +187,4 @@ export function getWeeklyFreshArticles(articles = []) {
   
   return ensureStrictlyUniqueImages(weeklyOnly);
 }
+
