@@ -16,9 +16,9 @@ import { fetchFreshLiveArticles } from './utils/liveScraper';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v10';
-const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v10_';
-const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v10';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v11';
+const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v11_';
+const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v11';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export default function App() {
@@ -152,8 +152,7 @@ export default function App() {
           if (key && (
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
-            (key.startsWith('readainews_seen_') && !key.includes('_v10')) ||
-            (key.startsWith('readainews_1hr_batch_') && !key.includes('_v10'))
+            (key.startsWith('readainews_') && !key.includes('_v11') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }
