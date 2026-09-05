@@ -1,7 +1,7 @@
 /**
  * clientNewsFetcher.js - Resilient Client News Fetcher
  * 
- * Fetches fresh AI news from /api/news (Vercel serverless function).
+ * Fetches fresh AI news pool from /api/news (Vercel serverless function).
  * Provides graceful client-side fallback if the API route is unreachable.
  * Strictly guarantees that ONLY articles published within the last 24 hours are returned for Today's News.
  */
@@ -10,33 +10,61 @@ import { executeNewsPipeline, parseFeedXml } from './newsPipeline.js';
 import { TRUSTED_AI_SOURCES } from './sourceRegistry.js';
 import { ensureStrictlyUniqueImages } from './imageEngine.js';
 
-const STORAGE_KEY_TODAY = 'readainews_fresh_today_v13';
-const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v13';
+const STORAGE_KEY_POOL = 'readainews_fresh_pool_v14';
+const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v14';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
- * Fetches the freshest AI news for "Today's AI News" deck.
- * Guarantees that only articles published within the last 24 hours are returned.
+ * Extracts a batch of 5 distinct articles from the fresh pool for a given batch index.
+ */
+export function getBatchOfArticles(pool = [], batchIndex = 1, batchSize = 5) {
+  if (!Array.isArray(pool) || pool.length === 0) return [];
+  if (pool.length <= batchSize) return pool;
+
+  const totalBatches = Math.ceil(pool.length / batchSize);
+  const normalizedIndex = ((batchIndex - 1) % totalBatches) + 1;
+  const start = (normalizedIndex - 1) * batchSize;
+  const slice = pool.slice(start, start + batchSize);
+
+  if (slice.length < batchSize) {
+    const needed = batchSize - slice.length;
+    const fillers = pool.slice(0, needed).filter(f => !slice.some(s => s.id === f.id));
+    return [...slice, ...fillers];
+  }
+  return slice;
+}
+
+/**
+ * Calculates current default hourly batch index (1..totalBatches) based on elapsed hours.
+ */
+export function getHourlyBatchIndex(poolSize = 25, batchSize = 5) {
+  const totalBatches = Math.max(1, Math.ceil(poolSize / batchSize));
+  const hourOfDay = Math.floor(Date.now() / (3600 * 1000));
+  return (hourOfDay % totalBatches) + 1;
+}
+
+/**
+ * Fetches the full pool of fresh AI news (< 24h old) for Today's News.
  */
 export async function fetchTodayFreshNews(force = false) {
   const now = Date.now();
   
-  // Check client-side cached fresh batch if not forcing refresh
+  // Check client-side cached fresh pool if not forcing refresh
   if (!force && typeof window !== 'undefined') {
     try {
       const lastTime = parseInt(localStorage.getItem(STORAGE_KEY_TIMESTAMP) || '0', 10);
       const isStillFresh = (now - lastTime) < ONE_HOUR_MS;
       if (isStillFresh) {
-        const cachedRaw = localStorage.getItem(STORAGE_KEY_TODAY);
+        const cachedRaw = localStorage.getItem(STORAGE_KEY_POOL);
         if (cachedRaw) {
           const cached = JSON.parse(cachedRaw);
-          // Verify cached items are still within 24h
+          // Verify cached items are strictly within 24h
           const valid = cached.filter(a => {
             const age = now - (a.publishedEpoch || 0);
             return age >= 0 && age <= 24 * 3600 * 1000;
           });
           if (valid.length > 0) {
-            console.log(`[ReadAiNews] Using cached fresh batch (${valid.length} articles)`);
+            console.log(`[ReadAiNews] Using cached fresh pool (${valid.length} articles)`);
             return ensureStrictlyUniqueImages(valid);
           }
         }
@@ -48,10 +76,10 @@ export async function fetchTodayFreshNews(force = false) {
 
   // Attempt 1: Fetch from /api/news Vercel Serverless Function
   try {
-    const url = `/api/news${force ? '?force=true' : ''}`;
+    const url = `/api/news?force=${force ? 'true' : 'false'}&_t=${now}`;
     const res = await fetch(url, {
       headers: { 'Accept': 'application/json' },
-      cache: force ? 'no-store' : 'default'
+      cache: 'no-store'
     });
     
     if (res.ok) {
@@ -63,17 +91,17 @@ export async function fetchTodayFreshNews(force = false) {
           return age >= 0 && age <= 24 * 3600 * 1000;
         });
         
-        const finalArticles = ensureStrictlyUniqueImages(strictlyFresh.slice(0, 5));
+        const finalPool = ensureStrictlyUniqueImages(strictlyFresh);
         
-        if (typeof window !== 'undefined' && finalArticles.length > 0) {
+        if (typeof window !== 'undefined' && finalPool.length > 0) {
           try {
-            localStorage.setItem(STORAGE_KEY_TODAY, JSON.stringify(finalArticles));
+            localStorage.setItem(STORAGE_KEY_POOL, JSON.stringify(finalPool));
             localStorage.setItem(STORAGE_KEY_TIMESTAMP, now.toString());
           } catch (e) {}
         }
         
-        console.log(`[ReadAiNews] Successfully received ${finalArticles.length} fresh articles from /api/news`);
-        return finalArticles;
+        console.log(`[ReadAiNews] Received ${finalPool.length} fresh articles pool from /api/news`);
+        return finalPool;
       }
     }
   } catch (err) {
@@ -84,9 +112,7 @@ export async function fetchTodayFreshNews(force = false) {
   try {
     console.log('[ReadAiNews] Running client-side RSS pipeline...');
     const candidateArticles = [];
-    
-    // Pick top reliable feeds that support CORS or direct access
-    const clientFeeds = TRUSTED_AI_SOURCES.slice(0, 8);
+    const clientFeeds = TRUSTED_AI_SOURCES.slice(0, 10);
     
     const feedPromises = clientFeeds.map(async (source) => {
       try {
@@ -105,27 +131,25 @@ export async function fetchTodayFreshNews(force = false) {
     if (candidateArticles.length > 0) {
       const winners = executeNewsPipeline(candidateArticles, {
         nowUtc: now,
-        maxArticles: 5,
+        maxArticles: 50,
         logger: console
       });
       
-      const finalArticles = ensureStrictlyUniqueImages(winners);
+      const finalPool = ensureStrictlyUniqueImages(winners);
       
-      if (typeof window !== 'undefined' && finalArticles.length > 0) {
+      if (typeof window !== 'undefined' && finalPool.length > 0) {
         try {
-          localStorage.setItem(STORAGE_KEY_TODAY, JSON.stringify(finalArticles));
+          localStorage.setItem(STORAGE_KEY_POOL, JSON.stringify(finalPool));
           localStorage.setItem(STORAGE_KEY_TIMESTAMP, now.toString());
         } catch (e) {}
       }
       
-      return finalArticles;
+      return finalPool;
     }
   } catch (e) {
     console.error('[ReadAiNews] Client-side fallback error:', e);
   }
 
-  // If no fresh news found in last 24h, return empty array (DO NOT BACKFILL WITH STALE NEWS!)
-  console.log('[ReadAiNews] Zero articles passed the 24-hour freshness filter. Returning empty feed.');
   return [];
 }
 

@@ -564,12 +564,14 @@ export function executeNewsPipeline(rawCandidateArticles, options = {}) {
       score -= 5.0;
     }
     
-    // Freshness boost: articles published within 8 hours receive priority
+    // Freshness boost: breaking articles published in the last 1-4 hours receive highest priority
     const ageHrs = (nowUtc - article.publishedEpoch) / 3600000;
-    if (ageHrs < 8) {
-      score += 2.0;
-    } else if (ageHrs < 16) {
-      score += 1.0;
+    if (ageHrs < 2) {
+      score += 6.0;
+    } else if (ageHrs < 6) {
+      score += 3.5;
+    } else if (ageHrs < 12) {
+      score += 1.5;
     }
     
     return { ...article, score };

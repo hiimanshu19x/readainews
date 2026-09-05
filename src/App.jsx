@@ -12,14 +12,14 @@ import SearchModal from './components/SearchModal';
 import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
 import { getDailyPreviewArticle } from './utils/dailyRefresh';
-import { fetchTodayFreshNews } from './utils/clientNewsFetcher';
+import { fetchTodayFreshNews, getBatchOfArticles, getHourlyBatchIndex } from './utils/clientNewsFetcher';
 import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v13';
-const BATCH_STORAGE_KEY = 'readainews_fresh_today_v13';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v13';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v14';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v14';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v14';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export default function App() {
@@ -42,53 +42,40 @@ export default function App() {
     }
     return ensureStrictlyUniqueImages(allNewsArticles);
   });
-  
+
   // Daily featured preview article that strictly updates once per day
   const [dailyPreviewArticle, setDailyPreviewArticle] = useState(() => {
     return getDailyPreviewArticle(allNewsArticles);
   });
-  
-  // Top stories deck initialized strictly with fresh cached articles (< 24h old) or empty until fetched
-  const [shuffleState, setShuffleState] = useState(() => {
+
+  // Today's complete fresh pool (< 24h old)
+  const [freshPool, setFreshPool] = useState(() => {
     try {
       if (typeof window !== 'undefined') {
-        const cached = localStorage.getItem(BATCH_STORAGE_KEY);
+        const cached = localStorage.getItem(POOL_STORAGE_KEY);
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const now = Date.now();
-            // Verify strictly within 24h
             const freshOnly = parsed.filter(a => {
               const age = now - (a.publishedEpoch || 0);
               return age >= 0 && age <= 24 * 3600 * 1000;
             });
             if (freshOnly.length > 0) {
-              return {
-                articles: ensureStrictlyUniqueImages(freshOnly),
-                batchIndex: 1,
-                totalBatches: 1,
-                isResetCycle: false,
-                remainingUnseen: 0,
-                totalSeenToday: freshOnly.length,
-                totalPoolSize: freshOnly.length
-              };
+              return ensureStrictlyUniqueImages(freshOnly);
             }
           }
         }
       }
     } catch (e) {}
-    // If no fresh cached batch, start with empty to prevent showing stale news
-    return {
-      articles: [],
-      batchIndex: 1,
-      totalBatches: 1,
-      isResetCycle: false,
-      remainingUnseen: 0,
-      totalSeenToday: 0,
-      totalPoolSize: 0
-    };
+    return [];
   });
-  
+
+  // Active batch index (1..totalBatches)
+  const [batchIndex, setBatchIndex] = useState(() => {
+    return getHourlyBatchIndex(25, 5);
+  });
+
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [savedIds, setSavedIds] = useState([]);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -97,31 +84,33 @@ export default function App() {
   const [isLiveWire, setIsLiveWire] = useState(true);
   const [isRefreshingLive, setIsRefreshingLive] = useState(false);
 
+  // Total batches available in today's fresh pool
+  const totalBatches = Math.max(1, Math.ceil((freshPool.length || 5) / 5));
+
+  // Current 5 articles for the active batch
+  const currentBatchArticles = getBatchOfArticles(freshPool, batchIndex, 5);
+
   // Fetch & publish brand new live AI articles onto the website (strict 24-hour freshness)
-  const handleRefreshToday = async (force = true) => {
+  const handleRefreshToday = async (force = true, advanceBatch = true) => {
     setIsRefreshingLive(true);
     try {
-      const fresh = await fetchTodayFreshNews(force);
+      const freshArticlesPool = await fetchTodayFreshNews(force);
       
-      // Update top cards deck with strictly fresh news (no backfilling)
-      setShuffleState(prev => {
-        const newBatchIndex = (prev.batchIndex % 10) + 1;
-        return {
-          articles: fresh,
-          batchIndex: newBatchIndex,
-          totalBatches: Math.max(prev.totalBatches || 1, newBatchIndex),
-          isResetCycle: false,
-          remainingUnseen: 0,
-          totalSeenToday: (prev.totalSeenToday || 0) + fresh.length,
-          totalPoolSize: (prev.totalPoolSize || 0) + fresh.length
-        };
-      });
+      if (Array.isArray(freshArticlesPool) && freshArticlesPool.length > 0) {
+        setFreshPool(freshArticlesPool);
 
-      if (fresh && fresh.length > 0) {
-        // Update allArticles repository
+        const newTotalBatches = Math.max(1, Math.ceil(freshArticlesPool.length / 5));
+
+        if (advanceBatch) {
+          setBatchIndex(prev => (prev % newTotalBatches) + 1);
+        } else {
+          setBatchIndex(getHourlyBatchIndex(freshArticlesPool.length, 5));
+        }
+
+        // Update allArticles master repository with full pool
         setAllArticles(prev => {
-          const prevFiltered = prev.filter(p => !fresh.some(f => f.id === p.id || f.canonicalUrl === p.canonicalUrl));
-          const combined = ensureStrictlyUniqueImages([...fresh, ...prevFiltered]);
+          const prevFiltered = prev.filter(p => !freshArticlesPool.some(f => f.id === p.id || f.canonicalUrl === p.canonicalUrl));
+          const combined = ensureStrictlyUniqueImages([...freshArticlesPool, ...prevFiltered]);
           try {
             localStorage.setItem(DYNAMIC_ARTICLES_KEY, JSON.stringify(combined));
           } catch (e) {}
@@ -129,8 +118,8 @@ export default function App() {
         });
 
         // Set daily preview to the #1 ranked fresh story if available
-        if (fresh[0]) {
-          setDailyPreviewArticle(fresh[0]);
+        if (freshArticlesPool[0]) {
+          setDailyPreviewArticle(freshArticlesPool[0]);
         }
       }
     } catch (err) {
@@ -151,7 +140,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Purge legacy caches from previous versions prior to v13
+    // Purge legacy caches from previous versions prior to v14
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -160,7 +149,8 @@ export default function App() {
           if (key && (
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
-            (key.startsWith('readainews_') && !key.includes('_v13') && !key.includes('readainews_saved_ids') && !key.includes('_v12'))
+            key.startsWith('readainews_fresh_today_') ||
+            (key.startsWith('readainews_') && !key.includes('_v14') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }
@@ -169,20 +159,24 @@ export default function App() {
       }
     } catch (e) {}
 
-    // Check if current batch is missing or older than 1 hour; if so, fetch fresh news
+    // Check if current pool is missing or older than 1 hour; if so, fetch fresh news
     const checkAndRefresh = async () => {
       const now = Date.now();
       const lastTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
       const isExpired = (now - lastTime) >= ONE_HOUR_MS;
       
-      if (isExpired || lastTime === 0 || shuffleState.articles.length === 0) {
-        await handleRefreshToday(false);
+      if (isExpired || lastTime === 0 || freshPool.length === 0) {
+        await handleRefreshToday(true, false);
+      } else {
+        // Auto-advance batch if the hour rolled over
+        const expectedBatch = getHourlyBatchIndex(freshPool.length, 5);
+        setBatchIndex(expectedBatch);
       }
     };
 
     checkAndRefresh();
 
-    // Check periodically to auto-refresh exactly when 1 hour elapses
+    // Check periodically to auto-refresh exactly when 1 hour elapses or hour changes
     const interval = setInterval(checkAndRefresh, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
@@ -280,20 +274,20 @@ export default function App() {
 
         {/* Today's Top 5 Interactive Deck Section with Live Refresh & 1-Hour Automated Cycle */}
         <ShuffleSection
-          articles={shuffleState.articles}
-          onShuffle={() => handleRefreshToday(true)}
+          articles={currentBatchArticles}
+          onShuffle={() => handleRefreshToday(true, true)}
           onSelectArticle={(article) => setSelectedArticle(article)}
           savedIds={savedIds}
           onToggleBookmark={handleToggleBookmark}
-          batchIndex={shuffleState.batchIndex || 1}
-          totalBatches={shuffleState.totalBatches || 1}
-          remainingUnseen={shuffleState.remainingUnseen}
-          totalSeenToday={shuffleState.totalSeenToday}
-          totalPoolSize={shuffleState.articles.length}
-          isResetCycle={shuffleState.isResetCycle}
+          batchIndex={batchIndex}
+          totalBatches={totalBatches}
+          remainingUnseen={Math.max(0, freshPool.length - (batchIndex * 5))}
+          totalSeenToday={Math.min(freshPool.length, batchIndex * 5)}
+          totalPoolSize={freshPool.length}
+          isResetCycle={false}
           isLiveWire={isLiveWire}
           isRefreshingLive={isRefreshingLive}
-          onRefreshLiveWire={() => handleRefreshToday(true)}
+          onRefreshLiveWire={() => handleRefreshToday(true, true)}
         />
 
         {/* This Week Collection Tab (Rolling 7-Day Curated Archive) */}

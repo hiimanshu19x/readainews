@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (isForce) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   } else {
-    res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=1800');
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
   }
 
   console.log(`[ReadAiNews] Fetch started at ${new Date().toISOString()} (force: ${isForce})`);
@@ -59,10 +59,10 @@ export default async function handler(req, res) {
 
   console.log(`[ReadAiNews] Total candidate pool fetched: ${allCandidates.length} articles across ${TRUSTED_AI_SOURCES.length} sources`);
 
-  // Execute the pipeline: Strict < 24h filter, deduplication, AI importance ranking, top 5 selection
+  // Execute the pipeline: Strict < 24h filter, deduplication, AI importance ranking across full pool
   const winners = executeNewsPipeline(allCandidates, {
     nowUtc: Date.now(),
-    maxArticles: 5,
+    maxArticles: 50,
     logger: console
   });
 
