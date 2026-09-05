@@ -42,11 +42,11 @@ export default function AboutSection({ onExploreToday }) {
             </div>
 
             <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-4">
-              Autonomous Daily Intelligence for Builders & Investors
+              Autonomous AI Intelligence for Builders & Investors
             </h2>
 
             <p className="text-xs sm:text-base text-zinc-300 leading-relaxed mb-6 font-normal">
-              In an era where thousands of speculative tweets, vendor marketing claims, and recycled newsletters drown out genuine innovation, ReadAiNews isolates the signal. Every morning, our engine curates the 5 most consequential artificial intelligence breakthroughs directly from premier newsrooms, synthesizing them into clear briefings with key takeaways, strategic context, and direct links to the original articles.
+              In an era where thousands of speculative tweets, vendor marketing claims, and recycled newsletters drown out genuine innovation, ReadAiNews isolates the signal. Refreshed every 1 hour in your local timezone, our engine curates the 5 most consequential artificial intelligence breakthroughs directly from 15 premier newsrooms, synthesizing each into a concise briefing under 200 words (strictly 180 to 200 words) with authentic human journalistic voice, verified takeaways, strategic context, and direct canonical links to the original articles.
             </p>
 
             {/* 3 Metric Pills */}
@@ -56,7 +56,7 @@ export default function AboutSection({ onExploreToday }) {
                   <Globe size={15} />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white">5 Stories Daily</div>
+                  <div className="text-xs font-bold text-white">5 Stories Hourly</div>
                   <div className="text-[10px] text-zinc-400">Zero duplicate repeats</div>
                 </div>
               </div>
@@ -66,8 +66,8 @@ export default function AboutSection({ onExploreToday }) {
                   <ShieldCheck size={15} />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white">Direct Sourcing</div>
-                  <div className="text-[10px] text-zinc-400">100% canonical links</div>
+                  <div className="text-xs font-bold text-white">180–200 Word Format</div>
+                  <div className="text-[10px] text-zinc-400">High-signal concise briefs</div>
                 </div>
               </div>
 
@@ -76,8 +76,8 @@ export default function AboutSection({ onExploreToday }) {
                   <CheckCircle2 size={15} />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white">De-hyped Analysis</div>
-                  <div className="text-[10px] text-zinc-400">Built for engineers</div>
+                  <div className="text-xs font-bold text-white">Direct Sourcing</div>
+                  <div className="text-[10px] text-zinc-400">100% canonical links</div>
                 </div>
               </div>
             </div>

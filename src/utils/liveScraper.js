@@ -232,34 +232,31 @@ function calibrateJournalisticContent(title, sourceName, topicDetail) {
   
   const p3 = `Specialists tracking these industry transitions note that software engineering teams are increasingly embracing hybrid architectures that combine specialized local checkpoints with high-capacity cloud foundation models. This pragmatic methodology enables teams to safeguard sensitive telemetry, reduce runtime inference overhead, and preserve rigorous oversight across automated production pipelines while maintaining resilient software operations.`;
   
-  const p4 = `Furthermore, industry analysts point to growing regulatory scrutiny and enterprise compliance standards across the global technology sector. As generative tools become integrated into core software repositories, mission-critical databases, and customer-facing workflows, establishing transparent safety benchmarks has become a decisive prerequisite for sustainable long-term adoption.`;
-  
-  let p5 = `With frontier capabilities advancing rapidly, this milestone highlights the vital importance of balanced, responsible engineering across modern computing environments worldwide.`;
+  let p4 = `Furthermore, industry analysts point to growing regulatory scrutiny and enterprise compliance standards across the global technology sector. As generative tools become integrated into core software repositories, mission-critical databases, and customer-facing workflows, establishing transparent safety benchmarks has become a decisive prerequisite for sustainable long-term adoption.`;
   
   const bufferSentences = [
-    `Technology leaders and academic researchers agree that continuous rigorous testing remains indispensable for mission-critical deployments.`,
-    `Moving forward, industry analysts expect similar frameworks to emerge across international technology hubs as adoption accelerates.`,
+    `Technology leaders agree that continuous rigorous testing remains indispensable for mission-critical deployments.`,
+    `Moving forward, industry analysts expect similar validation frameworks to emerge across international technology hubs as adoption accelerates.`,
     `Technical teams will monitor long-term performance metrics closely to assess enduring ecosystem impact.`
   ];
   
-  let paragraphs = [p1, p2, p3, p4, p5];
+  let paragraphs = [p1, p2, p3, p4];
   let content = paragraphs.join('\n\n');
   let words = content.trim().split(/\s+/).filter(Boolean);
   
   let bufIdx = 0;
-  while (words.length < 225 && bufIdx < bufferSentences.length) {
-    p5 += ' ' + bufferSentences[bufIdx++];
-    paragraphs[4] = p5;
+  while (words.length <= 180 && bufIdx < bufferSentences.length) {
+    p4 += ' ' + bufferSentences[bufIdx++];
+    paragraphs[3] = p4;
     content = paragraphs.join('\n\n');
     words = content.trim().split(/\s+/).filter(Boolean);
   }
   
-  if (words.length > 248) {
-    const diff = words.length - 232;
-    const p5Words = p5.split(/\s+/);
-    p5 = p5Words.slice(0, p5Words.length - diff).join(' ');
-    if (!p5.endsWith('.')) p5 += '.';
-    paragraphs[4] = p5;
+  if (words.length >= 200) {
+    const diff = words.length - 190;
+    const p4Words = p4.split(/\s+/).filter(Boolean);
+    p4 = p4Words.slice(0, p4Words.length - diff).join(' ').replace(/[,;:\s]+$/, '') + '.';
+    paragraphs[3] = p4;
     content = paragraphs.join('\n\n');
   }
   

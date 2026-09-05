@@ -12,7 +12,7 @@ const features = [
   {
     icon: Cpu,
     tag: 'EXECUTIVE SYNTHESIS',
-    title: '220+ Word AI-Crafted Briefs',
+    title: '180–200 Word AI-Crafted Briefs',
     description: 'Every story is broken down into an executive summary, 3 technical takeaways, and "Why It Matters" for builders and investors.'
   },
   {

@@ -107,7 +107,7 @@ export default function ArticleModal({
           </div>
         </div>
 
-        {/* Modal Content - Scrollable Extensive 220+ Word Journalism */}
+        {/* Modal Content - Scrollable Extensive 180-200 Word Journalism */}
         <div className="p-4 sm:p-8 space-y-5 sm:space-y-6 overflow-y-auto flex-1">
           
           {/* Mobile-Optimized Modern Metadata Header */}
@@ -153,7 +153,7 @@ export default function ArticleModal({
             </p>
           </div>
 
-          {/* FULL IN-DEPTH 220+ WORD ARTICLE BODY */}
+          {/* FULL IN-DEPTH 180-200 WORD ARTICLE BODY */}
           <div className="space-y-4 text-zinc-300 text-sm sm:text-base leading-relaxed font-normal">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400 pt-1 pb-1">
               <FileText size={14} className="text-white" />
