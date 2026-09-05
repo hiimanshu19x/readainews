@@ -52,7 +52,7 @@ export default function ArticleModal({
         <div className="sm:hidden w-12 h-1.5 rounded-full bg-white/25 mx-auto mt-2.5 mb-1 cursor-pointer" onClick={() => onClose()} />
 
         {/* Header Visual Preview Image */}
-        <div className="relative w-full h-36 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
+        <div className="relative w-full h-40 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
           {article.imageUrl ? (
             <img 
               src={article.imageUrl} 
@@ -108,21 +108,32 @@ export default function ArticleModal({
         </div>
 
         {/* Modal Content - Scrollable Extensive 220+ Word Journalism */}
-        <div className="p-5 sm:p-8 space-y-6 overflow-y-auto flex-1">
+        <div className="p-4 sm:p-8 space-y-5 sm:space-y-6 overflow-y-auto flex-1">
           
-          {/* Metadata Row */}
-          <div className="flex flex-wrap items-center justify-between gap-y-2.5 pb-3 border-b border-white/10 text-xs text-zinc-400">
-            <div className="flex items-center gap-2 flex-wrap min-w-0">
-              <span className="font-semibold text-white">{article.source}</span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-zinc-300 font-mono">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-zinc-400 font-mono">{article.timeAgo?.replace('Today • ', '') || article.timeAgo}</span>
+          {/* Mobile-Optimized Modern Metadata Header */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold text-white truncate max-w-[130px] xs:max-w-none">
+                {article.source}
+              </span>
+              <span className="text-zinc-600 font-mono shrink-0">•</span>
+              <span className="text-zinc-300 font-mono text-[11px] sm:text-xs shrink-0 whitespace-nowrap">
+                {formatLocalShortDate(article.dateKey || article.publishedDate)}
+              </span>
+              <span className="text-zinc-600 font-mono shrink-0 hidden sm:inline">•</span>
+              <span className="text-zinc-400 font-mono text-[11px] sm:text-xs shrink-0 hidden sm:inline whitespace-nowrap">
+                {article.timeAgo?.replace('Today • ', '') || article.timeAgo}
+              </span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900 border border-white/10 text-[11px] font-mono text-zinc-300 shrink-0">
-              <Clock size={11} className="text-zinc-400" />
-              <span>{article.readTime}</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-zinc-400 font-mono text-[11px] sm:hidden whitespace-nowrap">
+                {article.timeAgo?.replace('Today • ', '') || article.timeAgo}
+              </span>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-zinc-900 border border-white/10 text-[10px] sm:text-[11px] font-mono text-zinc-300">
+                <Clock size={11} className="text-zinc-400" />
+                <span>{article.readTime}</span>
+              </div>
             </div>
           </div>
 
