@@ -22,6 +22,19 @@ export function getUserTimeZoneAbbr() {
   }
 }
 
+export function getCurrentLocalHour(timeZone = getUserTimeZone()) {
+  try {
+    const str = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour: 'numeric',
+      hour12: false
+    }).format(new Date());
+    return parseInt(str, 10) % 24;
+  } catch (e) {
+    return new Date().getHours();
+  }
+}
+
 /**
  * Returns date key formatted as YYYY-MM-DD in the specified timezone.
  */

@@ -12,15 +12,15 @@ import SearchModal from './components/SearchModal';
 import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
 import { getDailyPreviewArticle } from './utils/dailyRefresh';
-import { isTodayInTz, getUserTimeZone } from './utils/timeZone';
+import { isTodayInTz, getUserTimeZone, getCurrentLocalHour } from './utils/timeZone';
 import { fetchTodayFreshNews, getBatchOfArticles } from './utils/clientNewsFetcher';
 import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v17';
-const POOL_STORAGE_KEY = 'readainews_fresh_pool_v17';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v17';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v18';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v18';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v18';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');
@@ -71,7 +71,7 @@ export default function App() {
   });
 
   // Track the current calendar hour to drive automatic hourly updates
-  const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
+  const [currentHour, setCurrentHour] = useState(() => getCurrentLocalHour());
   
   // User manual shuffle offset (clicking Refresh cycles through batches of fresh stories)
   const [manualBatchOffset, setManualBatchOffset] = useState(0);
@@ -150,7 +150,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Clean up legacy storage keys from previous versions prior to v17
+    // Clean up legacy storage keys from previous versions prior to v18
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -160,7 +160,7 @@ export default function App() {
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
             key.startsWith('readainews_fresh_today_') ||
-            (key.startsWith('readainews_') && !key.includes('_v17') && !key.includes('readainews_saved_ids'))
+            (key.startsWith('readainews_') && !key.includes('_v18') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }
@@ -174,7 +174,7 @@ export default function App() {
 
     // Auto-update to new stories whenever the hour changes or periodically
     const checkAndRefreshHourly = async () => {
-      const thisHour = new Date().getHours();
+      const thisHour = getCurrentLocalHour();
       
       // Auto-update to new stories whenever the hour changes
       if (thisHour !== currentHour) {
