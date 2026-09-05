@@ -82,12 +82,11 @@ export default function App() {
   }, [freshPool.length]);
 
   // Active batch index (1..totalBatches)
-  // Default is Batch 1 (the 5 freshest breaking news stories of the day)
-  // Clicking Refresh cycles through batches 2, 3, etc.
-  // When a new hour arrives, manualBatchOffset resets to 0 to show the new hourly edition!
+  // Automatically advances every single hour so each hour presents a brand new set of 5 articles
+  // Manual shuffle clicks advance through batches on demand
   const batchIndex = useMemo(() => {
-    return (manualBatchOffset % totalBatches) + 1;
-  }, [manualBatchOffset, totalBatches]);
+    return ((currentHour + manualBatchOffset) % totalBatches) + 1;
+  }, [currentHour, manualBatchOffset, totalBatches]);
 
   // The 5 active stories for the current batch
   const currentBatchArticles = useMemo(() => {
