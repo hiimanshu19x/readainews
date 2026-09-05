@@ -11,21 +11,64 @@ import ArticleModal from './components/ArticleModal';
 import SearchModal from './components/SearchModal';
 import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
-import { getUniqueDailyArticles, resetSeenArticlesToday } from './utils/dailyTracker';
 import { getDailyRefreshedArticles, getDailyPreviewArticle } from './utils/dailyRefresh';
+import { fetchFreshLiveArticles } from './utils/liveScraper';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v10';
+const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v10_';
+const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v10';
+const ONE_HOUR_MS = 60 * 60 * 1000;
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');
+
+  // Master article repository on the website (persists and accumulates all dynamically fetched fresh stories)
+  const [allArticles, setAllArticles] = useState(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem(DYNAMIC_ARTICLES_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const existingIds = new Set(parsed.map(a => a.id));
+            return [...parsed, ...allNewsArticles.filter(a => !existingIds.has(a.id))];
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load dynamic articles:', e);
+    }
+    return allNewsArticles;
+  });
   
   // Daily featured preview article that strictly updates once per day
   const [dailyPreviewArticle, setDailyPreviewArticle] = useState(() => {
     return getDailyPreviewArticle(allNewsArticles);
   });
   
-  // Initialize with top 5 distinct publication stories for today
+  // Top 5 stories deck initialized with fresh cached batch or top 5 articles
   const [shuffleState, setShuffleState] = useState(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const cached = localStorage.getItem(BATCH_STORAGE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length >= 5) {
+            return {
+              articles: parsed.slice(0, 5),
+              batchIndex: 1,
+              totalBatches: 3,
+              isResetCycle: false,
+              remainingUnseen: 10,
+              totalSeenToday: 5,
+              totalPoolSize: allNewsArticles.length
+            };
+          }
+        }
+      }
+    } catch (e) {}
     return {
       articles: allNewsArticles.slice(0, 5),
       batchIndex: 1,
@@ -45,7 +88,51 @@ export default function App() {
   const [isLiveWire, setIsLiveWire] = useState(true);
   const [isRefreshingLive, setIsRefreshingLive] = useState(false);
 
-  // Load saved bookmarks & check daily refreshed shot from the web
+  // Fetch & publish brand new live AI articles onto the website
+  const handleRefreshToday = async () => {
+    setIsRefreshingLive(true);
+    try {
+      const fresh = await fetchFreshLiveArticles(5);
+      if (fresh && fresh.length > 0) {
+        // Prepend and save onto website pool
+        setAllArticles(prev => {
+          const prevFiltered = prev.filter(p => !fresh.some(f => f.id === p.id));
+          const combined = [...fresh, ...prevFiltered];
+          try {
+            const dynamicOnly = combined.filter(a => a.isLiveScraped || !allNewsArticles.some(base => base.id === a.id));
+            localStorage.setItem(DYNAMIC_ARTICLES_KEY, JSON.stringify(dynamicOnly));
+          } catch (e) {}
+          return combined;
+        });
+
+        // Display fresh 5 stories on cards
+        setShuffleState(prev => {
+          const newBatchIndex = (prev.batchIndex % 10) + 1;
+          return {
+            articles: fresh,
+            batchIndex: newBatchIndex,
+            totalBatches: Math.max(prev.totalBatches || 3, newBatchIndex),
+            isResetCycle: false,
+            remainingUnseen: 0,
+            totalSeenToday: (prev.totalSeenToday || 5) + fresh.length,
+            totalPoolSize: (prev.totalPoolSize || allNewsArticles.length) + fresh.length
+          };
+        });
+
+        // Update 1-hour interval timer & batch storage
+        try {
+          localStorage.setItem(REFRESH_TIMESTAMP_KEY, Date.now().toString());
+          localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify(fresh));
+        } catch (e) {}
+      }
+    } catch (err) {
+      console.warn('Error refreshing live articles:', err);
+    } finally {
+      setIsRefreshingLive(false);
+    }
+  };
+
+  // Load saved bookmarks & manage automated 1-hour background refresh cycle
   useEffect(() => {
     try {
       const stored = localStorage.getItem('readainews_saved_ids');
@@ -56,7 +143,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Purge all legacy caches from previous sessions
+    // Purge legacy caches from previous versions
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -64,9 +151,9 @@ export default function App() {
           const key = localStorage.key(i);
           if (key && (
             key.startsWith('readainews_today_batch_') ||
-            (key.startsWith('readainews_3hr_batch_')) ||
-            (key.startsWith('readainews_seen_') && !key.includes('_v9_')) ||
-            (key.startsWith('readainews_1hr_batch_') && !key.includes('_v9_'))
+            key.startsWith('readainews_3hr_batch_') ||
+            (key.startsWith('readainews_seen_') && !key.includes('_v10')) ||
+            (key.startsWith('readainews_1hr_batch_') && !key.includes('_v10'))
           )) {
             keysToRemove.push(key);
           }
@@ -75,49 +162,23 @@ export default function App() {
       }
     } catch (e) {}
 
-    // Auto-check for fresh 1-hour shot on mount
-    getDailyRefreshedArticles(false).then((res) => {
-      if (res && res.articles && res.articles.length >= 5) {
-        setShuffleState(prev => ({
-          ...prev,
-          articles: res.articles
-        }));
-        setIsLiveWire(true);
+    // Check if current batch is older than 1 hour or missing; if so, refresh
+    const checkAndRefresh = async () => {
+      const now = Date.now();
+      const lastTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
+      const isExpired = (now - lastTime) >= ONE_HOUR_MS;
+      
+      if (isExpired || lastTime === 0) {
+        await handleRefreshToday();
       }
-    });
+    };
 
-    // Check every 1 minute to auto-refresh when the 1-hour period elapses
-    const interval = setInterval(() => {
-      getDailyRefreshedArticles(false).then((res) => {
-        if (res && res.articles && !res.isCachedToday) {
-          setShuffleState(prev => ({
-            ...prev,
-            articles: res.articles
-          }));
-        }
-      });
-    }, 60 * 1000);
+    checkAndRefresh();
 
+    // Check every 60 seconds to auto-refresh exactly when 1 hour elapses
+    const interval = setInterval(checkAndRefresh, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // Force live scrape refresh from web
-  const handleLiveScrape = async () => {
-    sound.playClick();
-    setIsRefreshingLive(true);
-    try {
-      const res = await getDailyRefreshedArticles(true);
-      if (res && res.articles) {
-        setShuffleState(prev => ({
-          ...prev,
-          articles: res.articles
-        }));
-        setIsLiveWire(res.isLive);
-      }
-    } finally {
-      setIsRefreshingLive(false);
-    }
-  };
 
   // Toggle bookmark & sync with localStorage
   const handleToggleBookmark = (id) => {
@@ -135,30 +196,13 @@ export default function App() {
     });
   };
 
-  // Refresh logic: GUARANTEED ZERO DUPLICATES FOR TODAY
-  const handleRefreshToday = () => {
-    const nextResult = getUniqueDailyArticles(allNewsArticles, 5);
-    setShuffleState(nextResult);
-    try {
-      localStorage.setItem('readainews_last_refresh_time_v9', Date.now().toString());
-      localStorage.setItem('readainews_1hr_batch_v9_', JSON.stringify(nextResult.articles));
-    } catch (e) {}
-  };
-
-  const handleResetToday = () => {
-    sound.playClick();
-    resetSeenArticlesToday();
-    const freshResult = getUniqueDailyArticles(allNewsArticles, 5);
-    setShuffleState(freshResult);
-  };
-
   const handleStartReading = () => {
     setActiveTab('today');
     smoothScrollTo('shuffle-deck');
   };
 
   const handleSeePreview = (article = null) => {
-    setSelectedArticle(article || dailyPreviewArticle || allNewsArticles[0]);
+    setSelectedArticle(article || dailyPreviewArticle || allArticles[0]);
   };
 
   const handleExploreMore = () => {
@@ -195,7 +239,7 @@ export default function App() {
           onToggleBookmark={handleToggleBookmark}
         />
 
-        {/* Mobile-Only Sticky Tab Navigation Pill (Hidden on desktop/web view to avoid redundant stacked bars) */}
+        {/* Mobile-Only Sticky Tab Navigation Pill */}
         <div className="md:hidden sticky top-14 z-30 bg-[#050505]/95 backdrop-blur-xl py-2 px-3 border-b border-white/[0.08] flex justify-center transition-all shadow-md">
           <div className="inline-flex p-1 rounded-full bg-zinc-900/90 border border-white/10 shadow-inner">
             <button
@@ -203,11 +247,11 @@ export default function App() {
                 setActiveTab('today');
                 smoothScrollTo('shuffle-deck');
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+              className={'px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 cursor-pointer ' + (
                 activeTab === 'today'
                   ? 'bg-white text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
-              }`}
+              )}
             >
               Today's Top 5
             </button>
@@ -216,18 +260,18 @@ export default function App() {
                 setActiveTab('weekly');
                 smoothScrollTo('weekly-collection');
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+              className={'px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 cursor-pointer ' + (
                 activeTab === 'weekly'
                   ? 'bg-white text-black shadow-md'
                   : 'text-zinc-400 hover:text-white'
-              }`}
+              )}
             >
               This Week Collection
             </button>
           </div>
         </div>
 
-        {/* Today's Top 5 Interactive Deck Section with ZERO Duplicate Guarantee & Live Auto-Refresh */}
+        {/* Today's Top 5 Interactive Deck Section with Live Refresh & 1-Hour Automated Cycle */}
         <ShuffleSection
           articles={shuffleState.articles}
           onShuffle={handleRefreshToday}
@@ -238,17 +282,16 @@ export default function App() {
           totalBatches={shuffleState.totalBatches || 3}
           remainingUnseen={shuffleState.remainingUnseen}
           totalSeenToday={shuffleState.totalSeenToday}
-          totalPoolSize={shuffleState.totalPoolSize}
+          totalPoolSize={allArticles.length}
           isResetCycle={shuffleState.isResetCycle}
-          onResetTodayHistory={handleResetToday}
           isLiveWire={isLiveWire}
           isRefreshingLive={isRefreshingLive}
-          onRefreshLiveWire={handleLiveScrape}
+          onRefreshLiveWire={handleRefreshToday}
         />
 
-        {/* This Week Collection Tab */}
+        {/* This Week Collection Tab (Includes All Dynamic & Premier Articles) */}
         <WeeklyCollection
-          articles={allNewsArticles}
+          articles={allArticles}
           onSelectArticle={(article) => setSelectedArticle(article)}
           savedIds={savedIds}
           onToggleBookmark={handleToggleBookmark}
@@ -280,11 +323,11 @@ export default function App() {
         />
       )}
 
-      {/* Search & Saved Modal */}
+      {/* Search & Saved Modal (Searches across all dynamic and premier articles) */}
       <SearchModal
         isOpen={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
-        articles={allNewsArticles}
+        articles={allArticles}
         onSelectArticle={(article) => setSelectedArticle(article)}
         savedIds={savedIds}
         mode={searchModalMode}

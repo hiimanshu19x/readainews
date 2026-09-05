@@ -1,14 +1,14 @@
 import { allNewsArticles } from '../data/newsData';
-import { getUniqueDailyArticles } from './dailyTracker';
-import { getTodayLocalKey } from './timeZone';
+import { getTodayLocalKey } from './timeZone.js';
+import { fetchFreshLiveArticles } from './liveScraper.js';
 
-const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v9_';
-const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v9';
+const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v10_';
+const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v10';
 const ONE_HOUR_MS = 60 * 60 * 1000; // 1 hour in milliseconds
 
 /**
- * Automatically refreshes the top curated AI news every 1 hour from the 15 premier publications.
- * Guarantees zero duplicates for any time using persistent seen-article history.
+ * Automatically refreshes the top curated AI news every 1 hour from the premier publications.
+ * Fetches fresh articles from the web and adds them to the pool with zero duplicates.
  */
 export async function getDailyRefreshedArticles(forceLive = false) {
   if (typeof window === 'undefined') {
@@ -40,19 +40,19 @@ export async function getDailyRefreshedArticles(forceLive = false) {
     }
   }
 
-  // Generate a fresh 5-story batch with strict zero-repeat guarantee
-  const { articles: selectedBatch } = getUniqueDailyArticles(allNewsArticles, 5);
+  // Fetch 5 brand new articles from the live web feeds
+  const freshArticles = await fetchFreshLiveArticles(5);
 
   // Save new 1-hour batch and update timestamp
   try {
     localStorage.setItem(REFRESH_TIMESTAMP_KEY, now.toString());
-    localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify(selectedBatch));
+    localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify(freshArticles));
   } catch (e) {
     console.warn('Cache write error:', e);
   }
 
   return {
-    articles: selectedBatch,
+    articles: freshArticles,
     isLive: true,
     isCachedToday: false,
     nextRefreshInMs: ONE_HOUR_MS
@@ -74,7 +74,7 @@ export function getNextRefreshCountdown() {
   return { hours, minutes };
 }
 
-const PREVIEW_STORAGE_PREFIX = 'readainews_preview_article_v9_';
+const PREVIEW_STORAGE_PREFIX = 'readainews_preview_article_v10_';
 
 /**
  * Returns the featured preview article that strictly updates ONCE PER DAY.
