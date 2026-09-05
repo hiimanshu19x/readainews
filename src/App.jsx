@@ -11,15 +11,15 @@ import ArticleModal from './components/ArticleModal';
 import SearchModal from './components/SearchModal';
 import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
-import { getDailyRefreshedArticles, getDailyPreviewArticle } from './utils/dailyRefresh';
-import { fetchFreshLiveArticles } from './utils/liveScraper';
+import { getDailyPreviewArticle } from './utils/dailyRefresh';
+import { fetchTodayFreshNews } from './utils/clientNewsFetcher';
 import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v12';
-const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v12_';
-const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v12';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v13';
+const BATCH_STORAGE_KEY = 'readainews_fresh_today_v13';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v13';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export default function App() {
@@ -33,9 +33,7 @@ export default function App() {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const existingIds = new Set(parsed.map(a => a.id));
-            const merged = [...parsed, ...allNewsArticles.filter(a => !existingIds.has(a.id))];
-            return ensureStrictlyUniqueImages(merged);
+            return ensureStrictlyUniqueImages(parsed);
           }
         }
       }
@@ -50,35 +48,44 @@ export default function App() {
     return getDailyPreviewArticle(allNewsArticles);
   });
   
-  // Top 5 stories deck initialized with fresh cached batch or top 5 articles
+  // Top stories deck initialized strictly with fresh cached articles (< 24h old) or empty until fetched
   const [shuffleState, setShuffleState] = useState(() => {
     try {
       if (typeof window !== 'undefined') {
         const cached = localStorage.getItem(BATCH_STORAGE_KEY);
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length >= 5) {
-            return {
-              articles: ensureStrictlyUniqueImages(parsed.slice(0, 5)),
-              batchIndex: 1,
-              totalBatches: 3,
-              isResetCycle: false,
-              remainingUnseen: 10,
-              totalSeenToday: 5,
-              totalPoolSize: allNewsArticles.length
-            };
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const now = Date.now();
+            // Verify strictly within 24h
+            const freshOnly = parsed.filter(a => {
+              const age = now - (a.publishedEpoch || 0);
+              return age >= 0 && age <= 24 * 3600 * 1000;
+            });
+            if (freshOnly.length > 0) {
+              return {
+                articles: ensureStrictlyUniqueImages(freshOnly),
+                batchIndex: 1,
+                totalBatches: 1,
+                isResetCycle: false,
+                remainingUnseen: 0,
+                totalSeenToday: freshOnly.length,
+                totalPoolSize: freshOnly.length
+              };
+            }
           }
         }
       }
     } catch (e) {}
+    // If no fresh cached batch, start with empty to prevent showing stale news
     return {
-      articles: ensureStrictlyUniqueImages(allNewsArticles.slice(0, 5)),
+      articles: [],
       batchIndex: 1,
-      totalBatches: 3,
+      totalBatches: 1,
       isResetCycle: false,
-      remainingUnseen: 10,
-      totalSeenToday: 5,
-      totalPoolSize: allNewsArticles.length
+      remainingUnseen: 0,
+      totalSeenToday: 0,
+      totalPoolSize: 0
     };
   });
   
@@ -90,52 +97,50 @@ export default function App() {
   const [isLiveWire, setIsLiveWire] = useState(true);
   const [isRefreshingLive, setIsRefreshingLive] = useState(false);
 
-  // Fetch & publish brand new live AI articles onto the website
-  const handleRefreshToday = async () => {
+  // Fetch & publish brand new live AI articles onto the website (strict 24-hour freshness)
+  const handleRefreshToday = async (force = true) => {
     setIsRefreshingLive(true);
     try {
-      const rawFresh = await fetchFreshLiveArticles(5);
-      const fresh = ensureStrictlyUniqueImages(rawFresh);
+      const fresh = await fetchTodayFreshNews(force);
+      
+      // Update top cards deck with strictly fresh news (no backfilling)
+      setShuffleState(prev => {
+        const newBatchIndex = (prev.batchIndex % 10) + 1;
+        return {
+          articles: fresh,
+          batchIndex: newBatchIndex,
+          totalBatches: Math.max(prev.totalBatches || 1, newBatchIndex),
+          isResetCycle: false,
+          remainingUnseen: 0,
+          totalSeenToday: (prev.totalSeenToday || 0) + fresh.length,
+          totalPoolSize: (prev.totalPoolSize || 0) + fresh.length
+        };
+      });
+
       if (fresh && fresh.length > 0) {
-        // Prepend and save onto website pool
+        // Update allArticles repository
         setAllArticles(prev => {
-          const prevFiltered = prev.filter(p => !fresh.some(f => f.id === p.id));
+          const prevFiltered = prev.filter(p => !fresh.some(f => f.id === p.id || f.canonicalUrl === p.canonicalUrl));
           const combined = ensureStrictlyUniqueImages([...fresh, ...prevFiltered]);
           try {
-            const dynamicOnly = combined.filter(a => a.isLiveScraped || !allNewsArticles.some(base => base.id === a.id));
-            localStorage.setItem(DYNAMIC_ARTICLES_KEY, JSON.stringify(dynamicOnly));
+            localStorage.setItem(DYNAMIC_ARTICLES_KEY, JSON.stringify(combined));
           } catch (e) {}
           return combined;
         });
 
-        // Display fresh 5 stories on cards with 100% unique preview images
-        setShuffleState(prev => {
-          const newBatchIndex = (prev.batchIndex % 10) + 1;
-          return {
-            articles: fresh,
-            batchIndex: newBatchIndex,
-            totalBatches: Math.max(prev.totalBatches || 3, newBatchIndex),
-            isResetCycle: false,
-            remainingUnseen: 0,
-            totalSeenToday: (prev.totalSeenToday || 5) + fresh.length,
-            totalPoolSize: (prev.totalPoolSize || allNewsArticles.length) + fresh.length
-          };
-        });
-
-        // Update 1-hour interval timer & batch storage
-        try {
-          localStorage.setItem(REFRESH_TIMESTAMP_KEY, Date.now().toString());
-          localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify(fresh));
-        } catch (e) {}
+        // Set daily preview to the #1 ranked fresh story if available
+        if (fresh[0]) {
+          setDailyPreviewArticle(fresh[0]);
+        }
       }
     } catch (err) {
-      console.warn('Error refreshing live articles:', err);
+      console.warn('Error refreshing fresh articles:', err);
     } finally {
       setIsRefreshingLive(false);
     }
   };
 
-  // Load saved bookmarks & manage automated 1-hour background refresh cycle
+  // Load saved bookmarks & manage automated background refresh cycle
   useEffect(() => {
     try {
       const stored = localStorage.getItem('readainews_saved_ids');
@@ -146,7 +151,7 @@ export default function App() {
       console.warn('Failed to parse bookmarks:', e);
     }
 
-    // Purge legacy caches from previous versions
+    // Purge legacy caches from previous versions prior to v13
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -155,7 +160,7 @@ export default function App() {
           if (key && (
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
-            (key.startsWith('readainews_') && !key.includes('_v12') && !key.includes('readainews_saved_ids'))
+            (key.startsWith('readainews_') && !key.includes('_v13') && !key.includes('readainews_saved_ids') && !key.includes('_v12'))
           )) {
             keysToRemove.push(key);
           }
@@ -164,20 +169,20 @@ export default function App() {
       }
     } catch (e) {}
 
-    // Check if current batch is older than 1 hour or missing; if so, refresh
+    // Check if current batch is missing or older than 1 hour; if so, fetch fresh news
     const checkAndRefresh = async () => {
       const now = Date.now();
       const lastTime = parseInt(localStorage.getItem(REFRESH_TIMESTAMP_KEY) || '0', 10);
       const isExpired = (now - lastTime) >= ONE_HOUR_MS;
       
-      if (isExpired || lastTime === 0) {
-        await handleRefreshToday();
+      if (isExpired || lastTime === 0 || shuffleState.articles.length === 0) {
+        await handleRefreshToday(false);
       }
     };
 
     checkAndRefresh();
 
-    // Check every 60 seconds to auto-refresh exactly when 1 hour elapses
+    // Check periodically to auto-refresh exactly when 1 hour elapses
     const interval = setInterval(checkAndRefresh, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
@@ -276,22 +281,22 @@ export default function App() {
         {/* Today's Top 5 Interactive Deck Section with Live Refresh & 1-Hour Automated Cycle */}
         <ShuffleSection
           articles={shuffleState.articles}
-          onShuffle={handleRefreshToday}
+          onShuffle={() => handleRefreshToday(true)}
           onSelectArticle={(article) => setSelectedArticle(article)}
           savedIds={savedIds}
           onToggleBookmark={handleToggleBookmark}
           batchIndex={shuffleState.batchIndex || 1}
-          totalBatches={shuffleState.totalBatches || 3}
+          totalBatches={shuffleState.totalBatches || 1}
           remainingUnseen={shuffleState.remainingUnseen}
           totalSeenToday={shuffleState.totalSeenToday}
-          totalPoolSize={allArticles.length}
+          totalPoolSize={shuffleState.articles.length}
           isResetCycle={shuffleState.isResetCycle}
           isLiveWire={isLiveWire}
           isRefreshingLive={isRefreshingLive}
-          onRefreshLiveWire={handleRefreshToday}
+          onRefreshLiveWire={() => handleRefreshToday(true)}
         />
 
-        {/* This Week Collection Tab (Includes All Dynamic & Premier Articles) */}
+        {/* This Week Collection Tab (Rolling 7-Day Curated Archive) */}
         <WeeklyCollection
           articles={allArticles}
           onSelectArticle={(article) => setSelectedArticle(article)}

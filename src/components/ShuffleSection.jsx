@@ -278,8 +278,30 @@ export default function ShuffleSection({
           </div>
         )}
 
-        {/* THE 5 CARDS SPREAD ACROSS SCREEN */}
-        {!isScanning && (
+        {/* EMPTY STATE: When no articles pass the 24-hour freshness filter */}
+        {!isScanning && filteredArticles.length === 0 && (
+          <div className="py-16 sm:py-24 px-4 text-center rounded-3xl bg-zinc-950/60 border border-white/10 max-w-xl mx-auto my-6 shadow-2xl">
+            <div className="inline-flex p-3 rounded-2xl bg-white/5 border border-white/10 text-zinc-400 mb-4">
+              <Clock size={28} className="text-amber-400 animate-pulse" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
+              Not enough major AI news yet. Check back later.
+            </h3>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mb-6 leading-relaxed">
+              ReadAiNews enforces a strict 24-hour freshness standard across premier publications. We never backfill today's feed with old news.
+            </p>
+            <button
+              onClick={handleShuffle}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-semibold text-xs sm:text-sm hover:bg-zinc-200 transition-all shadow-md active:scale-95 cursor-pointer"
+            >
+              <RotateCw size={14} />
+              <span>Scan Wire Now</span>
+            </button>
+          </div>
+        )}
+
+        {/* THE CARDS SPREAD ACROSS SCREEN */}
+        {!isScanning && filteredArticles.length > 0 && (
           <div className="relative">
             
             {/* MOBILE VIEW: Buttery Smooth Horizontal Touch Snap Carousel */}
@@ -350,7 +372,13 @@ export default function ShuffleSection({
             {/* DESKTOP / TABLET VIEW: 5-Card Grid & Fan View */}
             <div className="hidden sm:block">
               {viewMode === 'spread' ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3.5 xl:gap-5">
+                <div className={`grid sm:grid-cols-2 ${
+                  filteredArticles.length === 1 ? 'lg:grid-cols-1 max-w-md mx-auto' :
+                  filteredArticles.length === 2 ? 'lg:grid-cols-2 max-w-2xl mx-auto' :
+                  filteredArticles.length === 3 ? 'lg:grid-cols-3 max-w-4xl mx-auto' :
+                  filteredArticles.length === 4 ? 'lg:grid-cols-4 max-w-5xl mx-auto' :
+                  'lg:grid-cols-5'
+                } gap-3.5 xl:gap-5`}>
                   {filteredArticles.slice(0, 5).map((article, idx) => {
                     const isVisible = idx < dealtCount;
                     if (!isVisible) return (

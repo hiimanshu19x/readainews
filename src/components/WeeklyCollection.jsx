@@ -88,8 +88,16 @@ export default function WeeklyCollection({
 
   const currentWeekMeta = WEEKS_DATA.find(w => w.id === selectedWeek) || WEEKS_DATA[0];
 
-  // Filter weekly best items (past collected week)
-  const weeklyArticles = articles.filter(a => a.isWeeklyBest);
+  // Filter weekly items strictly by rolling 7-day period: published_at >= now - 7 days
+  const now = Date.now();
+  const SEVEN_DAYS_MS = 7 * 24 * 3600 * 1000;
+  const weeklyArticles = articles.filter(a => {
+    if (a.publishedEpoch) {
+      const age = now - a.publishedEpoch;
+      return age >= 0 && age <= SEVEN_DAYS_MS;
+    }
+    return a.isWeeklyBest;
+  });
   const filtered = weeklyArticles;
 
   const handleScrollToNewsletter = () => {
