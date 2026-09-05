@@ -2,8 +2,8 @@ import { allNewsArticles } from '../data/newsData';
 import { getTodayLocalKey } from './timeZone.js';
 import { fetchFreshLiveArticles } from './liveScraper.js';
 
-const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v11_';
-const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v11';
+const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v12_';
+const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v12';
 const ONE_HOUR_MS = 60 * 60 * 1000; // 1 hour in milliseconds
 
 /**
@@ -74,7 +74,7 @@ export function getNextRefreshCountdown() {
   return { hours, minutes };
 }
 
-const PREVIEW_STORAGE_PREFIX = 'readainews_preview_article_v11_';
+const PREVIEW_STORAGE_PREFIX = 'readainews_preview_article_v12_';
 
 /**
  * Returns the featured preview article that strictly updates ONCE PER DAY.

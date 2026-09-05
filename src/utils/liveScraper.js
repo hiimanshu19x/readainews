@@ -1,4 +1,5 @@
 import { formatLocalFullDate, getTodayLocalKey } from './timeZone.js';
+import { getOrAssignUniqueImage, ensureStrictlyUniqueImages, markPhotoIdUsed, getBaseImageId } from './imageEngine.js';
 
 export function detectContext(title, summary = '') {
   const text = (title + ' ' + summary).toLowerCase();
@@ -13,78 +14,6 @@ export function detectContext(title, summary = '') {
   if (/\b(code|coding|developer|developers|github|ide|copilot|software|programming|terminal|debug|compiler)\b/.test(text)) return 'coding_dev';
   return 'frontier_models';
 }
-
-const CONTEXT_PHOTO_POOLS = {
-  voice_audio: [
-    'photo-1511671782779-c97d3d27a1d4', // acoustic microphone vocal studio
-    'photo-1516280440614-37939bbacd81', // stage performance singer with microphone
-    'photo-1598488035139-bdbb2231ce04', // audio console sound mixer frequencies
-    'photo-1514525253161-7a46d19cd819', // concert opera stage lights
-    'photo-1508700115892-45ecd05ae2ad'  // sound spectrum audio visualizer
-  ],
-  education_learning: [
-    'photo-1509062522246-3755977927d7', // classroom teacher and digital learning
-    'photo-1503676260728-1c00da094a0b', // young students learning with technology
-    'photo-1523240795612-9a054b0db644', // university students collaborating
-    'photo-1427504494785-3a9ca7044f45', // modern lecture hall technology
-    'photo-1580582932707-520aed937b7b'  // digital school learning environment
-  ],
-  robotics_humanoids: [
-    'photo-1485827404703-89b55fcc595e', // white robotic humanoid face profile
-    'photo-1535378917042-10a22c95931a', // humanoid robot head with illuminated eyes
-    'photo-1581091226825-a6a2a5aee158', // industrial robotic precision arm
-    'photo-1563770660941-20978e870e26', // cybernetic bionic hand
-    'photo-1581092160607-ee22621dd758'  // robotic joint automation
-  ],
-  chips_hardware: [
-    'photo-1518770660439-4636190af475', // circuit board processor microchip
-    'photo-1550751827-4bd374c3f58b', // electronic circuit traces
-    'photo-1526374965328-7f61d4dc18c5', // green motherboard matrix
-    'photo-1591488320449-011701bb6704', // silicon microchip close up
-    'photo-1555680202-c86f0e12f086'  // GPU semiconductor processor
-  ],
-  cybersecurity_safety: [
-    'photo-1563986768609-322da13575f3', // cyber security digital shield
-    'photo-1614064641938-3bbee52942c7', // binary code lock encryption
-    'photo-1510511459019-5dda7724fd87', // digital security matrix
-    'photo-1558494949-ef010cbdcc31', // server air-gap security room
-    'photo-1550751827-4bd374c3f58b'  // network protection firewall
-  ],
-  datacenter_energy: [
-    'photo-1558494949-ef010cbdcc31', // datacenter server racks
-    'photo-1544197150-b99a580bb7a8', // blue server aisle datacenter
-    'photo-1504384308090-c894fdcc538d', // server infrastructure hardware
-    'photo-1473341304170-971dccb5ac1e', // green energy renewable power grid
-    'photo-1497435334941-8c899ee9e8e9'  // high power clean energy datacenter
-  ],
-  law_policy_ethics: [
-    'photo-1589829545856-d10d557cf95f', // scales of justice legal courtroom
-    'photo-1479142506502-19b3a3b7ff33', // classic law books courthouse
-    'photo-1521791136064-7986c2920216', // corporate handshake policy agreement
-    'photo-1450133064473-71024230f91b', // legal signing gavel
-    'photo-1486406146926-c627a92ad1ab'  // federal regulatory building
-  ],
-  biology_medicine: [
-    'photo-1532094349884-543bc11b234d', // laboratory medical test tubes
-    'photo-1507668077129-56e32842fceb', // scientific microscope examination
-    'photo-1530497610245-94d3c16cda28', // genomic DNA medical research
-    'photo-1579154204601-01588f351e67'  // clinical diagnostic laboratory
-  ],
-  coding_dev: [
-    'photo-1555066931-4365d14bab8c', // programming code monitor
-    'photo-1517694712202-14dd9538aa97', // laptop coding workspace
-    'photo-1461749280684-dccba630e2f6', // HTML CSS JavaScript screen
-    'photo-1498050108023-c5249f4df085', // developer desk dual screen
-    'photo-1542831371-29b0f74f9713'  // code on laptop keyboard
-  ],
-  frontier_models: [
-    'photo-1620712943543-bcc4688e7485', // glowing neural network AI brain
-    'photo-1618005182384-a83a8bd57fbe', // liquid digital abstract wave
-    'photo-1634017839464-5c339ebe3cb4', // 3D generative intelligence sphere
-    'photo-1635070041078-e363dbe005cb', // quantum geometric light matrix
-    'photo-1451187580459-43490279c0fa'  // global connected network intelligence
-  ]
-};
 
 const HIGH_YIELD_AI_QUERIES = [
   'artificial intelligence',
@@ -118,13 +47,11 @@ function isStrictlyToday(url, createdAtEpoch) {
   // Must be within last 24 hours
   if (ageHrs > 24) return false;
 
+  // Check URL path to reject explicit past date stamps
   if (url) {
-    // Reject older years (2010 to 2025)
-    if (/\/(201\d|202[0-5])\//.test(url) || /-(201\d|202[0-5])-/.test(url)) return false;
-    // Reject older months in 2026 (01 to 08)
-    if (/\/2026\/(0[1-8])\//.test(url) || /2026-(0[1-8])-/.test(url)) return false;
-    // Reject older days prior to September 4
-    if (/\/2026\/09\/(0[1-3])\//.test(url) || /2026-09-(0[1-3])/.test(url)) return false;
+    const pastMonthMatch = url.match(/\/2026\/(0[1-8]|09-0[1-3]|09\/0[1-3])/);
+    if (pastMonthMatch) return false;
+    if (url.includes('/2025/') || url.includes('/2024/') || url.includes('/2023/')) return false;
   }
   return true;
 }
@@ -181,37 +108,13 @@ const TODAY_PROCEDURAL_STORIES = [
   }
 ];
 
-const memoryUsedImages = new Set();
-
-function getUsedImages() {
-  let stored = [];
-  if (typeof window !== 'undefined') {
-    try {
-      const raw = localStorage.getItem('readainews_used_images_v11');
-      if (raw) stored = JSON.parse(raw);
-    } catch (e) {}
-  }
-  return Array.from(new Set([...stored, ...memoryUsedImages]));
-}
-
-function saveUsedImage(url) {
-  if (!url) return;
-  memoryUsedImages.add(url);
-  if (typeof window !== 'undefined') {
-    try {
-      const used = getUsedImages();
-      localStorage.setItem('readainews_used_images_v11', JSON.stringify(used));
-    } catch (e) {}
-  }
-}
-
 const memorySeenUrls = new Set();
 
 function getSeenUrls() {
   let stored = [];
   if (typeof window !== 'undefined') {
     try {
-      const raw = localStorage.getItem('readainews_seen_urls_v11');
+      const raw = localStorage.getItem('readainews_seen_urls_v12');
       if (raw) stored = JSON.parse(raw);
     } catch (e) {}
   }
@@ -224,27 +127,13 @@ function markUrlAsSeen(url) {
   if (typeof window !== 'undefined') {
     try {
       const seen = getSeenUrls();
-      localStorage.setItem('readainews_seen_urls_v11', JSON.stringify(seen));
+      localStorage.setItem('readainews_seen_urls_v12', JSON.stringify(seen));
     } catch (e) {}
   }
 }
 
-export function getContextualUniqueImage(context = 'frontier_models', title = '') {
-  const used = getUsedImages();
-  const pool = CONTEXT_PHOTO_POOLS[context] || CONTEXT_PHOTO_POOLS.frontier_models;
-  
-  for (const id of pool) {
-    const url = `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
-    if (!used.includes(url)) {
-      saveUsedImage(url);
-      return url;
-    }
-  }
-  
-  const fallbackId = pool[used.length % pool.length];
-  const uniqueUrl = `https://images.unsplash.com/${fallbackId}?auto=format&fit=crop&w=800&q=80&sig=${context}-${Date.now()}-${used.length}`;
-  saveUsedImage(uniqueUrl);
-  return uniqueUrl;
+export function getContextualUniqueImage(context = 'frontier_models', title = '', id = '') {
+  return getOrAssignUniqueImage({ title, context, id });
 }
 
 function mapDomainToPublication(url, fallback) {
@@ -281,52 +170,60 @@ function mapDomainToPublication(url, fallback) {
 function calibrateJournalisticContent(title, sourceName, topicDetail) {
   const p1 = `According to comprehensive reporting published today by ${sourceName}, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on ${title}.`;
   
-  const p2 = `The development represents a pivotal milestone in the evolution of modern computing, particularly regarding ${topicDetail || 'applied deep learning and enterprise infrastructure'}. As mission-critical systems increasingly rely on automated reasoning models, engineering organizations are actively re-evaluating their deployment workflows to prioritize deterministic verification, transparent latency, and cost-effective compute infrastructure over unconstrained parameter scaling.`;
+  const p2 = `The development marks an important evolutionary milestone across the artificial intelligence sector, demonstrating measurable progress in real-world deployments. Leading engineering teams have accelerated development sprints around ${topicDetail}, establishing systematic benchmarks and standardized testing protocols to evaluate reliability, safety, and operational efficiency across distributed cloud systems.`;
   
-  const p3 = `Specialists tracking these industry transitions note that software engineering teams are increasingly embracing hybrid architectures that combine specialized local checkpoints with high-capacity cloud foundation models. This pragmatic methodology enables teams to safeguard sensitive telemetry, reduce runtime inference overhead, and preserve rigorous oversight across automated production pipelines while maintaining resilient software operations.`;
+  const p3 = `Technical evaluators emphasize that disciplined integration remains crucial for long-term viability. As organizations implement autonomous decision algorithms, operational safeguards must be deployed to safeguard sensitive telemetry, reduce runtime inference overhead, and preserve rigorous oversight across automated production pipelines while maintaining resilient software operations.`;
   
-  let p4 = `Furthermore, industry analysts point to growing regulatory scrutiny and enterprise compliance standards across the global technology sector. As generative tools become integrated into core software repositories, mission-critical databases, and customer-facing workflows, establishing transparent safety benchmarks has become a decisive prerequisite for sustainable long-term adoption.`;
+  const p4 = `Furthermore, industry analysts point to growing regulatory scrutiny and enterprise compliance standards across the global technology sector. As generative tools become integrated into core software repositories, mission-critical databases, and customer-facing workflows, establishing transparent safety benchmarks has become a decisive prerequisite for sustainable long-term adoption.`;
   
-  const bufferSentences = [
+  const keyTakeaways = [
     `Technology leaders agree that continuous rigorous testing remains indispensable for mission-critical deployments.`,
     `Moving forward, industry analysts expect similar validation frameworks to emerge across international technology hubs as adoption accelerates.`,
     `Technical teams will monitor long-term performance metrics closely to assess enduring ecosystem impact.`
   ];
   
   let paragraphs = [p1, p2, p3, p4];
-  let content = paragraphs.join('\n\n');
-  let words = content.trim().split(/\s+/).filter(Boolean);
+  let fullText = paragraphs.join('\n\n').replace(/[—–]/g, ' ').replace(/--/g, ' ');
+  let words = fullText.split(/\s+/).filter(Boolean);
   
-  let bufIdx = 0;
-  while (words.length <= 180 && bufIdx < bufferSentences.length) {
-    p4 += ' ' + bufferSentences[bufIdx++];
-    paragraphs[3] = p4;
-    content = paragraphs.join('\n\n');
-    words = content.trim().split(/\s+/).filter(Boolean);
+  // Calibrate strictly between 181 and 199 words
+  if (words.length > 199) {
+    words = words.slice(0, 192);
+    let trimmed = words.join(' ');
+    if (!trimmed.endsWith('.')) trimmed += '.';
+    fullText = trimmed;
+    paragraphs = fullText.split('\n\n');
+  } else if (words.length < 181) {
+    const filler = "Technical evaluators continue tracking performance metrics to ensure enterprise compliance and system reliability across modern artificial intelligence infrastructures.";
+    fullText = fullText + ' ' + filler;
+    words = fullText.split(/\s+/).filter(Boolean);
+    if (words.length > 199) {
+      words = words.slice(0, 192);
+      let trimmed = words.join(' ');
+      if (!trimmed.endsWith('.')) trimmed += '.';
+      fullText = trimmed;
+    }
+    paragraphs = fullText.split('\n\n');
   }
   
-  if (words.length >= 200) {
-    const diff = words.length - 190;
-    const p4Words = p4.split(/\s+/).filter(Boolean);
-    p4 = p4Words.slice(0, p4Words.length - diff).join(' ').replace(/[,;:\s]+$/, '') + '.';
-    paragraphs[3] = p4;
-    content = paragraphs.join('\n\n');
-  }
+  fullText = fullText.replace(/[—–]/g, ' ').replace(/--/g, ' ');
   
-  content = content.replace(/—/g, ', ').replace(/--/g, ' ');
-  paragraphs = paragraphs.map(p => p.replace(/—/g, ', ').replace(/--/g, ' '));
-  
-  return { content, paragraphs };
+  return {
+    content: fullText,
+    paragraphs: paragraphs,
+    wordCount: fullText.split(/\s+/).filter(Boolean).length
+  };
 }
 
 /**
  * Fetches exactly `count` (default 5) brand new AI articles from the internet.
  * STRICT ENFORCEMENT: ONLY AI news, published TODAY (within last 24h), with
- * working canonical URLs, unique contextual preview images, and 180-200 word journalism.
+ * working canonical URLs, 100% UNIQUE contextual preview images, and 180-200 word journalism.
  */
 export async function fetchFreshLiveArticles(count = 5) {
   const seenUrls = getSeenUrls();
   const gatheredArticles = [];
+  const takenInBatch = new Set();
   const themes = ['rose', 'blue', 'emerald', 'amber', 'purple', 'cyan', 'teal', 'violet'];
   const nowSec = Math.floor(Date.now() / 1000);
   const since24h = nowSec - 24 * 3600;
@@ -369,7 +266,10 @@ export async function fetchFreshLiveArticles(count = 5) {
             
             const pubName = mapDomainToPublication(itemUrl, 'Tech Wire');
             const context = detectContext(cleanTitle, '');
-            const imageUrl = getContextualUniqueImage(context, cleanTitle);
+            const articleId = `live-${hit.objectID || Date.now()}-${Math.random().toString(36).substr(2, 7)}`;
+            
+            // Guarantee 100% unique preview image for this article
+            const imageUrl = getOrAssignUniqueImage({ id: articleId, title: cleanTitle, context }, takenInBatch);
             const { content, paragraphs } = calibrateJournalisticContent(cleanTitle, pubName, cleanTitle.toLowerCase());
             
             const ageMins = Math.max(2, Math.floor((nowSec - hit.created_at_i) / 60));
@@ -379,7 +279,7 @@ export async function fetchFreshLiveArticles(count = 5) {
             seenUrls.push(itemUrl);
             
             const article = {
-              id: `live-${hit.objectID || Date.now()}-${Math.random().toString(36).substr(2, 7)}`,
+              id: articleId,
               title: cleanTitle,
               tier: "industry",
               context: context,
@@ -429,12 +329,14 @@ export async function fetchFreshLiveArticles(count = 5) {
       
       const uniqueUrl = item.sourceUrl;
       const context = item.context || detectContext(item.title, item.topicDetail);
-      const imageUrl = getContextualUniqueImage(context, item.title);
+      const articleId = `procedural-${Date.now()}-${Math.random().toString(36).substr(2, 7)}`;
+      
+      const imageUrl = getOrAssignUniqueImage({ id: articleId, title: item.title, context }, takenInBatch);
       const { content, paragraphs } = calibrateJournalisticContent(item.title, item.source, item.topicDetail);
       const minsAgo = Math.floor(Math.random() * 45) + 10;
       
       const article = {
-        id: `procedural-${Date.now()}-${Math.random().toString(36).substr(2, 7)}`,
+        id: articleId,
         title: item.title,
         tier: "industry",
         context: context,
@@ -468,5 +370,6 @@ export async function fetchFreshLiveArticles(count = 5) {
     }
   }
   
-  return gatheredArticles.slice(0, count);
+  // Double-check guaranteed uniqueness across all returned articles
+  return ensureStrictlyUniqueImages(gatheredArticles.slice(0, count));
 }

@@ -13,12 +13,13 @@ import InfoModal from './components/InfoModal';
 import { allNewsArticles } from './data/newsData';
 import { getDailyRefreshedArticles, getDailyPreviewArticle } from './utils/dailyRefresh';
 import { fetchFreshLiveArticles } from './utils/liveScraper';
+import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v11';
-const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v11_';
-const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v11';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v12';
+const BATCH_STORAGE_KEY = 'readainews_1hr_batch_v12_';
+const REFRESH_TIMESTAMP_KEY = 'readainews_last_refresh_time_v12';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export default function App() {
@@ -33,14 +34,15 @@ export default function App() {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const existingIds = new Set(parsed.map(a => a.id));
-            return [...parsed, ...allNewsArticles.filter(a => !existingIds.has(a.id))];
+            const merged = [...parsed, ...allNewsArticles.filter(a => !existingIds.has(a.id))];
+            return ensureStrictlyUniqueImages(merged);
           }
         }
       }
     } catch (e) {
       console.warn('Failed to load dynamic articles:', e);
     }
-    return allNewsArticles;
+    return ensureStrictlyUniqueImages(allNewsArticles);
   });
   
   // Daily featured preview article that strictly updates once per day
@@ -57,7 +59,7 @@ export default function App() {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length >= 5) {
             return {
-              articles: parsed.slice(0, 5),
+              articles: ensureStrictlyUniqueImages(parsed.slice(0, 5)),
               batchIndex: 1,
               totalBatches: 3,
               isResetCycle: false,
@@ -70,7 +72,7 @@ export default function App() {
       }
     } catch (e) {}
     return {
-      articles: allNewsArticles.slice(0, 5),
+      articles: ensureStrictlyUniqueImages(allNewsArticles.slice(0, 5)),
       batchIndex: 1,
       totalBatches: 3,
       isResetCycle: false,
@@ -92,12 +94,13 @@ export default function App() {
   const handleRefreshToday = async () => {
     setIsRefreshingLive(true);
     try {
-      const fresh = await fetchFreshLiveArticles(5);
+      const rawFresh = await fetchFreshLiveArticles(5);
+      const fresh = ensureStrictlyUniqueImages(rawFresh);
       if (fresh && fresh.length > 0) {
         // Prepend and save onto website pool
         setAllArticles(prev => {
           const prevFiltered = prev.filter(p => !fresh.some(f => f.id === p.id));
-          const combined = [...fresh, ...prevFiltered];
+          const combined = ensureStrictlyUniqueImages([...fresh, ...prevFiltered]);
           try {
             const dynamicOnly = combined.filter(a => a.isLiveScraped || !allNewsArticles.some(base => base.id === a.id));
             localStorage.setItem(DYNAMIC_ARTICLES_KEY, JSON.stringify(dynamicOnly));
@@ -105,7 +108,7 @@ export default function App() {
           return combined;
         });
 
-        // Display fresh 5 stories on cards
+        // Display fresh 5 stories on cards with 100% unique preview images
         setShuffleState(prev => {
           const newBatchIndex = (prev.batchIndex % 10) + 1;
           return {
@@ -152,7 +155,7 @@ export default function App() {
           if (key && (
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
-            (key.startsWith('readainews_') && !key.includes('_v11') && !key.includes('readainews_saved_ids'))
+            (key.startsWith('readainews_') && !key.includes('_v12') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }

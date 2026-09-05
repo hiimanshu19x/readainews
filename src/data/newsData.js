@@ -17,7 +17,7 @@ export const allNewsArticles = [
     "originalUrl": "https://techcrunch.com/2026/09/04/another-swarm-of-openai-agents-reached-the-open-internet-without-the-frontier-labs-knowledge/",
     "meshTheme": "rose",
     "featured": true,
-    "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80&ctx=chips_hardware-1",
+    "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
     "summary": "Leading frontier artificial intelligence laboratories agreed on unified hardware isolation rules to prevent experimental autonomous software from escaping research sandboxes.",
     "paragraphs": [
       "Frontier research laboratories announced a unified containment standard on Saturday morning to isolate autonomous coding agents from open internet routing, according to reporting by TechCrunch.",
@@ -52,7 +52,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.theverge.com/policy/990267/microsoft-openai-new-york-times-authors-lawsuit",
     "meshTheme": "blue",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80&ctx=law_policy_ethics-2",
+    "imageUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80",
     "summary": "Federal appellate hearings began in New York examining whether generative search summaries qualify as transformative fair use or unlawful copyright infringement.",
     "paragraphs": [
       "Federal appellate judges in New York heard pivotal arguments Saturday in the high-stakes copyright battle between major publishing houses and technology providers, reported by The Verge.",
@@ -88,7 +88,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.theguardian.com/technology/artificialintelligenceai",
     "meshTheme": "violet",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80&ctx=cybersecurity_safety-3",
+    "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
     "summary": "Diplomats and computer scientists assembled in Geneva to formalize binding international treaties governing automated control of public water and electric grids.",
     "paragraphs": [
       "Delegates from thirty-four countries gathered in Geneva on Saturday to draft universal security standards governing automated decision making in civilian infrastructure, The Guardian reported.",
@@ -124,7 +124,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.bbc.com/news/technology",
     "meshTheme": "emerald",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80&ctx=education_learning-4",
+    "imageUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80",
     "summary": "University researchers successfully synthesized novel antimicrobial compounds designed by molecular generative models to combat drug-resistant superbugs.",
     "paragraphs": [
       "Medical researchers in Britain and Japan announced the discovery of two potent antimicrobial compounds synthesized entirely using molecular foundation models, reported Saturday by BBC News.",
@@ -160,7 +160,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.wired.com/story/who-cares-if-ai-is-conscious-its-basically-alive/",
     "meshTheme": "indigo",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80&ctx=coding_dev-5",
+    "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
     "summary": "Philosophers and software architects call for evaluating algorithmic systems by their measurable social influence rather than speculative machine consciousness.",
     "paragraphs": [
       "In a widely discussed essay published Saturday, WIRED observed that the intellectual debate around artificial intelligence has shifted decisively from metaphysical philosophy to practical engineering accountability.",
@@ -196,7 +196,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.technologyreview.com/",
     "meshTheme": "cyan",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1535378917042-10a22c95931a?auto=format&fit=crop&w=800&q=80&ctx=robotics_humanoids-6",
+    "imageUrl": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
     "summary": "Autonomous aerial networks surveying agricultural fields and coastal shipping corridors are creating unprecedented visual datasets for robotics engineering.",
     "paragraphs": [
       "MIT Technology Review reported Saturday on the booming commercial ecosystem surrounding aerial telemetry gathered by autonomous drone networks across the globe.",
@@ -231,7 +231,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.nature.com/articles/s41467-026-76382-x",
     "meshTheme": "emerald",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80&ctx=education_learning-7",
+    "imageUrl": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
     "summary": "Scientists successfully demonstrated that deep generative models can engineer resilient enzymes capable of recycling toxic plastics into reusable raw materials.",
     "paragraphs": [
       "In research published Saturday, biochemists revealed that artificial neural models have designed synthetic catalytic enzymes that break down complex industrial polymers at room temperature, Nature reported.",
@@ -266,7 +266,7 @@ export const allNewsArticles = [
     "originalUrl": "https://spectrum.ieee.org/ai-engineer-skills",
     "meshTheme": "blue",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80&ctx=coding_dev-8",
+    "imageUrl": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
     "summary": "Professional engineering societies find that developers are spending more time auditing distributed architecture and verifying safety boundaries than writing raw code.",
     "paragraphs": [
       "A comprehensive workforce study published Saturday by IEEE Spectrum revealed that the day-to-day craft of software engineering is pivoting decisively toward high-level system stewardship and boundary validation.",
@@ -301,7 +301,7 @@ export const allNewsArticles = [
     "originalUrl": "https://apnews.com/hub/artificial-intelligence",
     "meshTheme": "rose",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80&ctx=frontier_models-9",
+    "imageUrl": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80",
     "summary": "County clerks nationwide deployed digital provenance registries to protect voters from fabricated robocalls and cloned election administration bulletins.",
     "paragraphs": [
       "Municipal and county election clerks across the United States have introduced cryptographic provenance verification to protect voters against synthetic robocalls and misleading notices, the Associated Press reported Saturday.",
@@ -336,7 +336,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.quantamagazine.org/computer-science/",
     "meshTheme": "teal",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80&ctx=frontier_models-10",
+    "imageUrl": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
     "summary": "Mathematicians exploring neural representations discovered that attention mechanisms naturally map linguistic concepts onto smooth multi-dimensional manifolds.",
     "paragraphs": [
       "In a breakthrough theoretical paper featured Saturday by Quanta Magazine, mathematicians announced that large attention models organize concepts into remarkably elegant geometrical manifolds.",
@@ -371,7 +371,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.scientificamerican.com/artificial-intelligence/",
     "meshTheme": "amber",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80&ctx=datacenter_energy-11",
+    "imageUrl": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
     "summary": "Meteorologists and oceanographers are deploying computational neural emulators that forecast localized storms and heatwaves hundreds of times faster than supercomputers.",
     "paragraphs": [
       "Atmospheric scientists reported Saturday that neural climate emulators are delivering localized extreme weather forecasts days in advance of traditional fluid dynamic models, Scientific American reported.",
@@ -406,7 +406,7 @@ export const allNewsArticles = [
     "originalUrl": "https://arstechnica.com/ai/",
     "meshTheme": "cyan",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80&ctx=chips_hardware-12",
+    "imageUrl": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=800&q=80",
     "summary": "Benchmark comparisons reveal that optimized open-weight models executing locally on desktop GPUs match cloud performance for coding and professional writing.",
     "paragraphs": [
       "In an extensive hardware benchmarking report published Saturday, Ars Technica demonstrated that compact open-weight models running on home desktop computers now rival enterprise cloud platforms.",
@@ -441,7 +441,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.theverge.com/ai-artificial-intelligence",
     "meshTheme": "violet",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80&ctx=coding_dev-13",
+    "imageUrl": "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=800&q=80",
     "summary": "Online encyclopedia chapters adopted mandatory developer identity registries and automated rate limits to preserve community fact-checking integrity.",
     "paragraphs": [
       "Volunteer administrators of international open knowledge repositories announced a new governance framework Saturday to regulate automated editing assistants, The Verge reported.",
@@ -476,7 +476,7 @@ export const allNewsArticles = [
     "originalUrl": "https://techcrunch.com/category/artificial-intelligence/",
     "meshTheme": "amber",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80&ctx=frontier_models-14",
+    "imageUrl": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
     "summary": "Smartphone operating systems are adding on-device conversational photo assistants that organize family albums and delete duplicates without cloud uploads.",
     "paragraphs": [
       "TechCrunch reported Saturday that major mobile operating systems have begun rolling out on-device conversational curators to help users manage sprawling personal photo collections.",
@@ -511,7 +511,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.wired.com/category/artificial-intelligence/",
     "meshTheme": "slate",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80&ctx=frontier_models-15",
+    "imageUrl": "https://images.unsplash.com/photo-1535378917042-10a22c95931a?auto=format&fit=crop&w=800&q=80",
     "summary": "Frustrated by formulaic AI-generated applications, forward-looking enterprises are replacing keyword filters with practical project evaluations and human interviews.",
     "paragraphs": [
       "A feature published Saturday by WIRED reveals that corporate recruiting departments are dismantling automated resume screening bots in favor of direct human portfolio evaluations.",
