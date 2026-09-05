@@ -135,10 +135,14 @@ export default function App() {
     });
   };
 
-  // Shuffle logic: GUARANTEED ZERO DUPLICATES FOR TODAY
-  const handleShuffleToday = () => {
+  // Refresh logic: GUARANTEED ZERO DUPLICATES FOR TODAY
+  const handleRefreshToday = () => {
     const nextResult = getUniqueDailyArticles(allNewsArticles, 5);
     setShuffleState(nextResult);
+    try {
+      localStorage.setItem('readainews_last_refresh_time_v9', Date.now().toString());
+      localStorage.setItem('readainews_1hr_batch_v9_', JSON.stringify(nextResult.articles));
+    } catch (e) {}
   };
 
   const handleResetToday = () => {
@@ -226,7 +230,7 @@ export default function App() {
         {/* Today's Top 5 Interactive Deck Section with ZERO Duplicate Guarantee & Live Auto-Refresh */}
         <ShuffleSection
           articles={shuffleState.articles}
-          onShuffle={handleShuffleToday}
+          onShuffle={handleRefreshToday}
           onSelectArticle={(article) => setSelectedArticle(article)}
           savedIds={savedIds}
           onToggleBookmark={handleToggleBookmark}

@@ -198,19 +198,7 @@ export default function ShuffleSection({
               </button>
             </div>
 
-            {/* Live Web Scrape Refresh Button */}
-            <button
-              onClick={onRefreshLiveWire}
-              disabled={isRefreshingLive}
-              title="Refresh latest AI dispatches"
-              className="flex items-center gap-1.5 px-3.5 py-3 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-white/15 text-xs text-zinc-300 hover:text-white transition-all active:scale-95 flex-shrink-0"
-            >
-              <Globe size={13} className="text-cyan-400" />
-              <span>{isRefreshingLive ? "Refreshing..." : "Refresh Feed"}</span>
-              <RefreshCw size={11} className={isRefreshingLive ? "animate-spin text-cyan-400" : "text-zinc-500"} />
-            </button>
-
-            {/* The Main Shuffle Button - Prominent on Mobile */}
+            {/* The Main Refresh Button - Prominent on Mobile & Desktop */}
             <button
               onClick={handleShuffle}
               disabled={isScanning}
@@ -224,7 +212,7 @@ export default function ShuffleSection({
                 size={15} 
                 className={`transition-transform duration-700 ${isScanning ? 'animate-spin' : 'group-hover:rotate-180'}`} 
               />
-              <span>{isScanning ? "Refreshing..." : "Shuffle Next 5"}</span>
+              <span>{isScanning ? "Refreshing..." : "Refresh"}</span>
               <Sparkles size={13} className="text-amber-500 animate-pulse" />
             </button>
 
@@ -418,7 +406,7 @@ export default function ShuffleSection({
                 </span>
               </div>
               <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-zinc-500">
-                <span className="text-zinc-400">Tap "Shuffle Next 5" to rotate curated set</span>
+                <span className="text-zinc-400">Tap "Refresh" to rotate to next 5 stories</span>
                 <span>•</span>
                 <span>Tap card for full AI brief</span>
               </div>
