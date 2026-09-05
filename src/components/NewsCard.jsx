@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bookmark, ArrowRight, Clock, ExternalLink } from 'lucide-react';
+import ContextualThumbnail from './ContextualThumbnail';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
 import { formatLocalShortDate } from '../utils/timeZone';
@@ -12,6 +13,8 @@ export default function NewsCard({
   viewMode = 'grid', // 'grid' | 'spread' | 'row'
   animationDelay = 0 
 }) {
+  const [imgError, setImgError] = useState(false);
+
   const handleBookmark = (e) => {
     e.stopPropagation();
     sound.playClick();
@@ -27,10 +30,16 @@ export default function NewsCard({
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {/* Thumbnail */}
           <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 bg-zinc-950">
-            {article.imageUrl ? (
-              <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" loading="lazy" />
+            {!imgError && article.imageUrl ? (
+              <img 
+                src={article.imageUrl} 
+                alt="" 
+                onError={() => setImgError(true)}
+                className="w-full h-full object-cover" 
+                loading="lazy" 
+              />
             ) : (
-              <MeshThumbnail theme={article.meshTheme} className="w-full h-full" />
+              <ContextualThumbnail context={article.context || 'frontier_models'} theme={article.meshTheme} className="w-full h-full" />
             )}
           </div>
 
@@ -86,15 +95,17 @@ export default function NewsCard({
     >
       {/* Article Preview Image */}
       <div className="relative w-full h-36 sm:h-44 overflow-hidden bg-zinc-950 border-b border-white/5 flex-shrink-0">
-        {article.imageUrl ? (
+        {!imgError && article.imageUrl ? (
           <img 
             src={article.imageUrl} 
-            alt={article.title} 
-            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+            alt="" 
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out" 
             loading="lazy"
           />
         ) : (
-          <MeshThumbnail 
+          <ContextualThumbnail 
+            context={article.context || 'frontier_models'} 
             theme={article.meshTheme} 
             className="w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-out" 
           />

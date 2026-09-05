@@ -7,8 +7,13 @@ import {
   Check, 
   Sparkles, 
   Clock, 
-  FileText
+  FileText, 
+  CheckCircle2, 
+  Eye, 
+  ArrowUpRight,
+  ShieldCheck
 } from 'lucide-react';
+import ContextualThumbnail from './ContextualThumbnail';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
 import { formatLocalShortDate } from '../utils/timeZone';
@@ -16,10 +21,11 @@ import { formatLocalShortDate } from '../utils/timeZone';
 export default function ArticleModal({ 
   article, 
   onClose, 
-  isBookmarked, 
+  isBookmarked = false, 
   onToggleBookmark 
 }) {
   const [copied, setCopied] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   if (!article) return null;
 
@@ -53,14 +59,15 @@ export default function ArticleModal({
 
         {/* Header Visual Preview Image */}
         <div className="relative w-full h-40 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
-          {article.imageUrl ? (
+          {!imgError && article.imageUrl ? (
             <img 
               src={article.imageUrl} 
-              alt={article.title} 
+              alt="" 
+              onError={() => setImgError(true)}
               className="w-full h-full object-cover" 
             />
           ) : (
-            <MeshThumbnail theme={article.meshTheme} className="w-full h-full" />
+            <ContextualThumbnail context={article.context || 'frontier_models'} theme={article.meshTheme} className="w-full h-full" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d12] via-transparent to-black/30 pointer-events-none" />
           
