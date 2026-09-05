@@ -316,50 +316,51 @@ export function generateUniqueProceduralSvg(title = '', context = 'frontier_mode
 }
 
 export function getOrAssignUniqueImage(article, takenInBatch = new Set()) {
-  const globalUsed = getAllUsedPhotoIds();
   const currentBaseId = getBaseImageId(article?.imageUrl);
   
-  if (currentBaseId && !takenInBatch.has(currentBaseId) && !globalUsed.has(currentBaseId)) {
-    markPhotoIdUsed(currentBaseId);
+  // If the article already has a valid image and it has not been claimed by a preceding card in this batch, keep it!
+  if (currentBaseId && !takenInBatch.has(currentBaseId)) {
     takenInBatch.add(currentBaseId);
     return article.imageUrl;
   }
   
+  // Compute deterministic hash based on article identity (id, canonicalUrl, or title)
+  const hash = hashString(article?.id || article?.canonicalUrl || article?.title || 'ai-news');
   const ctx = article?.context || 'frontier_models';
   const categoryPool = VERIFIED_CONTEXT_PHOTO_POOLS[ctx] || VERIFIED_CONTEXT_PHOTO_POOLS.frontier_models;
   
-  for (const id of categoryPool) {
-    const candidateBaseId = id.toLowerCase();
-    if (!takenInBatch.has(candidateBaseId) && !globalUsed.has(candidateBaseId)) {
-      markPhotoIdUsed(candidateBaseId);
-      takenInBatch.add(candidateBaseId);
+  // 1. Try category-specific pool with deterministic offset
+  for (let i = 0; i < categoryPool.length; i++) {
+    const id = categoryPool[(hash + i) % categoryPool.length].toLowerCase();
+    if (!takenInBatch.has(id)) {
+      takenInBatch.add(id);
       return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
     }
   }
   
-  for (const id of VERIFIED_CONTEXT_PHOTO_POOLS.tech_general) {
-    const candidateBaseId = id.toLowerCase();
-    if (!takenInBatch.has(candidateBaseId) && !globalUsed.has(candidateBaseId)) {
-      markPhotoIdUsed(candidateBaseId);
-      takenInBatch.add(candidateBaseId);
+  // 2. Try tech general pool
+  for (let i = 0; i < VERIFIED_CONTEXT_PHOTO_POOLS.tech_general.length; i++) {
+    const id = VERIFIED_CONTEXT_PHOTO_POOLS.tech_general[(hash + i) % VERIFIED_CONTEXT_PHOTO_POOLS.tech_general.length].toLowerCase();
+    if (!takenInBatch.has(id)) {
+      takenInBatch.add(id);
       return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
     }
   }
   
+  // 3. Try any remaining pools
   for (const [catName, pool] of Object.entries(VERIFIED_CONTEXT_PHOTO_POOLS)) {
-    for (const id of pool) {
-      const candidateBaseId = id.toLowerCase();
-      if (!takenInBatch.has(candidateBaseId) && !globalUsed.has(candidateBaseId)) {
-        markPhotoIdUsed(candidateBaseId);
-        takenInBatch.add(candidateBaseId);
+    for (let i = 0; i < pool.length; i++) {
+      const id = pool[(hash + i) % pool.length].toLowerCase();
+      if (!takenInBatch.has(id)) {
+        takenInBatch.add(id);
         return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
       }
     }
   }
   
+  // 4. Procedural SVG fallback if every single pool is exhausted
   const svgUrl = generateUniqueProceduralSvg(article?.title, article?.context, article?.id);
   const svgId = getBaseImageId(svgUrl);
-  markPhotoIdUsed(svgId);
   takenInBatch.add(svgId);
   return svgUrl;
 }
@@ -370,18 +371,19 @@ export function ensureStrictlyUniqueImages(articles = []) {
   const takenInBatch = new Set();
   
   return articles.map((article) => {
-    const baseId = getBaseImageId(article.imageUrl);
+    const baseId = getBaseImageId(article?.imageUrl);
     
-    if (!baseId || takenInBatch.has(baseId)) {
-      const uniqueUrl = getOrAssignUniqueImage(article, takenInBatch);
-      return {
-        ...article,
-        imageUrl: uniqueUrl
-      };
+    // If the article already has an image and it does not conflict in this deck, keep it unchanged!
+    if (baseId && !takenInBatch.has(baseId)) {
+      takenInBatch.add(baseId);
+      return article;
     }
     
-    markPhotoIdUsed(baseId);
-    takenInBatch.add(baseId);
-    return article;
+    // Otherwise assign a deterministic unique image
+    const uniqueUrl = getOrAssignUniqueImage(article, takenInBatch);
+    return {
+      ...article,
+      imageUrl: uniqueUrl
+    };
   });
 }
