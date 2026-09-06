@@ -12,9 +12,9 @@ import { TRUSTED_AI_SOURCES } from './sourceRegistry.js';
 import { ensureStrictlyUniqueImages } from './imageEngine.js';
 import { isTodayInTz, getUserTimeZone, getLocalDateKey } from './timeZone.js';
 
-export const STORAGE_KEY_POOL = 'readainews_fresh_pool_v19';
-export const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v19';
-export const STORAGE_KEY_HOUR = 'readainews_fresh_hour_v19';
+export const STORAGE_KEY_POOL = 'readainews_fresh_pool_v20';
+export const STORAGE_KEY_TIMESTAMP = 'readainews_fresh_timestamp_v20';
+export const STORAGE_KEY_HOUR = 'readainews_fresh_hour_v20';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**

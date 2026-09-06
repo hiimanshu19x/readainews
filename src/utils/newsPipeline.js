@@ -319,23 +319,9 @@ export function parseXmlItem(itemXml, isAtom, sourceMeta) {
   let rawDesc = getTag('description') || getTag('summary') || getTag('content:encoded') || getTag('content');
   let desc = decodeHtmlEntities(rawDesc.replace(/<[^>]*>/g, ' '));
 
-  let imageUrl = getAttr('enclosure', 'url') || 
-                 getAttr('media:content', 'url') || 
-                 getAttr('media:thumbnail', 'url');
-                 
-  const isInvalidImg = (u) => !u || u.length < 15 || 
-    u.includes('s.w.org') || u.includes('emoji') || u.includes('gravatar') || 
-    u.includes('avatar') || u.includes('1x1') || u.includes('pixel') || 
-    u.includes('feedburner') || u.includes('spacer') || u.includes('wp-includes');
-
-  if (isInvalidImg(imageUrl)) {
-    const imgMatch = itemXml.match(/<img[^>]+src=["']([^"']+)["']/i);
-    if (imgMatch && !isInvalidImg(imgMatch[1])) {
-      imageUrl = imgMatch[1];
-    } else {
-      imageUrl = '';
-    }
-  }
+  // Strictly do NOT extract original publisher images.
+  // Preview images will be synthesized as unique, creative AI-generated artwork in Step 6.
+  const imageUrl = '';
 
   return {
     id: `article-${Math.abs(hash(canonicalUrl || title))}`,

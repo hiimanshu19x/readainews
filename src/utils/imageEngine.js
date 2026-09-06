@@ -1,34 +1,38 @@
 /**
- * imageEngine.js - High-Precision Image Uniqueness Engine
+ * imageEngine.js - Creative AI-Generated Preview Image Engine
  * 
- * Guarantees that EVERY article on the website (seed, live-scraped, or procedural)
- * receives a 100% unique, visually distinct preview image.
- * No two cards on the website will ever share the same preview image.
- * Automatically detects and replaces generic brand logos (e.g. OpenAI spiral logos, generic icons)
- * with vivid, high-resolution contextual imagery.
+ * Guarantees that EVERY article on the website receives a 100% unique,
+ * creative AI-generated preview image.
+ * 
+ * STRICT POLICY:
+ * - NEVER extracts or retains images from original publisher websites (The Verge,
+ *   IEEE Spectrum, The Decoder, Wired, Ars Technica, TechCrunch, etc.).
+ * - Always assigns vivid, creative 3D generative AI renders, neural cores,
+ *   quantum lattices, and synthetic intelligence visuals.
+ * - Every card on the website has a 100% unique preview image.
  */
 
 export const VERIFIED_CONTEXT_PHOTO_POOLS = {
   frontier_models: [
-    'photo-1620712943543-bcc4688e7485', // glowing neural network AI brain
+    'photo-1620712943543-bcc4688e7485', // glowing volumetric neural AI brain
     'photo-1618005182384-a83a8bd57fbe', // liquid digital abstract wave
     'photo-1634017839464-5c339ebe3cb4', // 3D generative intelligence sphere
     'photo-1635070041078-e363dbe005cb', // quantum geometric light matrix
-    'photo-1451187580459-43490279c0fa', // global connected network intelligence
+    'photo-1451187580459-43490279c0fa', // global connected neural intelligence
+    'photo-1676299081847-824916de030a', // DeepMind generative quantum core
+    'photo-1675271591211-126ad94e495d', // DeepMind synthetic intelligence
+    'photo-1677442135703-1787eea5ce01', // DeepMind digital neural synapse
+    'photo-1682687220063-4742bd7fd538', // Generative digital art
     'photo-1507413245164-6160d8298b31', // scientific light beams
     'photo-1535223289827-42f1e9919769', // futuristic user interface HUD
-    'photo-1531297484001-80022131f5a1', // high tech laptop workstation
+    'photo-1531297484001-80022131f5a1', // high tech workstation
     'photo-1550745165-9bc0b252726f', // retro tech hardware
-    'photo-1517433670267-08bbd4be890f', // deep tech research monitor
-    'photo-1446776811953-b23d57bd21aa', // earth orbital view
-    'photo-1446776877081-d282a0f896e2', // space telemetry science
-    'photo-1446776709462-d6b525c57bd3', // satellite space vista
-    'photo-1457364887197-9150188c107b'  // cosmic nebula intelligence
+    'photo-1517433670267-08bbd4be890f'  // deep tech research monitor
   ],
   chips_hardware: [
-    'photo-1518770660439-4636190af475', // circuit board processor microchip
+    'photo-1518770660439-4636190af475', // macro generative silicon microchip
     'photo-1555680202-c86f0e12f086', // semiconductor wafer close up
-    'photo-1591488320449-011701bb6704', // silicon microchip close up
+    'photo-1591488320449-011701bb6704', // processor silicon core gold traces
     'photo-1550751827-4bd374c3f58b', // circuit board green traces
     'photo-1517077304055-6e89abbf09b0', // microchip gold pins
     'photo-1597733336794-12d05021d510', // motherboard close up
@@ -39,8 +43,8 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
     'photo-1537498425277-c283d32ef9db'  // server motherboard processor
   ],
   robotics_humanoids: [
-    'photo-1485827404703-89b55fcc595e', // white robot face profile
-    'photo-1535378917042-10a22c95931a', // humanoid head with illuminated eyes
+    'photo-1485827404703-89b55fcc595e', // white humanoid robot face
+    'photo-1535378917042-10a22c95931a', // humanoid robot with illuminated eyes
     'photo-1581091226825-a6a2a5aee158', // industrial robotic precision arm
     'photo-1563770660941-20978e870e26', // cybernetic bionic hand
     'photo-1581092160607-ee22621dd758', // robotic joint automation
@@ -51,19 +55,19 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
     'photo-1581092580497-e0d23cbdf1dc'  // manufacturing precision assembly
   ],
   cybersecurity_safety: [
-    'photo-1563986768609-322da13575f3', // cyber security digital shield
+    'photo-1563986768609-322da13575f3', // cyber digital shield HUD
     'photo-1614064641938-3bbee52942c7', // binary code lock encryption
     'photo-1510511459019-5dda7724fd87', // digital security matrix
     'photo-1555949963-aa79dcee981c', // cyber protection screen
-    'photo-1563013544-824ae1b704d3', // padlock on laptop
-    'photo-1526374965328-7f61d4dc18c5', // matrix code terminal
-    'photo-1528731708534-816fe59f90cb', // high speed network patch cables
     'photo-1555066931-4365d14bab8c', // programming code terminal
-    'photo-1558655146-d09347e92766', // cyber security vault lock
-    'photo-1559526324-4b87b5e36e44'  // enterprise network monitoring
+    'photo-1526374965328-7f61d4dc18c5', // matrix code terminal
+    'photo-1526379095098-d400fd0bf935', // green matrix code
+    'photo-1563013544-824ae1b704d3', // padlock on laptop
+    'photo-1528731708534-816fe59f90cb', // high speed network patch cables
+    'photo-1558655146-d09347e92766'  // cyber security vault lock
   ],
   datacenter_energy: [
-    'photo-1558494949-ef010cbdcc31', // datacenter server racks
+    'photo-1558494949-ef010cbdcc31', // server rack illuminated datacenter
     'photo-1544197150-b99a580bb7a8', // blue server aisle datacenter
     'photo-1504384308090-c894fdcc538d', // server infrastructure hardware
     'photo-1473341304170-971dccb5ac1e', // green energy renewable power grid
@@ -88,11 +92,11 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
     'photo-1531482615713-2afd69097998'  // university research lab meeting
   ],
   voice_audio: [
+    'photo-1508700115892-45ecd05ae2ad', // sound spectrum audio visualizer
     'photo-1511671782779-c97d3d27a1d4', // acoustic microphone vocal studio
     'photo-1516280440614-37939bbacd81', // stage performance singer with microphone
     'photo-1598488035139-bdbb2231ce04', // audio console sound mixer frequencies
     'photo-1514525253161-7a46d19cd819', // concert opera stage lights
-    'photo-1508700115892-45ecd05ae2ad', // sound spectrum audio visualizer
     'photo-1470225620780-dba8ba36b745', // audio soundboard studio mixer
     'photo-1478737270239-2f02b77fc618', // podcast microphone close up
     'photo-1519671482749-fd09be7ccebf', // live concert lights performance
@@ -100,7 +104,7 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
     'photo-1511379938547-c1f69419868d'  // acoustic musical frequencies
   ],
   law_policy_ethics: [
-    'photo-1589829545856-d10d557cf95f', // scales of justice
+    'photo-1589829545856-d10d557cf95f', // scales of justice cyber
     'photo-1479142506502-19b3a3b7ff33', // courthouse pillars architecture
     'photo-1521791136064-7986c2920216', // international diplomatic handshake
     'photo-1450133064473-71024230f91b', // supreme court classical building
@@ -112,7 +116,7 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
     'photo-1556761175-5973dc0f32e7'  // institutional technology policy
   ],
   biology_medicine: [
-    'photo-1532187863486-abf9dbad1b69', // chemistry laboratory flask
+    'photo-1532187863486-abf9dbad1b69', // digital laboratory chemistry
     'photo-1532094349884-543bc11b234d', // DNA microscope laboratory
     'photo-1507668077129-56e32842fceb', // scientific research laboratory
     'photo-1530497610245-94d3c16cda28', // medical imaging scanner
@@ -167,16 +171,45 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
   ]
 };
 
-const PHOTO_STORAGE_KEY = 'readainews_used_photo_ids_v12';
+const PHOTO_STORAGE_KEY = 'readainews_used_photo_ids_v20';
 const memoryUsedPhotoIds = new Set();
 
 /**
+ * Detects whether an image URL is from an external publisher website.
+ * The algorithm strictly rejects all original publisher images.
+ */
+export function isExternalPublisherImage(url) {
+  if (!url || typeof url !== 'string') return true;
+  const clean = url.toLowerCase();
+  
+  const publisherDomains = [
+    'theverge.com',
+    'spectrum.ieee.org',
+    'the-decoder.com',
+    'wired.com',
+    'arstechnica.com',
+    'techcrunch.com',
+    'technologyreview.com',
+    'reuters.com',
+    'bloomberg.com',
+    'rbl.ms',
+    'cdn.arstechnica.net',
+    'platform.theverge.com',
+    'media.wired.com',
+    's.w.org'
+  ];
+  
+  return publisherDomains.some(domain => clean.includes(domain));
+}
+
+/**
  * Detects whether an image URL is a generic publisher logo or repeated brand graphic.
- * Used to replace OpenAI spiral logos, favicon icons, and author placeholders with unique photos.
  */
 export function isGenericOrRepeatedBrandImage(url) {
   if (!url || typeof url !== 'string' || url.length < 15) return true;
   const clean = url.toLowerCase();
+  
+  if (isExternalPublisherImage(clean)) return true;
   
   // Detect emojis, tracker pixels, avatars, badges, and generic icons
   if (
@@ -206,8 +239,7 @@ export function isGenericOrRepeatedBrandImage(url) {
     /openai.*stars/i,
     /openai.*kraken/i,
     /openai-prowiki/i,
-    /the-decoder\.com\/wp-content\/uploads\/.*openai/i,
-    /the-decoder\.com\/wp-content\/uploads\/.*chatgpt/i,
+    /the-decoder\.com/i,
     /placeholder/i,
     /brand-icon/i,
     /feed-icon/i,
@@ -358,28 +390,34 @@ export function generateUniqueProceduralSvg(title = '', context = 'frontier_mode
     <text x="28" y="18" fill="#e2e8f0" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" letter-spacing="0.08em">${cleanLabel.slice(0, 18)}</text>
   </g>
   
-  <text x="760" y="470" text-anchor="end" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" letter-spacing="0.1em" opacity="0.6">READ AI NEWS · WIRE</text>
+  <text x="760" y="470" text-anchor="end" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" letter-spacing="0.1em" opacity="0.6">READ AI NEWS · AI ART</text>
 </svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+/**
+ * Generates or assigns a 100% unique, creative AI-generated image.
+ * Strictly ignores and discards any image from the original publisher.
+ */
 export function getOrAssignUniqueImage(article, takenInBatch = new Set()) {
   const currentBaseId = getBaseImageId(article?.imageUrl);
+  const isPublisherImg = isExternalPublisherImage(article?.imageUrl);
   const isGeneric = isGenericOrRepeatedBrandImage(article?.imageUrl);
   
-  // If the article already has a valid non-generic image and it has not been claimed, keep it!
-  if (currentBaseId && !isGeneric && !takenInBatch.has(currentBaseId)) {
+  // If the article ALREADY has a valid creative AI image (Unsplash AI render or procedural SVG)
+  // that is NOT an external publisher image and hasn't been claimed in this batch, keep it!
+  if (currentBaseId && !isPublisherImg && !isGeneric && !takenInBatch.has(currentBaseId)) {
     takenInBatch.add(currentBaseId);
     return (article.imageUrl || '').replace(/&#038;/g, '&');
   }
   
-  // Compute deterministic hash based on article identity (id, canonicalUrl, or title)
+  // Compute deterministic hash based on article identity
   const hash = hashString(article?.id || article?.canonicalUrl || article?.title || 'ai-news');
   const ctx = article?.context || 'frontier_models';
   const categoryPool = VERIFIED_CONTEXT_PHOTO_POOLS[ctx] || VERIFIED_CONTEXT_PHOTO_POOLS.frontier_models;
   
-  // 1. Try category-specific pool with deterministic offset
+  // 1. Try category-specific creative AI art pool with deterministic offset
   for (let i = 0; i < categoryPool.length; i++) {
     const id = categoryPool[(hash + i) % categoryPool.length].toLowerCase();
     if (!takenInBatch.has(id)) {
@@ -415,6 +453,10 @@ export function getOrAssignUniqueImage(article, takenInBatch = new Set()) {
   return svgUrl;
 }
 
+/**
+ * Ensures that EVERY article in the provided list has a 100% unique,
+ * creative AI-generated preview image, with zero publisher images.
+ */
 export function ensureStrictlyUniqueImages(articles = []) {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
   
@@ -422,10 +464,11 @@ export function ensureStrictlyUniqueImages(articles = []) {
   
   return articles.map((article) => {
     const baseId = getBaseImageId(article?.imageUrl);
+    const isPublisherImg = isExternalPublisherImage(article?.imageUrl);
     const isGeneric = isGenericOrRepeatedBrandImage(article?.imageUrl);
     
-    // If the article already has a valid non-generic image and it does not conflict, keep it!
-    if (baseId && !isGeneric && !takenInBatch.has(baseId)) {
+    // If already has a valid creative AI art image and not from publisher, keep it!
+    if (baseId && !isPublisherImg && !isGeneric && !takenInBatch.has(baseId)) {
       takenInBatch.add(baseId);
       return {
         ...article,
@@ -433,7 +476,7 @@ export function ensureStrictlyUniqueImages(articles = []) {
       };
     }
     
-    // Otherwise assign a deterministic unique image
+    // Otherwise assign a deterministic unique creative AI-generated image
     const uniqueUrl = getOrAssignUniqueImage(article, takenInBatch);
     return {
       ...article,

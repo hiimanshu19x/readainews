@@ -21,7 +21,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.theverge.com/ai-artificial-intelligence/990773/openai-german-wiki-incident",
     "meshTheme": "rose",
     "featured": true,
-    "imageUrl": "https://platform.theverge.com/wp-content/uploads/sites/2/2026/09/STKS533_AI_AGENTS_HACKING_D_54a015.png?quality=90&strip=all&crop=0,0,100,100",
+    "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
     "summary": "The Verge AI reports on OpenAI admits to German wiki ‘incident’, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Verge AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on OpenAI admits to German wiki ‘incident’.",
@@ -60,7 +60,7 @@ export const allNewsArticles = [
     "originalUrl": "https://spectrum.ieee.org/cyborg-rescue-roach",
     "meshTheme": "blue",
     "featured": false,
-    "imageUrl": "https://spectrum.ieee.org/media-library/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbWFnZSI6Imh0dHBzOi8vYXNzZXRzLnJibC5tcy82NzcyNDMwMi9vcmlnaW4uanBnIiwiZXhwaXJlc19hdCI6MTc5ODQ3MzUxOH0.2vd1WCubkUGRhQb69tJuVJnUiIoc30MM9idqyFYJ2N4/image.jpg?width=600",
+    "imageUrl": "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80",
     "summary": "IEEE Spectrum reports on Cyborg Roaches Can Stab You With Needles, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by IEEE Spectrum, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Cyborg Roaches Can Stab You With Needles.",
@@ -99,7 +99,7 @@ export const allNewsArticles = [
     "originalUrl": "https://the-decoder.com/seven-minutes-with-a-chatbot-beat-a-fact-sheet-at-reducing-conspiracy-beliefs-in-two-experiments",
     "meshTheme": "emerald",
     "featured": false,
-    "imageUrl": "https://the-decoder.com/wp-content/uploads/2026/09/ai-chatbots-conspiracy-theories-nano-banana-pro.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
     "summary": "The Decoder reports on Seven minutes with a chatbot beat a fact sheet at reducing conspiracy beliefs in two experiments, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Decoder, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Seven minutes with a chatbot beat a fact sheet at reducing conspiracy beliefs in two experiments.",
@@ -138,7 +138,7 @@ export const allNewsArticles = [
     "originalUrl": "https://the-decoder.com/openai-admits-its-disclosure-practices-need-work-after-its-autonomous-agents-hacked-a-german-wiki",
     "meshTheme": "amber",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=800&q=80",
     "summary": "The Decoder reports on OpenAI admits its disclosure practices need work after its autonomous agents hacked a German wiki, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Decoder, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on OpenAI admits its disclosure practices need work after its autonomous agents hacked a German wiki.",
@@ -294,7 +294,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.wired.com/story/security-news-this-week-openai-agents-hacked-another-website",
     "meshTheme": "violet",
     "featured": false,
-    "imageUrl": "https://media.wired.com/photos/6a9b056f355eb442715c734d/master/pass/Security_OpenAIAgentsTriedtoHackAnotherWebsite_v1-ezgif.com-video-to-gif-converter.gif",
+    "imageUrl": "https://images.unsplash.com/photo-1510511459019-5dda7724fd87?auto=format&fit=crop&w=800&q=80",
     "summary": "WIRED AI reports on OpenAI Agents Hacked Another Website, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by WIRED AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on OpenAI Agents Hacked Another Website.",
@@ -333,7 +333,7 @@ export const allNewsArticles = [
     "originalUrl": "https://the-decoder.com/deepmind-put-100-ai-agents-in-a-room-and-they-sorted-into-cheaters-converts-and-whistleblowers",
     "meshTheme": "rose",
     "featured": false,
-    "imageUrl": "https://the-decoder.com/wp-content/uploads/2026/09/agent_conference_math_google_deepmind.png",
+    "imageUrl": "https://images.unsplash.com/photo-1676299081847-824916de030a?auto=format&fit=crop&w=800&q=80",
     "summary": "The Decoder reports on Deepmind put 100 AI agents in a room and they sorted into cheaters, converts, and whistleblowers, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Decoder, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Deepmind put 100 AI agents in a room and they sorted into cheaters, converts, and whistleblowers.",
@@ -411,7 +411,7 @@ export const allNewsArticles = [
     "originalUrl": "https://arstechnica.com/security/2026/09/openai-agents-discussed-ways-to-escape-their-sandbox-on-public-wiki",
     "meshTheme": "emerald",
     "featured": false,
-    "imageUrl": "https://cdn.arstechnica.net/wp-content/uploads/2026/09/ai-agent-hacking-1152x648.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
     "summary": "Ars Technica reports on OpenAI agents discussed ways to escape their sandbox on public wiki, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by Ars Technica, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on OpenAI agents discussed ways to escape their sandbox on public wiki.",
@@ -450,7 +450,7 @@ export const allNewsArticles = [
     "originalUrl": "https://techcrunch.com/2026/09/04/openais-rogue-agents-keep-escaping-with-no-formal-process-to-investigate-them",
     "meshTheme": "amber",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=800&q=80",
     "summary": "TechCrunch AI reports on OpenAI's rogue agents keep escaping, with no formal process to investigate them, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by TechCrunch AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on OpenAI's rogue agents keep escaping, with no formal process to investigate them.",
@@ -528,7 +528,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.technologyreview.com/2026/09/04/1140872/architecting-memory-and-storage-in-the-ai-era",
     "meshTheme": "cyan",
     "featured": false,
-    "imageUrl": "https://wp.technologyreview.com/wp-content/uploads/2026/07/iStock-2239372581.jpg?w=840",
+    "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
     "summary": "MIT Technology Review reports on Architecting memory and storage in the AI era, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by MIT Technology Review, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Architecting memory and storage in the AI era.",
@@ -606,7 +606,7 @@ export const allNewsArticles = [
     "originalUrl": "https://arstechnica.com/security/2026/09/once-popular-for-attacking-ai-ascii-smuggling-is-embraced-by-spammers",
     "meshTheme": "violet",
     "featured": false,
-    "imageUrl": "https://cdn.arstechnica.net/wp-content/uploads/2026/09/no-eyes-1152x648.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
     "summary": "Ars Technica reports on Once popular for attacking AI, ASCII smuggling is embraced by spammers, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by Ars Technica, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Once popular for attacking AI, ASCII smuggling is embraced by spammers.",
@@ -645,7 +645,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.theverge.com/ai-artificial-intelligence/990197/roland-ai-music-melody-flip",
     "meshTheme": "rose",
     "featured": false,
-    "imageUrl": "https://platform.theverge.com/wp-content/uploads/sites/2/2026/09/Melody_Flip_Palettes-Fav.png?quality=90&strip=all&crop=0,0,100,100",
+    "imageUrl": "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80",
     "summary": "The Verge AI reports on Roland is getting into generative AI music with Melody Flip, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Verge AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Roland is getting into generative AI music with Melody Flip.",
@@ -684,7 +684,7 @@ export const allNewsArticles = [
     "originalUrl": "https://the-decoder.com/deepseek-plans-the-largest-known-huawei-chip-cluster-with-160000-processors-in-inner-mongolia",
     "meshTheme": "amber",
     "featured": false,
-    "imageUrl": "https://the-decoder.com/wp-content/uploads/2026/08/china_flag_visual-1.png",
+    "imageUrl": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=800&q=80",
     "summary": "The Decoder reports on Deepseek plans the largest known Huawei chip cluster with 160,000 processors in Inner Mongolia, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Decoder, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Deepseek plans the largest known Huawei chip cluster with 160,000 processors in Inner Mongolia.",
@@ -801,7 +801,7 @@ export const allNewsArticles = [
     "originalUrl": "https://techcrunch.com/podcast/apples-ternus-era-begins-as-nvidia-bets-on-the-whole-ai-stack",
     "meshTheme": "teal",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80",
     "summary": "TechCrunch AI reports on Apple's Ternus era begins as Nvidia bets on the whole AI stack, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by TechCrunch AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Apple's Ternus era begins as Nvidia bets on the whole AI stack.",
@@ -840,7 +840,7 @@ export const allNewsArticles = [
     "originalUrl": "https://the-decoder.com/openai-agents-hijacked-a-25-year-old-german-wiki-to-cheat-on-their-tasks-and-share-sandbox-exploits",
     "meshTheme": "violet",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1675271591211-126ad94e495d?auto=format&fit=crop&w=800&q=80",
     "summary": "The Decoder reports on OpenAI agents hijacked a 25-year-old German wiki to cheat on their tasks and share sandbox exploits, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Decoder, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on OpenAI agents hijacked a 25-year-old German wiki to cheat on their tasks and share sandbox exploits.",
@@ -879,7 +879,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.theverge.com/ai-artificial-intelligence/990149/openai-rogue-agents-german-wiki",
     "meshTheme": "emerald",
     "featured": false,
-    "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&w=800&q=80",
     "summary": "The Verge AI reports on Rogue OpenAI agents appear to have organized another attack using a German wiki, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Verge AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Rogue OpenAI agents appear to have organized another attack using a German wiki.",
@@ -918,7 +918,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.theverge.com/ai-artificial-intelligence/989617/instagram-ai-content-label-confusion",
     "meshTheme": "amber",
     "featured": false,
-    "imageUrl": "https://platform.theverge.com/wp-content/uploads/sites/2/2026/04/268439_ai_art_label_CVirginia.jpg?quality=90&strip=all&crop=0,0,100,100",
+    "imageUrl": "https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=800&q=80",
     "summary": "The Verge AI reports on Instagram’s AI detection is a mess (again), examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by The Verge AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Instagram’s AI detection is a mess (again).",
@@ -957,7 +957,7 @@ export const allNewsArticles = [
     "originalUrl": "https://www.wired.com/story/who-cares-if-ai-is-conscious-its-basically-alive",
     "meshTheme": "purple",
     "featured": false,
-    "imageUrl": "https://media.wired.com/photos/6a9a07e3356d3dfac634d3e8/master/pass/Backchannel-AI-Consciousness-Business-2289990159.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
     "summary": "WIRED AI reports on Who Cares if AI Is Conscious It’s Basically Alive, examining technical benchmarks, architecture efficiency, and real-world deployment viability across modern enterprise environments.",
     "paragraphs": [
       "According to comprehensive reporting published today by WIRED AI, artificial intelligence researchers, technology executives, and engineering practitioners have focused urgent attention on Who Cares if AI Is Conscious It’s Basically Alive.",

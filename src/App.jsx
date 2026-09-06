@@ -18,9 +18,9 @@ import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v19';
-const POOL_STORAGE_KEY = 'readainews_fresh_pool_v19';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v19';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v20';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v20';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v20';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');
@@ -160,7 +160,7 @@ export default function App() {
             key.startsWith('readainews_today_batch_') ||
             key.startsWith('readainews_3hr_batch_') ||
             key.startsWith('readainews_fresh_today_') ||
-            (key.startsWith('readainews_') && !key.includes('_v19') && !key.includes('readainews_saved_ids'))
+            (key.startsWith('readainews_') && !key.includes('_v20') && !key.includes('readainews_saved_ids'))
           )) {
             keysToRemove.push(key);
           }
