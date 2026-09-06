@@ -4,6 +4,8 @@
  * Guarantees that EVERY article on the website (seed, live-scraped, or procedural)
  * receives a 100% unique, visually distinct preview image.
  * No two cards on the website will ever share the same preview image.
+ * Automatically detects and replaces generic brand logos (e.g. OpenAI spiral logos, generic icons)
+ * with vivid, high-resolution contextual imagery.
  */
 
 export const VERIFIED_CONTEXT_PHOTO_POOLS = {
@@ -14,12 +16,10 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
     'photo-1635070041078-e363dbe005cb', // quantum geometric light matrix
     'photo-1451187580459-43490279c0fa', // global connected network intelligence
     'photo-1507413245164-6160d8298b31', // scientific light beams
-    'photo-1501167786227-4cba60f6d58f', // minimal abstract futuristic
+    'photo-1535223289827-42f1e9919769', // futuristic user interface HUD
     'photo-1531297484001-80022131f5a1', // high tech laptop workstation
-    'photo-1579546929518-9e396f3cc809', // color gradient mesh
     'photo-1550745165-9bc0b252726f', // retro tech hardware
-    'photo-1504384764586-bb4cdc1707b0', // abstract light rays
-    'photo-1517433670267-08bbd4be890f', // deep tech research
+    'photo-1517433670267-08bbd4be890f', // deep tech research monitor
     'photo-1446776811953-b23d57bd21aa', // earth orbital view
     'photo-1446776877081-d282a0f896e2', // space telemetry science
     'photo-1446776709462-d6b525c57bd3', // satellite space vista
@@ -58,7 +58,7 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
     'photo-1563013544-824ae1b704d3', // padlock on laptop
     'photo-1526374965328-7f61d4dc18c5', // matrix code terminal
     'photo-1528731708534-816fe59f90cb', // high speed network patch cables
-    'photo-1535223289827-42f1e9919769', // futuristic user interface
+    'photo-1555066931-4365d14bab8c', // programming code terminal
     'photo-1558655146-d09347e92766', // cyber security vault lock
     'photo-1559526324-4b87b5e36e44'  // enterprise network monitoring
   ],
@@ -170,14 +170,47 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
 const PHOTO_STORAGE_KEY = 'readainews_used_photo_ids_v12';
 const memoryUsedPhotoIds = new Set();
 
+/**
+ * Detects whether an image URL is a generic publisher logo or repeated brand graphic.
+ * Used to replace OpenAI spiral logos, favicon icons, and author placeholders with unique photos.
+ */
+export function isGenericOrRepeatedBrandImage(url) {
+  if (!url || typeof url !== 'string') return true;
+  const clean = url.toLowerCase();
+  
+  // Detect repetitive brand logos and stock icons
+  const brandLogoPatterns = [
+    /openai.*logo/i,
+    /logo.*openai/i,
+    /openai.*pattern/i,
+    /openai.*wall/i,
+    /openai.*stars/i,
+    /openai.*kraken/i,
+    /openai-prowiki/i,
+    /the-decoder\.com\/wp-content\/uploads\/.*openai/i,
+    /the-decoder\.com\/wp-content\/uploads\/.*chatgpt/i,
+    /favicon/i,
+    /default-avatar/i,
+    /author-avatar/i,
+    /placeholder/i,
+    /brand-icon/i,
+    /feed-icon/i,
+    /social-share/i,
+    /logo-mark/i
+  ];
+  
+  return brandLogoPatterns.some(p => p.test(clean));
+}
+
 export function getBaseImageId(url) {
   if (!url || typeof url !== 'string') return '';
-  const match = url.match(/photo-[0-9a-f-]+/i);
+  const decoded = url.replace(/&#038;/g, '&');
+  const match = decoded.match(/photo-[0-9a-f-]+/i);
   if (match) return match[0].toLowerCase();
-  if (url.startsWith('data:image/svg')) {
-    return 'svg-' + hashString(url);
+  if (decoded.startsWith('data:image/svg')) {
+    return 'svg-' + hashString(decoded);
   }
-  return url.split('?')[0].toLowerCase();
+  return decoded.split('?')[0].toLowerCase();
 }
 
 export function hashString(str) {
@@ -317,11 +350,12 @@ export function generateUniqueProceduralSvg(title = '', context = 'frontier_mode
 
 export function getOrAssignUniqueImage(article, takenInBatch = new Set()) {
   const currentBaseId = getBaseImageId(article?.imageUrl);
+  const isGeneric = isGenericOrRepeatedBrandImage(article?.imageUrl);
   
-  // If the article already has a valid image and it has not been claimed by a preceding card in this batch, keep it!
-  if (currentBaseId && !takenInBatch.has(currentBaseId)) {
+  // If the article already has a valid non-generic image and it has not been claimed, keep it!
+  if (currentBaseId && !isGeneric && !takenInBatch.has(currentBaseId)) {
     takenInBatch.add(currentBaseId);
-    return article.imageUrl;
+    return (article.imageUrl || '').replace(/&#038;/g, '&');
   }
   
   // Compute deterministic hash based on article identity (id, canonicalUrl, or title)
@@ -372,11 +406,15 @@ export function ensureStrictlyUniqueImages(articles = []) {
   
   return articles.map((article) => {
     const baseId = getBaseImageId(article?.imageUrl);
+    const isGeneric = isGenericOrRepeatedBrandImage(article?.imageUrl);
     
-    // If the article already has an image and it does not conflict in this deck, keep it unchanged!
-    if (baseId && !takenInBatch.has(baseId)) {
+    // If the article already has a valid non-generic image and it does not conflict, keep it!
+    if (baseId && !isGeneric && !takenInBatch.has(baseId)) {
       takenInBatch.add(baseId);
-      return article;
+      return {
+        ...article,
+        imageUrl: (article.imageUrl || '').replace(/&#038;/g, '&')
+      };
     }
     
     // Otherwise assign a deterministic unique image
