@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Sparkles, 
   Calendar, 
@@ -11,11 +11,13 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Bell, 
-  RotateCcw 
+  RotateCcw,
+  ExternalLink
 } from 'lucide-react';
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
 import { formatLocalShortDate, getUserTimeZoneAbbr } from '../utils/timeZone';
+import { curateThisWeekCollection } from '../utils/weeklyCuration';
 
 const tz = getUserTimeZoneAbbr() || 'Local';
 
@@ -88,16 +90,11 @@ export default function WeeklyCollection({
 
   const currentWeekMeta = WEEKS_DATA.find(w => w.id === selectedWeek) || WEEKS_DATA[0];
 
-  // Filter weekly items strictly by rolling 7-day period: published_at >= now - 7 days
-  const now = Date.now();
-  const SEVEN_DAYS_MS = 7 * 24 * 3600 * 1000;
-  const weeklyArticles = articles.filter(a => {
-    if (a.publishedEpoch) {
-      const age = now - a.publishedEpoch;
-      return age >= 0 && age <= SEVEN_DAYS_MS;
-    }
-    return a.isWeeklyBest;
-  });
+  // Curate 10-12 top engaging articles from each previous day of the current week
+  const weeklyArticles = useMemo(() => {
+    return curateThisWeekCollection(articles);
+  }, [articles]);
+
   const filtered = weeklyArticles;
 
   const handleScrollToNewsletter = () => {
@@ -367,14 +364,19 @@ export default function WeeklyCollection({
                       {article.summary}
                     </p>
 
-                    {/* Bottom Source */}
+                    {/* Bottom Source & Direct Outbound Link */}
                     <div className="mt-auto pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2 text-xs">
-                      <span 
-                        className="text-[10px] sm:text-[11px] text-zinc-400 truncate min-w-0 flex-1"
-                        title={`Source: ${article.source}`}
+                      <a 
+                        href={article.canonicalUrl || article.originalUrl || article.sourceUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
+                        className="text-[10px] sm:text-[11px] text-zinc-400 hover:text-white truncate min-w-0 flex-1 flex items-center gap-1 transition-colors"
+                        title={`Open original article on ${article.source}`}
                       >
-                        Source: <strong className="text-zinc-300 font-normal">{article.source}</strong>
-                      </span>
+                        <span>Source:</span> <strong className="text-zinc-300 hover:text-white font-medium underline decoration-white/20 underline-offset-2">{article.source}</strong>
+                        <ExternalLink size={9} className="opacity-70 flex-shrink-0" />
+                      </a>
 
                       <span className="shrink-0 whitespace-nowrap inline-flex items-center gap-1 font-medium text-[11px] sm:text-xs text-zinc-300 group-hover:text-white">
                         <span className="whitespace-nowrap">Full brief</span>

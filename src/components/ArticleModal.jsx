@@ -41,7 +41,7 @@ export default function ArticleModal({
   };
 
   const getDirectOriginalUrl = () => {
-    return article?.sourceUrl || '#';
+    return article?.canonicalUrl || article?.originalUrl || article?.sourceUrl || '#';
   };
 
   return (
@@ -82,16 +82,16 @@ export default function ArticleModal({
             <X size={16} />
           </button>
 
-          {/* Source Outlet Badge (Direct Outbound Link) */}
+          {/* Source Outlet Badge (Direct Outbound Link to Original Article) */}
           <a
-            href={article.sourceUrl || '#'}
+            href={getDirectOriginalUrl()}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
             title={`Open original article on ${article.source}`}
             className="absolute top-3 left-3 sm:top-4 sm:left-4 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs text-white font-semibold flex items-center gap-1.5 shadow-md hover:bg-black hover:border-white/30 transition-all group"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span>{article.source}</span>
             <ExternalLink size={10} className="text-zinc-400 group-hover:text-white transition-colors" />
           </a>
@@ -217,13 +217,13 @@ export default function ArticleModal({
             </div>
 
             <a
-              href={article.sourceUrl || '#'}
+              href={getDirectOriginalUrl()}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => sound.playClick()}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 active:scale-95 transition-all shadow-md"
             >
-              <span>Read on {article.source}</span>
+              <span>Read Original on {article.source}</span>
               <ExternalLink size={13} />
             </a>
           </div>

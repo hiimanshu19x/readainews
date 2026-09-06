@@ -60,7 +60,7 @@ export default function NewsCard({
 
             {/* Source mention at bottom (Direct Outbound Link) */}
             <a 
-              href={article.sourceUrl || '#'}
+              href={article.canonicalUrl || article.originalUrl || article.sourceUrl || '#'}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
@@ -158,7 +158,7 @@ export default function NewsCard({
         {/* Bottom Metadata & Source Mention */}
         <div className="mt-auto pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2 text-xs">
           <a 
-            href={article.sourceUrl || '#'}
+            href={article.canonicalUrl || article.originalUrl || article.sourceUrl || '#'}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => { e.stopPropagation(); sound.playClick(); }}

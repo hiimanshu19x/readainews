@@ -457,6 +457,7 @@ export function calibrateJournalisticArticle(candidate, rank = 1) {
     source: candidate.source,
     sourceUrl: candidate.canonicalUrl,
     originalUrl: candidate.canonicalUrl,
+    canonicalUrl: candidate.canonicalUrl,
     meshTheme: meshTheme,
     featured: rank === 1,
     imageUrl: candidate.imageUrl,
