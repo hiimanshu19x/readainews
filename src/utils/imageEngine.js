@@ -175,9 +175,28 @@ const memoryUsedPhotoIds = new Set();
  * Used to replace OpenAI spiral logos, favicon icons, and author placeholders with unique photos.
  */
 export function isGenericOrRepeatedBrandImage(url) {
-  if (!url || typeof url !== 'string') return true;
+  if (!url || typeof url !== 'string' || url.length < 15) return true;
   const clean = url.toLowerCase();
   
+  // Detect emojis, tracker pixels, avatars, badges, and generic icons
+  if (
+    clean.includes('s.w.org') ||
+    clean.includes('emoji') ||
+    clean.includes('twemoji') ||
+    clean.includes('gravatar') ||
+    clean.includes('avatar') ||
+    clean.includes('favicon') ||
+    clean.includes('1x1') ||
+    clean.includes('pixel') ||
+    clean.includes('feedburner') ||
+    clean.includes('tracker') ||
+    clean.includes('badge') ||
+    clean.includes('spacer') ||
+    clean.includes('wp-includes')
+  ) {
+    return true;
+  }
+
   // Detect repetitive brand logos and stock icons
   const brandLogoPatterns = [
     /openai.*logo/i,
@@ -189,9 +208,6 @@ export function isGenericOrRepeatedBrandImage(url) {
     /openai-prowiki/i,
     /the-decoder\.com\/wp-content\/uploads\/.*openai/i,
     /the-decoder\.com\/wp-content\/uploads\/.*chatgpt/i,
-    /favicon/i,
-    /default-avatar/i,
-    /author-avatar/i,
     /placeholder/i,
     /brand-icon/i,
     /feed-icon/i,

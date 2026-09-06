@@ -322,9 +322,19 @@ export function parseXmlItem(itemXml, isAtom, sourceMeta) {
   let imageUrl = getAttr('enclosure', 'url') || 
                  getAttr('media:content', 'url') || 
                  getAttr('media:thumbnail', 'url');
-  if (!imageUrl) {
+                 
+  const isInvalidImg = (u) => !u || u.length < 15 || 
+    u.includes('s.w.org') || u.includes('emoji') || u.includes('gravatar') || 
+    u.includes('avatar') || u.includes('1x1') || u.includes('pixel') || 
+    u.includes('feedburner') || u.includes('spacer') || u.includes('wp-includes');
+
+  if (isInvalidImg(imageUrl)) {
     const imgMatch = itemXml.match(/<img[^>]+src=["']([^"']+)["']/i);
-    if (imgMatch) imageUrl = imgMatch[1];
+    if (imgMatch && !isInvalidImg(imgMatch[1])) {
+      imageUrl = imgMatch[1];
+    } else {
+      imageUrl = '';
+    }
   }
 
   return {
