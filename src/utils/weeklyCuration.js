@@ -41,20 +41,23 @@ export function curateThisWeekCollection(allArticles = []) {
     daysMap.get(dateKey).push(article);
   }
 
-  // Sort dates descending (newest previous days first)
-  const sortedDates = Array.from(daysMap.keys()).sort().reverse();
+  const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(now));
+
+  // Prioritize completed previous days of the current week (e.g. Sept 6 first, then Sept 5, Sept 4...)
+  const previousDates = Array.from(daysMap.keys()).filter(d => d < todayKey).sort().reverse();
+  const sortedDates = previousDates.length > 0 ? previousDates : Array.from(daysMap.keys()).sort().reverse();
+
   const curatedSelection = [];
   const seenIds = new Set();
 
-  // For each day, pick the top 1 or 2 highest engaging/scored articles
+  // For each day, pick the top 1 or 2 highest engaging/viral articles
   for (const dateKey of sortedDates) {
     const dayArticles = daysMap.get(dateKey) || [];
     
-    // Sort day's articles by engagement score / importance
+    // Sort day's articles by engagement score & virality
     const rankedDayArticles = [...dayArticles].sort((a, b) => {
-      // Prioritize high-weight sources & engagement
-      const scoreA = (a.score || 0) + (a.isWeeklyBest ? 20 : 0) + (parseFloat(a.views || '0') * 0.1);
-      const scoreB = (b.score || 0) + (b.isWeeklyBest ? 20 : 0) + (parseFloat(b.views || '0') * 0.1);
+      const scoreA = (a.score || 0) + (a.isWeeklyBest ? 30 : 0) + (parseFloat(a.views || '0') * 0.1);
+      const scoreB = (b.score || 0) + (b.isWeeklyBest ? 30 : 0) + (parseFloat(b.views || '0') * 0.1);
       return scoreB - scoreA;
     });
 
