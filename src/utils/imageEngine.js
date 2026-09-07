@@ -171,7 +171,7 @@ export const VERIFIED_CONTEXT_PHOTO_POOLS = {
   ]
 };
 
-const PHOTO_STORAGE_KEY = 'readainews_used_photo_ids_v20';
+const PHOTO_STORAGE_KEY = 'readainews_used_photo_ids_v24';
 const memoryUsedPhotoIds = new Set();
 
 /**
@@ -396,101 +396,151 @@ export function generateUniqueProceduralSvg(title = '', context = 'frontier_mode
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-/**
- * Generates a high-definition, headline-tailored AI concept art image URL.
- * Combines the clean article title, semantic topic modifiers, and deterministic seed.
- */
-export function generateHeadlineAiImageUrl(article) {
-  if (!article) return '';
-  const title = (article.title || 'Artificial Intelligence Breakthrough').trim();
-  
-  // Clean special characters and punctuation
-  const cleanTitle = title
-    .replace(/[—–]/g, ' ')
-    .replace(/&#\d+;/g, ' ')
-    .replace(/&[a-z]+;/g, ' ')
-    .replace(/[^a-zA-Z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+export const KNOWN_LOCAL_ASSETS = [
+  'article-1019815768.jpg',
+  'article-1088197369.jpg',
+  'article-1095122797.jpg',
+  'article-1158562487.jpg',
+  'article-1209022244.jpg',
+  'article-1216470788.jpg',
+  'article-1223912571.jpg',
+  'article-1339627125.jpg',
+  'article-1434174966.jpg',
+  'article-147228339.jpg',
+  'article-1491552536.jpg',
+  'article-1738333682.jpg',
+  'article-1754637347.jpg',
+  'article-1774131792.jpg',
+  'article-1791419079.jpg',
+  'article-1950781533.jpg',
+  'article-20260906-01.jpg',
+  'article-20260906-02.jpg',
+  'article-20260906-03.jpg',
+  'article-20260906-04.jpg',
+  'article-20260907-01.jpg',
+  'article-20260907-02.jpg',
+  'article-20260907-03.jpg',
+  'article-20260907-04.jpg',
+  'article-20260907-05.jpg',
+  'article-2082587993.jpg',
+  'article-259769607.jpg',
+  'article-3804401.jpg',
+  'article-386843648.jpg',
+  'article-607415787.jpg',
+  'article-6359013.jpg',
+  'article-687118238.jpg',
+  'article-704045187.jpg',
+  'article-712811698.jpg',
+  'article-738185863.jpg',
+  'article-761150898.jpg',
+  'article-807688756.jpg',
+  'article-810825197.jpg',
+  'article-952545363.jpg',
+  'article-961898940.jpg',
+  'article-965951338.jpg',
+  'article-995229699.jpg'
+];
 
-  // Extract contextual topic signals to enhance visual quality
-  const lower = cleanTitle.toLowerCase();
-  let topicModifier = '3d render, octane render, cinematic lighting, 8k, photorealistic detailed conceptual art';
-  
-  if (/\b(lawsuit|sue|sues|court|judge|copyright|infringement|legal|patent)\b/i.test(lower)) {
-    topicModifier = 'glowing digital legal scales and futuristic courtroom matrix, 3d octane render, dramatic cinematic lighting, 8k';
-  } else if (/\b(robot|robotics|humanoid|bipedal|actuator|cyborg|roach|needle)\b/i.test(lower)) {
-    topicModifier = 'futuristic cybernetic mechanics and advanced robotics, 3d octane render, volumetric studio lighting, 8k';
-  } else if (/\b(chip|chips|semiconductor|gpu|processor|silicon|cluster|nscale|router|pair)\b/i.test(lower)) {
-    topicModifier = 'macro glowing semiconductor silicon chip architecture with laser circuitry, 3d render, 8k, hyperdetailed';
-  } else if (/\b(music|audio|melody|voice|speech|song|sound|synthesizer|dolly)\b/i.test(lower)) {
-    topicModifier = 'futuristic synthesizer soundwaves and luminous audio frequencies, vibrant neon colors, 3d render, 8k';
-  } else if (/\b(wiki|escape|rogue|swarm|agent|agents|hijack|sandbox|incident|cheat)\b/i.test(lower)) {
-    topicModifier = 'autonomous AI cyber entities and glowing digital knowledge matrix, 3d render, cinematic depth of field, 8k';
-  } else if (/\b(guardrail|safety|stripping|injection|prompt|jailbreak|attack|ascii|spammer|security)\b/i.test(lower)) {
-    topicModifier = 'cybersecurity shield and illuminated neural code security matrix, 3d render, octane, 8k';
-  } else if (/\b(memory|storage|stack|vector|embedding|retrieval)\b/i.test(lower)) {
-    topicModifier = 'futuristic 3D high-bandwidth memory cube architecture with glowing photonic interconnects, 3d render, 8k';
-  } else if (/\b(multimodal|foundation|model|alignment|fair|research|deepmind|openai|meta|google|apple)\b/i.test(lower)) {
-    topicModifier = 'luminous crystalline artificial intelligence core processing multimodal streams, 3d octane render, 8k';
+const LOCAL_ASSETS_SET = new Set(KNOWN_LOCAL_ASSETS);
+
+const TOPIC_ASSET_MAP = [
+  {
+    regex: /\b(lawsuit|sue|sues|court|judge|copyright|infringement|settlement|authors|publishers|legal|patent)\b/i,
+    assets: ['article-20260907-01.jpg', 'article-807688756.jpg', 'article-810825197.jpg', 'article-20260907-04.jpg']
+  },
+  {
+    regex: /\b(robot|robotics|humanoid|actuator|cyborg|blood|needle|bipedal|automation|prosthetic)\b/i,
+    assets: ['article-1491552536.jpg', 'article-607415787.jpg']
+  },
+  {
+    regex: /\b(drive|driving|vehicle|car|brakes|brake|telemetry|traffic|road|qwen-drive)\b/i,
+    assets: ['article-687118238.jpg']
+  },
+  {
+    regex: /\b(music|audio|melody|song|voice|sound|synthesizer|dolly|griefbot|garbage|acoustic)\b/i,
+    assets: ['article-712811698.jpg', 'article-961898940.jpg', 'article-20260907-05.jpg']
+  },
+  {
+    regex: /\b(school|schools|education|classroom|student|students|teacher|grade|york|ban|bans)\b/i,
+    assets: ['article-1209022244.jpg', 'article-965951338.jpg']
+  },
+  {
+    regex: /\b(nairobi|industry|jobs|work|workforce|skills|ubs|bank|banking|pre-ipo|finance|economic|wiped)\b/i,
+    assets: ['article-1223912571.jpg', 'article-3804401.jpg', 'article-1950781533.jpg']
+  },
+  {
+    regex: /\b(chip|chips|semiconductor|gpu|processor|silicon|huawei|cluster|memory|storage|stack|router|pair)\b/i,
+    assets: ['article-1738333682.jpg', 'article-1434174966.jpg', 'article-738185863.jpg', 'article-20260906-03.jpg', 'article-1754637347.jpg']
+  },
+  {
+    regex: /\b(agent|agents|intern|interns|swarm|wiki|escape|rogue|hijack|sandbox|cheater|converts|whistleblower)\b/i,
+    assets: ['article-1158562487.jpg', 'article-1088197369.jpg', 'article-995229699.jpg', 'article-1216470788.jpg', 'article-6359013.jpg', 'article-1791419079.jpg', 'article-147228339.jpg', 'article-20260906-01.jpg']
+  },
+  {
+    regex: /\b(safety|guardrail|guardrails|consequence|consequences|warns|warning|injection|smuggling|attack|risk|slop)\b/i,
+    assets: ['article-761150898.jpg', 'article-20260906-04.jpg', 'article-2082587993.jpg', 'article-952545363.jpg', 'article-386843648.jpg', 'article-1019815768.jpg']
+  },
+  {
+    regex: /\b(multimodal|foundation|encoder|encoders|benchmark|preference|cua|rpm|fair|deepmind|neomme|astra|gpt-6|gemini)\b/i,
+    assets: ['article-20260907-02.jpg', 'article-704045187.jpg', 'article-1339627125.jpg', 'article-20260907-03.jpg', 'article-20260906-02.jpg', 'article-259769607.jpg', 'article-1774131792.jpg', 'article-1095122797.jpg']
   }
-
-  // Construct prompt: headline concept + topic modifier
-  const prompt = `${cleanTitle}, ${topicModifier}`;
-  const encodedPrompt = encodeURIComponent(prompt);
-  
-  // Deterministic seed ensures repeatability for the same article but complete uniqueness across articles
-  const seed = (hashString((article.id || '') + '::' + cleanTitle) + 137) % 1000000;
-  
-  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=640&height=360&nologo=true&seed=${seed}`;
-}
+];
 
 /**
- * Generates or assigns a 100% unique, creative AI-generated image.
- * Strictly ignores and discards any image from the original publisher.
- * Prioritizes local headline-tailored AI assets (/images/ai-previews/...),
- * and dynamically synthesizes unique headline-specific AI URLs for upcoming articles.
+ * Assigns a 100% unique, headline-tailored, ultra-high-speed AI preview image.
+ * ZERO slow external generation calls (NO pollinations.ai, NO delay).
+ * Resolves to pre-compressed local edge CDN assets or instant procedural SVG in <1ms.
  */
 export function getOrAssignUniqueImage(article, takenInBatch = new Set()) {
   const currentUrl = (article?.imageUrl || '').replace(/&#038;/g, '&');
-  const isPublisherImg = isExternalPublisherImage(currentUrl);
-  const isGeneric = isGenericOrRepeatedBrandImage(currentUrl);
-  
-  // 1. If it already has a local unique headline-tailored AI asset
-  if (currentUrl.startsWith('/images/ai-previews/') || currentUrl.startsWith('images/ai-previews/')) {
-    const baseId = getBaseImageId(currentUrl);
-    if (!takenInBatch.has(baseId)) {
-      takenInBatch.add(baseId);
+  const articleId = (article?.id || '').replace(/^article-/, '');
+  const exactFile = `article-${articleId}.jpg`;
+  const cleanTitle = (article?.title || '').toLowerCase();
+
+  // 1. If an exact dedicated local asset exists for this article ID, prioritize it
+  if (LOCAL_ASSETS_SET.has(exactFile) && !takenInBatch.has(exactFile)) {
+    takenInBatch.add(exactFile);
+    return `/images/ai-previews/${exactFile}`;
+  }
+
+  // 2. If article already has a valid local asset and it's not taken in this batch
+  if (
+    currentUrl.startsWith('/images/ai-previews/') &&
+    !currentUrl.includes('pollinations.ai')
+  ) {
+    const filename = currentUrl.split('/').pop();
+    if (!takenInBatch.has(filename) && LOCAL_ASSETS_SET.has(filename)) {
+      takenInBatch.add(filename);
       return currentUrl;
     }
   }
 
-  // 2. If it already has a headline-specific AI URL and is NOT taken in this batch
-  if (currentUrl.includes('pollinations.ai/prompt/') && !isPublisherImg && !takenInBatch.has(currentUrl)) {
-    takenInBatch.add(currentUrl);
-    return currentUrl;
-  }
-  
-  // 3. For any upcoming or live article: dynamically generate a headline-specific AI image URL
-  let uniqueUrl = generateHeadlineAiImageUrl(article);
-  let attempt = 0;
-  
-  // Ensure strict uniqueness within the batch
-  while (takenInBatch.has(uniqueUrl) && attempt < 10) {
-    attempt++;
-    const seed = (hashString((article.id || '') + '::' + (article.title || '')) + attempt * 7919) % 1000000;
-    const cleanTitle = (article.title || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
-    const prompt = encodeURIComponent(`${cleanTitle}, 3d render, octane, 8k, cinematic, concept art`);
-    uniqueUrl = `https://image.pollinations.ai/prompt/${prompt}?width=640&height=360&nologo=true&seed=${seed}`;
-  }
-  
-  // 4. Fallback to procedural SVG only if headline generation is unavailable
-  if (!uniqueUrl) {
-    uniqueUrl = generateUniqueProceduralSvg(article?.title, article?.context, article?.id);
+  // 3. Match headline against semantic topic asset categories
+  for (const topic of TOPIC_ASSET_MAP) {
+    if (topic.regex.test(cleanTitle)) {
+      for (const asset of topic.assets) {
+        if (!takenInBatch.has(asset)) {
+          takenInBatch.add(asset);
+          return `/images/ai-previews/${asset}`;
+        }
+      }
+    }
   }
 
-  takenInBatch.add(uniqueUrl);
-  return uniqueUrl;
+  // 4. Deterministically select an unused asset from the 42 local assets
+  const seed = hashString((article?.id || '') + '::' + cleanTitle);
+  const availableAssets = KNOWN_LOCAL_ASSETS.filter(a => !takenInBatch.has(a));
+  
+  if (availableAssets.length > 0) {
+    const chosen = availableAssets[seed % availableAssets.length];
+    takenInBatch.add(chosen);
+    return `/images/ai-previews/${chosen}`;
+  }
+
+  // 5. Fallback: Instant 0ms inline procedural SVG Data URI (no external network request)
+  const svgDataUri = generateUniqueProceduralSvg(article?.title, article?.context, article?.id);
+  takenInBatch.add(svgDataUri);
+  return svgDataUri;
 }
 
 /**

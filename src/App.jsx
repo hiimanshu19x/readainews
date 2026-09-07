@@ -18,9 +18,22 @@ import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v23';
-const POOL_STORAGE_KEY = 'readainews_fresh_pool_v23';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v23';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v24';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v24';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v24';
+
+// Clean up any legacy caches containing slow or stale URLs
+if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+  try {
+    ['v20', 'v21', 'v22', 'v23'].forEach(v => {
+      localStorage.removeItem(`readainews_dynamic_articles_${v}`);
+      localStorage.removeItem(`readainews_fresh_pool_${v}`);
+      localStorage.removeItem(`readainews_fresh_timestamp_${v}`);
+      localStorage.removeItem(`readainews_fresh_hour_${v}`);
+      localStorage.removeItem(`readainews_used_photo_ids_${v}`);
+    });
+  } catch (e) {}
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');

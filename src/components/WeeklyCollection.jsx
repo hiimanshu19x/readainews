@@ -341,13 +341,16 @@ function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBoo
               <div className="absolute inset-0 bg-zinc-900 animate-pulse" />
             )}
             <img 
+              ref={el => {
+                if (el && el.complete && !loaded) setLoaded(true);
+              }}
               src={article.imageUrl} 
               alt={article.title} 
               onLoad={() => setLoaded(true)}
               onError={() => setImgError(true)}
-              className={`w-full h-full object-cover transform group-hover:scale-105 transition-all duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} 
-              loading={idx < 3 ? "eager" : "lazy"}
-              fetchpriority={idx === 0 ? "high" : "auto"}
+              className={`w-full h-full object-cover transform group-hover:scale-105 transition-all duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`} 
+              loading="eager"
+              fetchpriority={idx < 3 ? "high" : "auto"}
               decoding="async"
             />
           </>

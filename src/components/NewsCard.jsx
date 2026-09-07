@@ -35,12 +35,15 @@ export default function NewsCard({
           <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 bg-zinc-950">
             {!imgError && article.imageUrl ? (
               <img 
+                ref={el => {
+                  if (el && el.complete && !loaded) setLoaded(true);
+                }}
                 src={article.imageUrl} 
                 alt="" 
                 onLoad={() => setLoaded(true)}
                 onError={() => setImgError(true)}
-                className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`} 
-                loading="lazy" 
+                className={`w-full h-full object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`} 
+                loading="eager" 
                 decoding="async"
               />
             ) : (
@@ -108,12 +111,15 @@ export default function NewsCard({
               <div className="absolute inset-0 bg-zinc-900 animate-pulse" />
             )}
             <img 
+              ref={el => {
+                if (el && el.complete && !loaded) setLoaded(true);
+              }}
               src={article.imageUrl} 
               alt="" 
               onLoad={() => setLoaded(true)}
               onError={() => setImgError(true)}
-              className={`w-full h-full object-cover transform group-hover:scale-105 transition-all duration-500 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`} 
-              loading={animationDelay < 150 ? "eager" : "lazy"}
+              className={`w-full h-full object-cover transform group-hover:scale-105 transition-all duration-300 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`} 
+              loading="eager"
               fetchpriority={animationDelay === 0 ? "high" : "auto"}
               decoding="async"
             />
