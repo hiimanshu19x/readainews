@@ -442,7 +442,7 @@ export function generateHeadlineAiImageUrl(article) {
   // Deterministic seed ensures repeatability for the same article but complete uniqueness across articles
   const seed = (hashString((article.id || '') + '::' + cleanTitle) + 137) % 1000000;
   
-  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=500&nologo=true&seed=${seed}`;
+  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=640&height=360&nologo=true&seed=${seed}`;
 }
 
 /**
@@ -481,7 +481,7 @@ export function getOrAssignUniqueImage(article, takenInBatch = new Set()) {
     const seed = (hashString((article.id || '') + '::' + (article.title || '')) + attempt * 7919) % 1000000;
     const cleanTitle = (article.title || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
     const prompt = encodeURIComponent(`${cleanTitle}, 3d render, octane, 8k, cinematic, concept art`);
-    uniqueUrl = `https://image.pollinations.ai/prompt/${prompt}?width=800&height=500&nologo=true&seed=${seed}`;
+    uniqueUrl = `https://image.pollinations.ai/prompt/${prompt}?width=640&height=360&nologo=true&seed=${seed}`;
   }
   
   // 4. Fallback to procedural SVG only if headline generation is unavailable

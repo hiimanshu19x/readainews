@@ -15,6 +15,7 @@ export default function NewsCard({
   animationDelay = 0 
 }) {
   const [imgError, setImgError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const { dayLabel, timeAgo } = formatCardDateBadges(article?.publishedEpoch || article?.publishedDate);
 
   const handleBookmark = (e) => {
@@ -31,14 +32,16 @@ export default function NewsCard({
       >
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {/* Thumbnail */}
-          <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 bg-zinc-950">
+          <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 bg-zinc-950">
             {!imgError && article.imageUrl ? (
               <img 
                 src={article.imageUrl} 
                 alt="" 
+                onLoad={() => setLoaded(true)}
                 onError={() => setImgError(true)}
-                className="w-full h-full object-cover" 
+                className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`} 
                 loading="lazy" 
+                decoding="async"
               />
             ) : (
               <ContextualThumbnail context={article.context || 'frontier_models'} theme={article.meshTheme} className="w-full h-full" />
@@ -100,13 +103,21 @@ export default function NewsCard({
       {/* Article Preview Image */}
       <div className="relative w-full h-36 sm:h-44 overflow-hidden bg-zinc-950 border-b border-white/5 flex-shrink-0">
         {!imgError && article.imageUrl ? (
-          <img 
-            src={article.imageUrl} 
-            alt="" 
-            onError={() => setImgError(true)}
-            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out" 
-            loading="lazy"
-          />
+          <>
+            {!loaded && (
+              <div className="absolute inset-0 bg-zinc-900 animate-pulse" />
+            )}
+            <img 
+              src={article.imageUrl} 
+              alt="" 
+              onLoad={() => setLoaded(true)}
+              onError={() => setImgError(true)}
+              className={`w-full h-full object-cover transform group-hover:scale-105 transition-all duration-500 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`} 
+              loading={animationDelay < 150 ? "eager" : "lazy"}
+              fetchpriority={animationDelay === 0 ? "high" : "auto"}
+              decoding="async"
+            />
+          </>
         ) : (
           <ContextualThumbnail 
             context={article.context || 'frontier_models'} 

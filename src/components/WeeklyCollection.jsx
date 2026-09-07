@@ -326,6 +326,7 @@ export default function WeeklyCollection({
 
 function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBookmark }) {
   const [imgError, setImgError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   return (
     <div
@@ -335,13 +336,21 @@ function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBoo
       {/* Article Preview Image Header */}
       <div className="relative w-full h-36 sm:h-44 overflow-hidden border-b border-white/5 flex-shrink-0 bg-zinc-950">
         {!imgError && article.imageUrl ? (
-          <img 
-            src={article.imageUrl} 
-            alt={article.title} 
-            onError={() => setImgError(true)}
-            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
-            loading="lazy"
-          />
+          <>
+            {!loaded && (
+              <div className="absolute inset-0 bg-zinc-900 animate-pulse" />
+            )}
+            <img 
+              src={article.imageUrl} 
+              alt={article.title} 
+              onLoad={() => setLoaded(true)}
+              onError={() => setImgError(true)}
+              className={`w-full h-full object-cover transform group-hover:scale-105 transition-all duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} 
+              loading={idx < 3 ? "eager" : "lazy"}
+              fetchpriority={idx === 0 ? "high" : "auto"}
+              decoding="async"
+            />
+          </>
         ) : (
           <MeshThumbnail theme={article.meshTheme} className="w-full h-full transform group-hover:scale-105 transition-transform duration-500" />
         )}

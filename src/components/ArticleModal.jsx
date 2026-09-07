@@ -67,6 +67,9 @@ export default function ArticleModal({
               alt="" 
               onError={() => setImgError(true)}
               className="w-full h-full object-cover" 
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
             />
           ) : (
             <ContextualThumbnail context={article.context || 'frontier_models'} theme={article.meshTheme} className="w-full h-full" />

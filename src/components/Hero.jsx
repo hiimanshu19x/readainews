@@ -156,7 +156,9 @@ export default function Hero({
                       alt={previewArticle.title} 
                       onError={() => setImgError(true)}
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
-                      loading="lazy"
+                      loading="eager"
+                      fetchpriority="high"
+                      decoding="async"
                     />
                   ) : (
                     <MeshThumbnail theme={previewArticle?.meshTheme || 'ribbon'} className="w-full h-full" />
