@@ -12,6 +12,7 @@ export default function Hero({
   isBookmarked = false,
   onToggleBookmark
 }) {
+  const [imgError, setImgError] = React.useState(false);
   const previewBadges = formatCardDateBadges(previewArticle?.publishedEpoch || previewArticle?.publishedDate);
   return (
     <section className="relative pt-6 pb-20 sm:pt-12 sm:pb-28 md:pt-16 md:pb-36 overflow-hidden bg-[#050505]">
@@ -149,10 +150,11 @@ export default function Hero({
 
                 {/* Article Image Preview */}
                 <div className="w-full h-36 sm:h-44 rounded-xl overflow-hidden mb-3 border border-white/10 shadow-inner bg-zinc-950">
-                  {previewArticle?.imageUrl ? (
+                  {!imgError && previewArticle?.imageUrl ? (
                     <img 
                       src={previewArticle.imageUrl} 
                       alt={previewArticle.title} 
+                      onError={() => setImgError(true)}
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
                       loading="lazy"
                     />

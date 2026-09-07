@@ -397,65 +397,105 @@ export function generateUniqueProceduralSvg(title = '', context = 'frontier_mode
 }
 
 /**
+ * Generates a high-definition, headline-tailored AI concept art image URL.
+ * Combines the clean article title, semantic topic modifiers, and deterministic seed.
+ */
+export function generateHeadlineAiImageUrl(article) {
+  if (!article) return '';
+  const title = (article.title || 'Artificial Intelligence Breakthrough').trim();
+  
+  // Clean special characters and punctuation
+  const cleanTitle = title
+    .replace(/[—–]/g, ' ')
+    .replace(/&#\d+;/g, ' ')
+    .replace(/&[a-z]+;/g, ' ')
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Extract contextual topic signals to enhance visual quality
+  const lower = cleanTitle.toLowerCase();
+  let topicModifier = '3d render, octane render, cinematic lighting, 8k, photorealistic detailed conceptual art';
+  
+  if (/\b(lawsuit|sue|sues|court|judge|copyright|infringement|legal|patent)\b/i.test(lower)) {
+    topicModifier = 'glowing digital legal scales and futuristic courtroom matrix, 3d octane render, dramatic cinematic lighting, 8k';
+  } else if (/\b(robot|robotics|humanoid|bipedal|actuator|cyborg|roach|needle)\b/i.test(lower)) {
+    topicModifier = 'futuristic cybernetic mechanics and advanced robotics, 3d octane render, volumetric studio lighting, 8k';
+  } else if (/\b(chip|chips|semiconductor|gpu|processor|silicon|cluster|nscale|router|pair)\b/i.test(lower)) {
+    topicModifier = 'macro glowing semiconductor silicon chip architecture with laser circuitry, 3d render, 8k, hyperdetailed';
+  } else if (/\b(music|audio|melody|voice|speech|song|sound|synthesizer|dolly)\b/i.test(lower)) {
+    topicModifier = 'futuristic synthesizer soundwaves and luminous audio frequencies, vibrant neon colors, 3d render, 8k';
+  } else if (/\b(wiki|escape|rogue|swarm|agent|agents|hijack|sandbox|incident|cheat)\b/i.test(lower)) {
+    topicModifier = 'autonomous AI cyber entities and glowing digital knowledge matrix, 3d render, cinematic depth of field, 8k';
+  } else if (/\b(guardrail|safety|stripping|injection|prompt|jailbreak|attack|ascii|spammer|security)\b/i.test(lower)) {
+    topicModifier = 'cybersecurity shield and illuminated neural code security matrix, 3d render, octane, 8k';
+  } else if (/\b(memory|storage|stack|vector|embedding|retrieval)\b/i.test(lower)) {
+    topicModifier = 'futuristic 3D high-bandwidth memory cube architecture with glowing photonic interconnects, 3d render, 8k';
+  } else if (/\b(multimodal|foundation|model|alignment|fair|research|deepmind|openai|meta|google|apple)\b/i.test(lower)) {
+    topicModifier = 'luminous crystalline artificial intelligence core processing multimodal streams, 3d octane render, 8k';
+  }
+
+  // Construct prompt: headline concept + topic modifier
+  const prompt = `${cleanTitle}, ${topicModifier}`;
+  const encodedPrompt = encodeURIComponent(prompt);
+  
+  // Deterministic seed ensures repeatability for the same article but complete uniqueness across articles
+  const seed = (hashString((article.id || '') + '::' + cleanTitle) + 137) % 1000000;
+  
+  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=500&nologo=true&seed=${seed}`;
+}
+
+/**
  * Generates or assigns a 100% unique, creative AI-generated image.
  * Strictly ignores and discards any image from the original publisher.
+ * Prioritizes local headline-tailored AI assets (/images/ai-previews/...),
+ * and dynamically synthesizes unique headline-specific AI URLs for upcoming articles.
  */
 export function getOrAssignUniqueImage(article, takenInBatch = new Set()) {
-  const currentBaseId = getBaseImageId(article?.imageUrl);
-  const isPublisherImg = isExternalPublisherImage(article?.imageUrl);
-  const isGeneric = isGenericOrRepeatedBrandImage(article?.imageUrl);
+  const currentUrl = (article?.imageUrl || '').replace(/&#038;/g, '&');
+  const isPublisherImg = isExternalPublisherImage(currentUrl);
+  const isGeneric = isGenericOrRepeatedBrandImage(currentUrl);
   
-  // If the article ALREADY has a valid creative AI image (Unsplash AI render or procedural SVG)
-  // that is NOT an external publisher image and hasn't been claimed in this batch, keep it!
-  if (currentBaseId && !isPublisherImg && !isGeneric && !takenInBatch.has(currentBaseId)) {
-    takenInBatch.add(currentBaseId);
-    return (article.imageUrl || '').replace(/&#038;/g, '&');
-  }
-  
-  // Compute deterministic hash based on article identity
-  const hash = hashString(article?.id || article?.canonicalUrl || article?.title || 'ai-news');
-  const ctx = article?.context || 'frontier_models';
-  const categoryPool = VERIFIED_CONTEXT_PHOTO_POOLS[ctx] || VERIFIED_CONTEXT_PHOTO_POOLS.frontier_models;
-  
-  // 1. Try category-specific creative AI art pool with deterministic offset
-  for (let i = 0; i < categoryPool.length; i++) {
-    const id = categoryPool[(hash + i) % categoryPool.length].toLowerCase();
-    if (!takenInBatch.has(id)) {
-      takenInBatch.add(id);
-      return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
+  // 1. If it already has a local unique headline-tailored AI asset
+  if (currentUrl.startsWith('/images/ai-previews/') || currentUrl.startsWith('images/ai-previews/')) {
+    const baseId = getBaseImageId(currentUrl);
+    if (!takenInBatch.has(baseId)) {
+      takenInBatch.add(baseId);
+      return currentUrl;
     }
   }
-  
-  // 2. Try tech general pool
-  for (let i = 0; i < VERIFIED_CONTEXT_PHOTO_POOLS.tech_general.length; i++) {
-    const id = VERIFIED_CONTEXT_PHOTO_POOLS.tech_general[(hash + i) % VERIFIED_CONTEXT_PHOTO_POOLS.tech_general.length].toLowerCase();
-    if (!takenInBatch.has(id)) {
-      takenInBatch.add(id);
-      return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
-    }
+
+  // 2. If it already has a headline-specific AI URL and is NOT taken in this batch
+  if (currentUrl.includes('pollinations.ai/prompt/') && !isPublisherImg && !takenInBatch.has(currentUrl)) {
+    takenInBatch.add(currentUrl);
+    return currentUrl;
   }
   
-  // 3. Try any remaining pools
-  for (const [catName, pool] of Object.entries(VERIFIED_CONTEXT_PHOTO_POOLS)) {
-    for (let i = 0; i < pool.length; i++) {
-      const id = pool[(hash + i) % pool.length].toLowerCase();
-      if (!takenInBatch.has(id)) {
-        takenInBatch.add(id);
-        return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=80`;
-      }
-    }
+  // 3. For any upcoming or live article: dynamically generate a headline-specific AI image URL
+  let uniqueUrl = generateHeadlineAiImageUrl(article);
+  let attempt = 0;
+  
+  // Ensure strict uniqueness within the batch
+  while (takenInBatch.has(uniqueUrl) && attempt < 10) {
+    attempt++;
+    const seed = (hashString((article.id || '') + '::' + (article.title || '')) + attempt * 7919) % 1000000;
+    const cleanTitle = (article.title || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+    const prompt = encodeURIComponent(`${cleanTitle}, 3d render, octane, 8k, cinematic, concept art`);
+    uniqueUrl = `https://image.pollinations.ai/prompt/${prompt}?width=800&height=500&nologo=true&seed=${seed}`;
   }
   
-  // 4. Procedural SVG fallback if every single pool is exhausted
-  const svgUrl = generateUniqueProceduralSvg(article?.title, article?.context, article?.id);
-  const svgId = getBaseImageId(svgUrl);
-  takenInBatch.add(svgId);
-  return svgUrl;
+  // 4. Fallback to procedural SVG only if headline generation is unavailable
+  if (!uniqueUrl) {
+    uniqueUrl = generateUniqueProceduralSvg(article?.title, article?.context, article?.id);
+  }
+
+  takenInBatch.add(uniqueUrl);
+  return uniqueUrl;
 }
 
 /**
  * Ensures that EVERY article in the provided list has a 100% unique,
- * creative AI-generated preview image, with zero publisher images.
+ * creative AI-generated preview image tailored to its headline, with zero publisher images.
  */
 export function ensureStrictlyUniqueImages(articles = []) {
   if (!Array.isArray(articles) || articles.length === 0) return articles;
@@ -463,20 +503,6 @@ export function ensureStrictlyUniqueImages(articles = []) {
   const takenInBatch = new Set();
   
   return articles.map((article) => {
-    const baseId = getBaseImageId(article?.imageUrl);
-    const isPublisherImg = isExternalPublisherImage(article?.imageUrl);
-    const isGeneric = isGenericOrRepeatedBrandImage(article?.imageUrl);
-    
-    // If already has a valid creative AI art image and not from publisher, keep it!
-    if (baseId && !isPublisherImg && !isGeneric && !takenInBatch.has(baseId)) {
-      takenInBatch.add(baseId);
-      return {
-        ...article,
-        imageUrl: (article.imageUrl || '').replace(/&#038;/g, '&')
-      };
-    }
-    
-    // Otherwise assign a deterministic unique creative AI-generated image
     const uniqueUrl = getOrAssignUniqueImage(article, takenInBatch);
     return {
       ...article,

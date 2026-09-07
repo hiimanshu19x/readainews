@@ -305,92 +305,103 @@ export default function WeeklyCollection({
 
           </div>
         ) : (
-          /* CONDITION 2: UNLOCKED PAST WEEK COLLECTED ARTICLES GRID */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {filtered.map((article, idx) => {
-              const isSaved = savedIds.includes(article.id);
-              return (
-                <div
-                  key={article.id}
-                  onClick={() => { sound.playClick(); onSelectArticle(article); }}
-                  className="group relative flex flex-col rounded-[22px] bg-[#0d0d10] hover:bg-[#131318] active:scale-[0.98] border border-white/10 hover:border-white/25 transition-all duration-300 cursor-pointer overflow-hidden shadow-lg"
-                >
-                  {/* Article Preview Image Header */}
-                  <div className="relative w-full h-36 sm:h-44 overflow-hidden border-b border-white/5 flex-shrink-0 bg-zinc-950">
-                    {article.imageUrl ? (
-                      <img 
-                        src={article.imageUrl} 
-                        alt={article.title} 
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
-                        loading="lazy"
-                      />
-                    ) : (
-                      <MeshThumbnail theme={article.meshTheme} className="w-full h-full transform group-hover:scale-105 transition-transform duration-500" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d10] via-transparent to-black/30 pointer-events-none" />
-                    
-                    {/* Rank Badge */}
-                    <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
-                      <span className="text-amber-400 font-mono text-xs">#{article.weeklyRank || idx + 1}</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-400 font-normal">Week's Pick</span>
-                    </div>
-
-                    {/* Bookmark Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        sound.playClick();
-                        onToggleBookmark(article.id);
-                      }}
-                      className="absolute top-2.5 right-2.5 p-2 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-zinc-300 hover:text-white active:scale-90 transition-colors shadow-md"
-                    >
-                      <Bookmark size={13} className={isSaved ? "fill-white text-white" : ""} />
-                    </button>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 sm:p-5 flex flex-col flex-1">
-                    <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 font-mono mb-2">
-                      <span className="text-zinc-300 font-medium">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
-                      <span className="text-zinc-600">•</span>
-                      <span className="text-zinc-500 font-normal lowercase">{article.readTime}</span>
-                    </div>
-
-                    <h3 className="text-[13px] sm:text-base font-bold text-white leading-snug group-hover:text-zinc-100 transition-colors mb-2 line-clamp-2">
-                      {article.title}
-                    </h3>
-
-                    <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-4">
-                      {article.summary}
-                    </p>
-
-                    {/* Bottom Source & Direct Outbound Link */}
-                    <div className="mt-auto pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2 text-xs">
-                      <a 
-                        href={article.canonicalUrl || article.originalUrl || article.sourceUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
-                        className="text-[10px] sm:text-[11px] text-zinc-400 hover:text-white truncate min-w-0 flex-1 flex items-center gap-1 transition-colors"
-                        title={`Open original article on ${article.source}`}
-                      >
-                        <span>Source:</span> <strong className="text-zinc-300 hover:text-white font-medium underline decoration-white/20 underline-offset-2">{article.source}</strong>
-                        <ExternalLink size={9} className="opacity-70 flex-shrink-0" />
-                      </a>
-
-                      <span className="shrink-0 whitespace-nowrap inline-flex items-center gap-1 font-medium text-[11px] sm:text-xs text-zinc-300 group-hover:text-white">
-                        <span className="whitespace-nowrap">Full brief</span>
-                        <ArrowRight size={12} className="shrink-0 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {filtered.map((article, idx) => (
+              <WeeklyArticleCard
+                key={article.id}
+                article={article}
+                idx={idx}
+                isSaved={savedIds.includes(article.id)}
+                onSelectArticle={onSelectArticle}
+                onToggleBookmark={onToggleBookmark}
+              />
+            ))}
           </div>
         )}
 
       </div>
     </section>
+  );
+}
+
+function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBookmark }) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      onClick={() => { sound.playClick(); onSelectArticle(article); }}
+      className="group relative flex flex-col rounded-[22px] bg-[#0d0d10] hover:bg-[#131318] active:scale-[0.98] border border-white/10 hover:border-white/25 transition-all duration-300 cursor-pointer overflow-hidden shadow-lg"
+    >
+      {/* Article Preview Image Header */}
+      <div className="relative w-full h-36 sm:h-44 overflow-hidden border-b border-white/5 flex-shrink-0 bg-zinc-950">
+        {!imgError && article.imageUrl ? (
+          <img 
+            src={article.imageUrl} 
+            alt={article.title} 
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
+            loading="lazy"
+          />
+        ) : (
+          <MeshThumbnail theme={article.meshTheme} className="w-full h-full transform group-hover:scale-105 transition-transform duration-500" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d10] via-transparent to-black/30 pointer-events-none" />
+        
+        {/* Rank Badge */}
+        <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
+          <span className="text-amber-400 font-mono text-xs">#{article.weeklyRank || idx + 1}</span>
+          <span className="text-[9px] sm:text-[10px] text-zinc-400 font-normal">Week's Pick</span>
+        </div>
+
+        {/* Bookmark Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            sound.playClick();
+            onToggleBookmark(article.id);
+          }}
+          className="absolute top-2.5 right-2.5 p-2 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-zinc-300 hover:text-white active:scale-90 transition-colors shadow-md"
+        >
+          <Bookmark size={13} className={isSaved ? "fill-white text-white" : ""} />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 sm:p-5 flex flex-col flex-1">
+        <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 font-mono mb-2">
+          <span className="text-zinc-300 font-medium">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
+          <span className="text-zinc-600">•</span>
+          <span className="text-zinc-500 font-normal lowercase">{article.readTime}</span>
+        </div>
+
+        <h3 className="text-[13px] sm:text-base font-bold text-white leading-snug group-hover:text-zinc-100 transition-colors mb-2 line-clamp-2">
+          {article.title}
+        </h3>
+
+        <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-4">
+          {article.summary}
+        </p>
+
+        {/* Bottom Source & Direct Outbound Link */}
+        <div className="mt-auto pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2 text-xs">
+          <a 
+            href={article.canonicalUrl || article.originalUrl || article.sourceUrl || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
+            className="text-[10px] sm:text-[11px] text-zinc-400 hover:text-white truncate min-w-0 flex-1 flex items-center gap-1 transition-colors"
+            title={`Open original article on ${article.source}`}
+          >
+            <span>Source:</span> <strong className="text-zinc-300 hover:text-white font-medium underline decoration-white/20 underline-offset-2">{article.source}</strong>
+            <ExternalLink size={9} className="opacity-70 flex-shrink-0" />
+          </a>
+
+          <span className="shrink-0 whitespace-nowrap inline-flex items-center gap-1 font-medium text-[11px] sm:text-xs text-zinc-300 group-hover:text-white">
+            <span className="whitespace-nowrap">Full brief</span>
+            <ArrowRight size={12} className="shrink-0 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }

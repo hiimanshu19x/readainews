@@ -18,9 +18,9 @@ import { ensureStrictlyUniqueImages } from './utils/imageEngine';
 import { sound } from './utils/audio';
 import { smoothScrollTo } from './utils/scroll';
 
-const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v21';
-const POOL_STORAGE_KEY = 'readainews_fresh_pool_v21';
-const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v21';
+const DYNAMIC_ARTICLES_KEY = 'readainews_dynamic_articles_v22';
+const POOL_STORAGE_KEY = 'readainews_fresh_pool_v22';
+const REFRESH_TIMESTAMP_KEY = 'readainews_fresh_timestamp_v22';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('today');
