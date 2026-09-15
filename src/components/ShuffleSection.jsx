@@ -21,9 +21,9 @@ import { formatLocalFullDate, getUserTimeZoneAbbr } from '../utils/timeZone';
 
 const SCAN_STEPS = [
   { region: "North America" },
-  { region: "Asia-Pacific" },
   { region: "Europe" },
-  { region: "Americas" },
+  { region: "Asia-Pacific" },
+  { region: "Australia" },
   { region: "Global Wire" }
 ];
 
@@ -229,21 +229,34 @@ export default function ShuffleSection({
           <div className="relative w-full py-8 sm:py-12 px-4 sm:px-8 rounded-2xl sm:rounded-3xl bg-[#09090b] border border-white/10 flex flex-col items-center justify-center my-4 sm:my-6 overflow-hidden">
             
             <style>{`
-              @keyframes minimalSearchZigZag {
+              @keyframes searchAcrossWorldMap {
                 0% {
-                  transform: translate(14%, 22%);
+                  left: 15%;
+                  top: 25%;
                 }
-                25% {
-                  transform: translate(72%, 26%);
+                18% {
+                  left: 45%;
+                  top: 20%;
                 }
-                50% {
-                  transform: translate(20%, 60%);
+                36% {
+                  left: 76%;
+                  top: 25%;
                 }
-                75% {
-                  transform: translate(68%, 54%);
+                54% {
+                  left: 80%;
+                  top: 72%;
+                }
+                72% {
+                  left: 48%;
+                  top: 60%;
+                }
+                88% {
+                  left: 24%;
+                  top: 68%;
                 }
                 100% {
-                  transform: translate(14%, 22%);
+                  left: 15%;
+                  top: 25%;
                 }
               }
             `}</style>
@@ -305,12 +318,13 @@ export default function ShuffleSection({
                 </g>
               </svg>
 
-              {/* SINGLE MINIMAL MAGNIFYING GLASS SEARCHING IN ZIG-ZAG */}
+              {/* SINGLE MINIMAL MAGNIFYING GLASS SWEEPING ACROSS ENTIRE WORLD MAP */}
               <div 
-                className="absolute top-0 left-0 pointer-events-none z-20 w-12 h-12 sm:w-16 sm:h-16"
+                className="absolute pointer-events-none z-20 w-12 h-12 sm:w-16 sm:h-16"
                 style={{
-                  animation: 'minimalSearchZigZag 2.3s ease-in-out infinite',
-                  willChange: 'transform'
+                  animation: 'searchAcrossWorldMap 2.5s ease-in-out infinite',
+                  transform: 'translate(-50%, -50%)',
+                  willChange: 'left, top'
                 }}
               >
                 <div className="relative w-full h-full">

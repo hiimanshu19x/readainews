@@ -28,11 +28,11 @@ export function getWeeksMetadata(referenceDate = new Date()) {
 
   const WEEKS_SCHEDULE = [
     {
-      num: 1,
-      startKey: '2026-09-01',
-      endKey: '2026-09-07',
-      shortDates: '1-7 Sept',
-      dateRange: 'Sept 1 - Sept 7, 2026'
+      num: 3,
+      startKey: '2026-09-15',
+      endKey: '2026-09-21',
+      shortDates: '15-21 Sept',
+      dateRange: 'Sept 15 - Sept 21, 2026'
     },
     {
       num: 2,
@@ -42,11 +42,11 @@ export function getWeeksMetadata(referenceDate = new Date()) {
       dateRange: 'Sept 8 - Sept 14, 2026'
     },
     {
-      num: 3,
-      startKey: '2026-09-15',
-      endKey: '2026-09-21',
-      shortDates: '15-21 Sept',
-      dateRange: 'Sept 15 - Sept 21, 2026'
+      num: 1,
+      startKey: '2026-09-01',
+      endKey: '2026-09-07',
+      shortDates: '1-7 Sept',
+      dateRange: 'Sept 1 - Sept 7, 2026'
     },
     {
       num: 4,
@@ -200,15 +200,15 @@ export function curatePastWeekCollection(allArticles = []) {
  */
 export function curateFreshWeekCollection(allArticles = []) {
   const weeks = getWeeksMetadata();
-  const activeMeta = weeks[0];
-  const cycleDay = activeMeta.cycleDay || 1;
+  const activeMeta = weeks.find(w => w.status === 'active') || weeks[0];
+  const cycleDay = activeMeta?.cycleDay || 1;
 
   return curateDayByDayWeek(
     allArticles,
-    '2026-09-15',
-    '2026-09-21',
+    activeMeta?.startKey || '2026-09-15',
+    activeMeta?.endKey || '2026-09-21',
     cycleDay,
-    'Current Week Collection · Sept 15 - Sept 21, 2026'
+    `Current Week Collection · ${activeMeta?.dateRange || 'Sept 15 - Sept 21, 2026'}`
   );
 }
 

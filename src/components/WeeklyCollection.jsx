@@ -30,13 +30,18 @@ export default function WeeklyCollection({
   const weeksList = useMemo(() => getWeeksMetadata(), []);
 
   // Defaults directly to the current active week (Sept 15 - Sept 21)
-  const [selectedWeek, setSelectedWeek] = useState(() => weeksList[0]?.id || 'week-2026-09-15');
+  const activeWeek = useMemo(() => {
+    return weeksList.find(w => w.status === 'active') || weeksList.find(w => w.id === 'week-2026-09-15') || weeksList[0];
+  }, [weeksList]);
+
+  const [selectedWeek, setSelectedWeek] = useState(() => activeWeek?.id || 'week-2026-09-15');
 
   // Always reset to the starting active week tab when user clicks "This Week Collection"
   useEffect(() => {
     const handleNav = (e) => {
       if (e.detail?.id === 'weekly-collection') {
-        setSelectedWeek(weeksList[0]?.id || 'week-2026-09-15');
+        const active = weeksList.find(w => w.status === 'active') || weeksList.find(w => w.id === 'week-2026-09-15') || weeksList[0];
+        setSelectedWeek(active?.id || 'week-2026-09-15');
       }
     };
     window.addEventListener('section-navigated', handleNav);
@@ -192,72 +197,7 @@ export default function WeeklyCollection({
           </div>
         </div>
 
-        {/* Contextual Edition Notification Banners */}
-        {!currentWeekMeta.isLocked && currentWeekMeta.status === 'active' && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-black border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                <Sparkles size={18} />
-              </div>
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span>Current Week Collection · Day {currentWeekMeta.cycleDay || 1} of 7 ({currentWeekMeta.dateRange})</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">UPDATES AT END OF DAY</span>
-                </div>
-                <div className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-relaxed">
-                  This week collection updates at the end of each day with the best saved articles from the day. Currently saved {filtered.length} stories (Target: 10-12 by Sunday).
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-xs text-zinc-400 shrink-0 self-end sm:self-auto bg-black/50 px-3 py-1.5 rounded-xl border border-white/10">
-              <span className="text-emerald-400 font-bold">{filtered.length}</span> / 12 Stories Saved
-            </div>
-          </div>
-        )}
 
-        {!currentWeekMeta.isLocked && selectedWeek === 'week-2026-09-08' && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/30 via-zinc-900 to-black border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                <Trophy size={18} />
-              </div>
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span>2nd Week Archive · Complete Archive (Sept 8 - Sept 14, 2026)</span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">2ND WEEK ARCHIVE</span>
-                </div>
-                <div className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-relaxed">
-                  The definitive 12 highest-impact AI breakthroughs from Sept 8 to Sept 14, 2026, permanently saved into the 2nd week archive.
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-xs text-zinc-400 shrink-0 self-end sm:self-auto bg-black/50 px-3 py-1.5 rounded-xl border border-white/10">
-              <span className="text-amber-400 font-bold">{filtered.length}</span> of 12 Stories Ranked
-            </div>
-          </div>
-        )}
-
-        {!currentWeekMeta.isLocked && selectedWeek === 'week-2026-09-01' && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/30 via-zinc-900 to-black border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
-                <Trophy size={18} />
-              </div>
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span>1st Week Archive · Complete Archive (Sept 1 - Sept 7, 2026)</span>
-                  <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">1ST WEEK ARCHIVE</span>
-                </div>
-                <div className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-relaxed">
-                  The initial curated archive of 12 breakthrough AI stories from Sept 1 to Sept 7, 2026.
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-xs text-zinc-400 shrink-0 self-end sm:self-auto bg-black/50 px-3 py-1.5 rounded-xl border border-white/10">
-              <span className="text-cyan-400 font-bold">{filtered.length}</span> Stories Archived
-            </div>
-          </div>
-        )}
 
         {/* CONDITION 1: LOCKED PREVIEW STATE (For 3rd & 4th Weeks of Sept 2026) */}
         {currentWeekMeta.isLocked ? (
