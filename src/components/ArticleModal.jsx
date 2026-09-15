@@ -18,6 +18,7 @@ import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
 import { formatLocalShortDate, formatCardDateBadges } from '../utils/timeZone';
 import { decodeHtmlEntities } from '../utils/newsPipeline';
+import GlossaryTermCard, { HighlightedArticleBody } from './GlossaryTermCard';
 
 export default function ArticleModal({ 
   article, 
@@ -27,6 +28,7 @@ export default function ArticleModal({
 }) {
   const [copied, setCopied] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [activeGlossaryTerm, setActiveGlossaryTerm] = useState(null);
   const { dayLabel, timeAgo } = formatCardDateBadges(article?.publishedEpoch || article?.publishedDate);
 
   if (!article) return null;
@@ -165,15 +167,37 @@ export default function ArticleModal({
             </p>
           </div>
 
-          {/* FULL IN-DEPTH 180-200 WORD ARTICLE BODY */}
-          <div className="space-y-4 text-zinc-300 text-sm sm:text-base leading-relaxed font-normal">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400 pt-1 pb-1">
-              <FileText size={14} className="text-white" />
-              <span>In-Depth Reporting ({article.source})</span>
+          {/* FULL IN-DEPTH 180-200 WORD ARTICLE BODY WITH INTERACTIVE GLOSSARY */}
+          <div className="space-y-4 text-zinc-300 text-sm sm:text-base leading-relaxed font-normal relative">
+            <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400 pt-1 pb-1">
+              <div className="flex items-center gap-2">
+                <FileText size={14} className="text-white" />
+                <span>In-Depth Reporting ({article.source})</span>
+              </div>
+              <span className="text-[10px] font-mono font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Tap highlighted terms for meanings
+              </span>
             </div>
+
+            {/* Active Glossary Floating Card Popup */}
+            {activeGlossaryTerm && (
+              <div className="my-3 sticky top-2 z-30 shadow-2xl">
+                <GlossaryTermCard 
+                  termKey={activeGlossaryTerm.termKey}
+                  matchedText={activeGlossaryTerm.matchedText}
+                  onClose={() => setActiveGlossaryTerm(null)}
+                />
+              </div>
+            )}
+
             {article.content.replace(/\\n/g, '\n').split(/\n\s*\n/).map((paragraph, idx) => (
               <p key={idx} className="text-zinc-300 leading-relaxed">
-                {paragraph.trim()}
+                <HighlightedArticleBody 
+                  text={paragraph.trim()} 
+                  onSelectTerm={(termKey, matchedText) => {
+                    setActiveGlossaryTerm({ termKey, matchedText });
+                  }}
+                />
               </p>
             ))}
           </div>
