@@ -17,62 +17,9 @@ import {
 import MeshThumbnail from './MeshThumbnail';
 import { sound } from '../utils/audio';
 import { formatLocalShortDate, getUserTimeZoneAbbr } from '../utils/timeZone';
-import { curateThisWeekCollection } from '../utils/weeklyCuration';
+import { curateThisWeekCollection, getWeeksMetadata } from '../utils/weeklyCuration';
 
 const tz = getUserTimeZoneAbbr() || 'Local';
-
-const WEEKS_DATA = [
-  {
-    id: 'week-2026-09-08',
-    shortLabel: 'This Week (8-14 Sept)',
-    editionName: 'Current Week Collection',
-    dateRange: 'Sept 8 - Sept 14, 2026',
-    status: 'active',
-    isLocked: false,
-    badgeText: 'Current Week · Active Collection',
-    cycleDay: 1,
-    totalDays: 7,
-    description: 'Fresh collection for the ongoing week (Sept 8 - Sept 14, 2026). Curating the 1-2 highest engaging breakthroughs each day to build a definitive 10-12 story archive by Sunday.'
-  },
-  {
-    id: 'week-2026-09-01',
-    shortLabel: 'Past Week Edition',
-    editionName: 'Past Week Edition',
-    dateRange: 'Sept 1 - Sept 7, 2026',
-    status: 'collected',
-    isLocked: false,
-    badgeText: 'Past Week Edition · Complete Archive',
-    cycleDay: 7,
-    totalDays: 7,
-    description: 'The definitive 12 highest-impact AI breakthroughs curated from Sept 1 to Sept 7, 2026, ranked #1 through #12.'
-  },
-  {
-    id: 'week-2026-09-15',
-    shortLabel: '3rd Week of Sept',
-    editionName: '3rd Week of Sept',
-    dateRange: 'Sept 15 - Sept 21, 2026',
-    status: 'locked',
-    isLocked: true,
-    badgeText: 'Upcoming · Locked',
-    unlockDate: `Sunday, Sept 21, 2026 at 11:59 PM ${tz}`,
-    progressPercent: 0,
-    progressLabel: 'Scheduled Pipeline',
-    description: 'Upcoming third weekly edition for September 2026. Automated pipeline will activate following the completion of Week 2.'
-  },
-  {
-    id: 'week-2026-09-22',
-    shortLabel: '4th Week of Sept',
-    editionName: '4th Week of Sept',
-    dateRange: 'Sept 22 - Sept 28, 2026',
-    status: 'locked',
-    isLocked: true,
-    badgeText: 'Upcoming · Locked',
-    unlockDate: `Sunday, Sept 28, 2026 at 11:59 PM ${tz}`,
-    progressPercent: 0,
-    progressLabel: 'Scheduled Pipeline',
-    description: 'Upcoming fourth weekly edition for September 2026. Will compile the month-end AI intelligence wrap-up.'
-  }
-];
 
 export default function WeeklyCollection({ 
   articles = [], 
@@ -80,21 +27,23 @@ export default function WeeklyCollection({
   savedIds = [], 
   onToggleBookmark 
 }) {
-  // Defaults directly to the fresh week starting 8-14 Sept
-  const [selectedWeek, setSelectedWeek] = useState('week-2026-09-08');
+  const weeksList = useMemo(() => getWeeksMetadata(), []);
 
-  // Always reset to the starting fresh week tab (8-14 Sept) when user clicks "This Week Collection"
+  // Defaults directly to the current active week (Sept 15 - Sept 21)
+  const [selectedWeek, setSelectedWeek] = useState(() => weeksList[0]?.id || 'week-2026-09-15');
+
+  // Always reset to the starting active week tab when user clicks "This Week Collection"
   useEffect(() => {
     const handleNav = (e) => {
       if (e.detail?.id === 'weekly-collection') {
-        setSelectedWeek('week-2026-09-08');
+        setSelectedWeek(weeksList[0]?.id || 'week-2026-09-15');
       }
     };
     window.addEventListener('section-navigated', handleNav);
     return () => window.removeEventListener('section-navigated', handleNav);
-  }, []);
+  }, [weeksList]);
 
-  const currentWeekMeta = WEEKS_DATA.find(w => w.id === selectedWeek) || WEEKS_DATA[0];
+  const currentWeekMeta = weeksList.find(w => w.id === selectedWeek) || weeksList[0];
 
   // Curates the active collection for the selected week edition
   const weeklyArticles = useMemo(() => {
@@ -154,9 +103,9 @@ export default function WeeklyCollection({
                       }}
                       className="bg-transparent text-white font-medium focus:outline-none cursor-pointer pr-4 appearance-none text-xs sm:text-sm"
                     >
-                      {WEEKS_DATA.map(w => (
+                      {weeksList.map(w => (
                         <option key={w.id} value={w.id} className="bg-zinc-900 text-white">
-                          {w.isLocked ? `🔒 ${w.shortLabel} (Locked)` : w.id === 'week-2026-09-08' ? `⚡ ${w.shortLabel} (Active)` : `✓ ${w.shortLabel}`}
+                          {w.isLocked ? `🔒 ${w.shortLabel} (Locked)` : w.status === 'active' ? `⚡ ${w.shortLabel} (Active)` : `✓ ${w.shortLabel}`}
                         </option>
                       ))}
                     </select>
@@ -175,11 +124,13 @@ export default function WeeklyCollection({
                       <div className="text-zinc-300 font-medium">In Ingestion Cycle</div>
                     </div>
                   </>
-                ) : currentWeekMeta.id === 'week-2026-09-08' ? (
+                ) : currentWeekMeta.status === 'active' ? (
                   <>
                     <Sparkles size={15} className="text-emerald-400 shrink-0 animate-pulse" />
                     <div className="text-[10px] sm:text-xs">
-                      <div className="text-emerald-400 font-mono text-[9px] sm:text-[10px] font-semibold">STATUS: ACTIVE · DAY 1</div>
+                      <div className="text-emerald-400 font-mono text-[9px] sm:text-[10px] font-semibold">
+                        STATUS: ACTIVE · DAY {currentWeekMeta.cycleDay || 1}
+                      </div>
                       <div className="text-white font-medium">{filtered.length} Stories Saved</div>
                     </div>
                   </>
@@ -187,7 +138,9 @@ export default function WeeklyCollection({
                   <>
                     <CheckCircle2 size={15} className="text-amber-400 shrink-0" />
                     <div className="text-[10px] sm:text-xs">
-                      <div className="text-amber-400 font-mono text-[9px] sm:text-[10px] font-semibold">STATUS: PAST WEEK</div>
+                      <div className="text-amber-400 font-mono text-[9px] sm:text-[10px] font-semibold">
+                        STATUS: {currentWeekMeta.id === 'week-2026-09-08' ? 'PAST WEEK EDITION' : 'COMPLETE ARCHIVE'}
+                      </div>
                       <div className="text-white font-medium">Top {filtered.length} Ranked Best</div>
                     </div>
                   </>
@@ -200,7 +153,7 @@ export default function WeeklyCollection({
           <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               <span className="text-zinc-500 text-[11px] font-mono shrink-0 mr-1">EDITIONS:</span>
-              {WEEKS_DATA.map((w) => {
+              {weeksList.map((w) => {
                 const isCurrent = selectedWeek === w.id;
                 return (
                   <button
@@ -219,14 +172,14 @@ export default function WeeklyCollection({
                   >
                     {w.isLocked ? (
                       <Lock size={10} className={isCurrent ? "text-black" : "text-amber-400/90"} />
-                    ) : w.id === 'week-2026-09-08' ? (
+                    ) : w.status === 'active' ? (
                       <Sparkles size={11} className={isCurrent ? "text-black" : "text-emerald-400"} />
                     ) : (
                       <CheckCircle2 size={11} className={isCurrent ? "text-black" : "text-amber-400"} />
                     )}
                     <span>{w.shortLabel}</span>
                     <span className={`text-[9px] font-mono ${isCurrent ? 'text-zinc-700' : 'text-zinc-500'}`}>
-                      {w.isLocked ? '🔒' : w.id === 'week-2026-09-08' ? '⚡' : '✓'}
+                      {w.isLocked ? '🔒' : w.status === 'active' ? '⚡' : '✓'}
                     </span>
                   </button>
                 );
@@ -240,7 +193,7 @@ export default function WeeklyCollection({
         </div>
 
         {/* Contextual Edition Notification Banners */}
-        {!currentWeekMeta.isLocked && selectedWeek === 'week-2026-09-08' && (
+        {!currentWeekMeta.isLocked && currentWeekMeta.status === 'active' && (
           <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-black border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
@@ -248,11 +201,11 @@ export default function WeeklyCollection({
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span>Current Week Collection · Day 1 of 7 (Sept 8 - Sept 14, 2026)</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">LIVE COLLECTION</span>
+                  <span>Current Week Collection · Day {currentWeekMeta.cycleDay || 1} of 7 ({currentWeekMeta.dateRange})</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">UPDATES AT END OF DAY</span>
                 </div>
                 <div className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-relaxed">
-                  Curating the 1-2 highest engaging breakthroughs daily. Currently saved {filtered.length} stories (Target: 10-12 by Sunday, Sept 14).
+                  This week collection updates at the end of each day with the best saved articles from the day. Currently saved {filtered.length} stories (Target: 10-12 by Sunday).
                 </div>
               </div>
             </div>
@@ -262,7 +215,7 @@ export default function WeeklyCollection({
           </div>
         )}
 
-        {!currentWeekMeta.isLocked && selectedWeek === 'week-2026-09-01' && (
+        {!currentWeekMeta.isLocked && selectedWeek === 'week-2026-09-08' && (
           <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/30 via-zinc-900 to-black border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
@@ -270,16 +223,38 @@ export default function WeeklyCollection({
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span>Past Week Edition · Complete Archive (Sept 1 - Sept 7, 2026)</span>
+                  <span>Past Week Edition · Complete Archive (Sept 8 - Sept 14, 2026)</span>
                   <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">PAST WEEK EDITION</span>
                 </div>
                 <div className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-relaxed">
-                  The definitive 12 highest-impact AI breakthroughs from 15 premier publications for the past week, ranked #1 through #12.
+                  The definitive 12 highest-impact AI breakthroughs curated day-by-day across Sept 8 to Sept 14, 2026, ranked #1 through #12 with end-of-day picks.
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2 font-mono text-xs text-zinc-400 shrink-0 self-end sm:self-auto bg-black/50 px-3 py-1.5 rounded-xl border border-white/10">
-              <span className="text-amber-400 font-bold">12</span> of 12 Stories Ranked
+              <span className="text-amber-400 font-bold">{filtered.length}</span> of 12 Stories Ranked
+            </div>
+          </div>
+        )}
+
+        {!currentWeekMeta.isLocked && selectedWeek === 'week-2026-09-01' && (
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/30 via-zinc-900 to-black border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                <Trophy size={18} />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                  <span>1st Week Archive · Complete Archive (Sept 1 - Sept 7, 2026)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">1ST WEEK ARCHIVE</span>
+                </div>
+                <div className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                  The initial curated archive of 12 breakthrough AI stories from Sept 1 to Sept 7, 2026.
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 font-mono text-xs text-zinc-400 shrink-0 self-end sm:self-auto bg-black/50 px-3 py-1.5 rounded-xl border border-white/10">
+              <span className="text-cyan-400 font-bold">{filtered.length}</span> Stories Archived
             </div>
           </div>
         )}
@@ -355,12 +330,12 @@ export default function WeeklyCollection({
               <button
                 onClick={() => {
                   sound.playClick();
-                  setSelectedWeek('week-2026-09-08');
+                  setSelectedWeek(weeksList[0]?.id || 'week-2026-09-15');
                 }}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-zinc-900 text-zinc-300 hover:text-white border border-white/10 hover:border-white/25 active:scale-95 transition-all text-xs sm:text-sm cursor-pointer w-full sm:w-auto"
               >
                 <RotateCcw size={13} />
-                <span>View This Week (8-14 Sept)</span>
+                <span>View This Week (15-21 Sept)</span>
               </button>
             </div>
 
@@ -420,10 +395,12 @@ function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBoo
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d10] via-transparent to-black/30 pointer-events-none" />
         
-        {/* Rank Badge */}
-        <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
+        {/* Rank & Saved Day Badge */}
+        <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-black/85 backdrop-blur-md border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
           <span className="text-amber-400 font-mono text-xs">#{article.weeklyRank || idx + 1}</span>
-          <span className="text-[9px] sm:text-[10px] text-zinc-400 font-normal">Week's Pick</span>
+          <span className="text-[9px] sm:text-[10px] text-zinc-300 font-medium">
+            {article.savedDayLabel ? article.savedDayLabel : "Week's Pick"}
+          </span>
         </div>
 
         {/* Bookmark Button */}
@@ -442,7 +419,11 @@ function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBoo
       {/* Content */}
       <div className="p-4 sm:p-5 flex flex-col flex-1">
         <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 font-mono mb-2">
-          <span className="text-zinc-300 font-medium">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
+          <span className="text-emerald-400 font-medium">
+            {article.savedStatusText || formatLocalShortDate(article.dateKey || article.publishedDate)}
+          </span>
+          <span className="text-zinc-600">•</span>
+          <span className="text-zinc-400">{article.views || '85k'} views</span>
           <span className="text-zinc-600">•</span>
           <span className="text-zinc-500 font-normal lowercase">{article.readTime}</span>
         </div>

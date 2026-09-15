@@ -2,40 +2,200 @@
  * weeklyCuration.js - Intelligent Multi-Edition Weekly Collection Curation
  * 
  * Rules:
- * 1. Fresh Week (Sept 8 - Sept 14, 2026):
- *    - Starts active at the start of the week.
- *    - Saves the 1-2 highest engaging, viral breakthroughs from previous days.
- *    - Accumulates daily up to 10-12 stories by the end of the week.
- * 2. Past Week Edition (Sept 1 - Sept 7, 2026):
- *    - Contains the definitive 12 top articles from the past week.
- *    - Ranked #1 through #12 with verified publication links.
+ * 1. Current Active Week (Sept 15 - Sept 21, 2026):
+ *    - Starts active at the start of the week (Day 1 of 7).
+ *    - Automatically updates at the end of each day with the 1-2 best saved breakthroughs from that day.
+ *    - Accumulates day by day to build a definitive 10-12 story archive by Sunday.
+ * 2. Past Week Edition (Sept 8 - Sept 14, 2026):
+ *    - Contains the definitive 12 top articles saved day-by-day from the past week.
+ *    - Ranked #1 through #12 with verified publication links and saved day tags.
+ * 3. 1st Week Archive (Sept 1 - Sept 7, 2026):
+ *    - Completed 12-story archive from the first week of September.
  */
 
-import { isTodayInTz, getUserTimeZone } from './timeZone.js';
+import { isTodayInTz, getUserTimeZone, getUserTimeZoneAbbr, getLocalDateKey } from './timeZone.js';
 import { ensureStrictlyUniqueImages } from './imageEngine.js';
 
+const WEEKLY_LEDGER_STORAGE_KEY = 'readainews_weekly_saved_ledger_v25';
+
 /**
- * Curates the Past Week Edition (Sept 1 - Sept 7, 2026).
- * Contains the completed 12 top breakthroughs from the past week.
+ * Returns dynamic week definitions based on the user's reference date and timezone.
  */
-export function curatePastWeekCollection(allArticles = []) {
+export function getWeeksMetadata(referenceDate = new Date()) {
+  const tz = getUserTimeZoneAbbr() || 'Local';
+  const todayKey = getLocalDateKey(referenceDate);
+
+  // Calculate day of cycle for Sept 15 - Sept 21 (Day 1 = Sept 15, Day 7 = Sept 21)
+  let activeCycleDay = 1;
+  if (todayKey >= '2026-09-15' && todayKey <= '2026-09-21') {
+    const diffDays = Math.floor((new Date(todayKey + 'T00:00:00Z') - new Date('2026-09-15T00:00:00Z')) / 86400000);
+    activeCycleDay = Math.min(7, Math.max(1, diffDays + 1));
+  } else if (todayKey > '2026-09-21') {
+    activeCycleDay = 7;
+  }
+
+  return [
+    {
+      id: 'week-2026-09-15',
+      shortLabel: 'This Week (15-21 Sept)',
+      editionName: 'Current Week Collection',
+      dateRange: 'Sept 15 - Sept 21, 2026',
+      status: 'active',
+      isLocked: false,
+      cycleDay: activeCycleDay,
+      totalDays: 7,
+      badgeText: `Current Week · Day ${activeCycleDay} of 7`,
+      updateNotice: 'Updated at the end of each day with the best saved articles from the day',
+      description: `Active collection for the ongoing week (Sept 15 - Sept 21, 2026). Automatically updated at the end of each day with the 1-2 best saved breakthroughs from that day (Target: 10-12 stories by Sunday).`
+    },
+    {
+      id: 'week-2026-09-08',
+      shortLabel: 'Past Week Edition (8-14 Sept)',
+      editionName: 'Past Week Edition',
+      dateRange: 'Sept 8 - Sept 14, 2026',
+      status: 'collected',
+      isLocked: false,
+      cycleDay: 7,
+      totalDays: 7,
+      badgeText: 'Past Week Edition · Complete Archive',
+      description: 'The definitive 12 highest-impact AI breakthroughs curated day-by-day from Sept 8 to Sept 14, 2026, ranked #1 through #12.'
+    },
+    {
+      id: 'week-2026-09-01',
+      shortLabel: '1st Week Archive (1-7 Sept)',
+      editionName: '1st Week Archive',
+      dateRange: 'Sept 1 - Sept 7, 2026',
+      status: 'collected',
+      isLocked: false,
+      cycleDay: 7,
+      totalDays: 7,
+      badgeText: '1st Week Archive · Complete Archive',
+      description: 'The definitive 12 highest-impact AI breakthroughs curated from Sept 1 to Sept 7, 2026, ranked #1 through #12.'
+    },
+    {
+      id: 'week-2026-09-22',
+      shortLabel: '4th Week of Sept',
+      editionName: '4th Week of Sept',
+      dateRange: 'Sept 22 - Sept 28, 2026',
+      status: 'locked',
+      isLocked: true,
+      badgeText: 'Upcoming · Locked',
+      unlockDate: `Sunday, Sept 28, 2026 at 11:59 PM ${tz}`,
+      progressPercent: 0,
+      progressLabel: 'Scheduled Pipeline',
+      description: 'Upcoming fourth weekly edition for September 2026. Scheduled pipeline will activate following the completion of Week 3.'
+    }
+  ];
+}
+
+/**
+ * Curates a weekly collection day-by-day:
+ * For each elapsed day, sorts candidates by virality and impact,
+ * selecting the 1-2 best articles saved at the end of each day.
+ */
+export function curateDayByDayWeek(allArticles = [], startKey, endKey, maxDays = 7, weekLabel = '') {
   if (!Array.isArray(allArticles) || allArticles.length === 0) return [];
 
-  // Filter to articles from Sept 1 - Sept 7, 2026
-  const pastWeekCandidates = allArticles.filter(a => {
+  const days = [];
+  let cur = new Date(startKey + 'T00:00:00Z');
+  const end = new Date(endKey + 'T00:00:00Z');
+  while (cur <= end) {
+    days.push(cur.toISOString().slice(0, 10));
+    cur.setUTCDate(cur.getUTCDate() + 1);
+  }
+
+  const activeDays = days.slice(0, maxDays);
+  const selected = [];
+  const seenIds = new Set();
+
+  activeDays.forEach((dayKey, idx) => {
+    const dayArticles = allArticles.filter(a => {
+      const key = a.dateKey || (a.publishedEpoch ? new Date(a.publishedEpoch).toISOString().slice(0, 10) : '');
+      return key === dayKey;
+    });
+
+    // Sort by engagement, views, isWeeklyBest, and rank
+    const sorted = [...dayArticles].sort((a, b) => {
+      const bestA = a.isWeeklyBest ? 50 : 0;
+      const bestB = b.isWeeklyBest ? 50 : 0;
+      const viewsA = parseFloat(a.views || '0');
+      const viewsB = parseFloat(b.views || '0');
+      const scoreA = (a.score || 0) + viewsA + bestA;
+      const scoreB = (b.score || 0) + viewsB + bestB;
+      return scoreB - scoreA;
+    });
+
+    const topPicks = sorted.filter(a => !seenIds.has(a.id)).slice(0, 2);
+    topPicks.forEach(item => {
+      seenIds.add(item.id);
+      selected.push({
+        ...item,
+        isWeeklyBest: true,
+        savedDayIndex: idx + 1,
+        savedDateKey: dayKey,
+        savedDayLabel: `Day ${idx + 1} of 7`,
+        savedStatusText: `Saved Day ${idx + 1} · End of Day Pick`,
+        weekEdition: weekLabel || item.weekEdition || `Week Edition · ${startKey} - ${endKey}`
+      });
+    });
+  });
+
+  const ranked = selected.map((item, idx) => ({
+    ...item,
+    weeklyRank: idx + 1
+  }));
+
+  return ensureStrictlyUniqueImages(ranked);
+}
+
+/**
+ * Curates the Past Week Edition (Sept 8 - Sept 14, 2026).
+ * Contains the completed 12 top breakthroughs curated day-by-day across that week.
+ */
+export function curatePastWeekCollection(allArticles = []) {
+  return curateDayByDayWeek(
+    allArticles,
+    '2026-09-08',
+    '2026-09-14',
+    7,
+    'Past Week Edition · Sept 8 - Sept 14, 2026'
+  );
+}
+
+/**
+ * Curates the Current Week Collection (Sept 15 - Sept 21, 2026).
+ * Starts on Sept 15 (Day 1 of 7) and updates at the end of each day
+ * with the 1-2 best saved breakthroughs from each elapsed day.
+ */
+export function curateFreshWeekCollection(allArticles = []) {
+  const weeks = getWeeksMetadata();
+  const activeMeta = weeks[0];
+  const cycleDay = activeMeta.cycleDay || 1;
+
+  return curateDayByDayWeek(
+    allArticles,
+    '2026-09-15',
+    '2026-09-21',
+    cycleDay,
+    'Current Week Collection · Sept 15 - Sept 21, 2026'
+  );
+}
+
+/**
+ * Curates the 1st Week Archive (Sept 1 - Sept 7, 2026).
+ */
+export function curateFirstWeekArchive(allArticles = []) {
+  const candidates = allArticles.filter(a => {
     const key = a.dateKey || (a.publishedEpoch ? new Date(a.publishedEpoch).toISOString().slice(0, 10) : '');
     return key >= '2026-09-01' && key <= '2026-09-07';
   });
 
-  // Prioritize articles already marked as weekly best, or sort by engagement
-  const sorted = [...pastWeekCandidates].sort((a, b) => {
+  const sorted = [...candidates].sort((a, b) => {
     const isBestA = a.isWeeklyBest ? 100 : 0;
     const isBestB = b.isWeeklyBest ? 100 : 0;
-    const rankA = a.weeklyRank ? (20 - a.weeklyRank) : 0;
-    const rankB = b.weeklyRank ? (20 - b.weeklyRank) : 0;
-    const scoreA = (a.score || 0) + (parseFloat(a.views || '0') * 0.1) + isBestA + rankA;
-    const scoreB = (b.score || 0) + (parseFloat(b.views || '0') * 0.1) + isBestB + rankB;
-    return scoreB - scoreA;
+    const viewsA = parseFloat(a.views || '0');
+    const viewsB = parseFloat(b.views || '0');
+    return (viewsB + isBestB) - (viewsA + isBestA);
   });
 
   const seenIds = new Set();
@@ -49,100 +209,29 @@ export function curatePastWeekCollection(allArticles = []) {
     }
   }
 
-  const finalPastWeek = selected.map((a, idx) => ({
+  const finalRanked = selected.map((a, idx) => ({
     ...a,
     isWeeklyBest: true,
     weeklyRank: idx + 1,
-    weekEdition: "Past Week Edition · Sept 1 - Sept 7, 2026"
+    savedDayLabel: `Day ${Math.min(7, Math.floor(idx / 2) + 1)} of 7`,
+    weekEdition: "1st Week Archive · Sept 1 - Sept 7, 2026"
   }));
 
-  return ensureStrictlyUniqueImages(finalPastWeek);
-}
-
-/**
- * Curates the Fresh Week Collection (Sept 8 - Sept 14, 2026).
- * Starts on Sept 8, curating the 1-2 best breakthroughs from previous day (Sept 7)
- * plus top breakthroughs from Day 1 of the ongoing week.
- */
-export function curateFreshWeekCollection(allArticles = []) {
-  if (!Array.isArray(allArticles) || allArticles.length === 0) return [];
-
-  // 1. Gather articles from Sept 7 (previous day) and Sept 8 (today)
-  const sept7Articles = allArticles.filter(a => {
-    const key = a.dateKey || (a.publishedEpoch ? new Date(a.publishedEpoch).toISOString().slice(0, 10) : '');
-    return key === '2026-09-07';
-  });
-
-  const sept8Articles = allArticles.filter(a => {
-    const key = a.dateKey || (a.publishedEpoch ? new Date(a.publishedEpoch).toISOString().slice(0, 10) : '');
-    return key === '2026-09-08' || a.id.includes('1491552536') || a.id.includes('3804401') || a.id.includes('1223912571');
-  });
-
-  // Sort Sept 7 articles by engagement / views to select the top 2 best
-  const sortedSept7 = [...sept7Articles].sort((a, b) => {
-    const viewsA = parseFloat(a.views || '0');
-    const viewsB = parseFloat(b.views || '0');
-    return viewsB - viewsA;
-  });
-
-  // Top 2 breakthroughs from previous day (Sept 7)
-  const topPreviousDay = sortedSept7.slice(0, 2);
-
-  // Top breakthroughs from today (Sept 8)
-  const sortedSept8 = [...sept8Articles].sort((a, b) => {
-    const scoreA = (a.score || 0) + (parseFloat(a.views || '0') * 0.1);
-    const scoreB = (b.score || 0) + (parseFloat(b.views || '0') * 0.1);
-    return scoreB - scoreA;
-  });
-
-  const topToday = sortedSept8.slice(0, 3);
-
-  const combined = [];
-  const seenIds = new Set();
-
-  // Add top picks from previous day
-  for (const item of topPreviousDay) {
-    if (!seenIds.has(item.id)) {
-      seenIds.add(item.id);
-      combined.push(item);
-    }
-  }
-
-  // Add top picks from today
-  for (const item of topToday) {
-    if (!seenIds.has(item.id)) {
-      seenIds.add(item.id);
-      combined.push(item);
-    }
-  }
-
-  // Fallback: If combined is sparse, backfill from other high-scoring recent items
-  if (combined.length < 4) {
-    for (const item of sortedSept7) {
-      if (!seenIds.has(item.id)) {
-        seenIds.add(item.id);
-        combined.push(item);
-        if (combined.length >= 5) break;
-      }
-    }
-  }
-
-  const finalFreshWeek = combined.map((a, idx) => ({
-    ...a,
-    isWeeklyBest: true,
-    weeklyRank: idx + 1,
-    weekEdition: "Week 37 · Sept 8 - Sept 14, 2026"
-  }));
-
-  return ensureStrictlyUniqueImages(finalFreshWeek);
+  return ensureStrictlyUniqueImages(finalRanked);
 }
 
 /**
  * Main entry point for weekly curation.
- * Defaults to the fresh week (Sept 8 - Sept 14, 2026).
+ * Supports:
+ * - 'week-2026-09-15' (This Week, updating at end of each day)
+ * - 'week-2026-09-08' or 'past-week' (Past Week Edition: Sept 8 - Sept 14, 2026)
+ * - 'week-2026-09-01' (1st Week Archive: Sept 1 - Sept 7, 2026)
  */
-export function curateThisWeekCollection(allArticles = [], editionId = 'week-2026-09-08') {
-  if (editionId === 'week-2026-09-01' || editionId === 'past-week') {
+export function curateThisWeekCollection(allArticles = [], editionId = 'week-2026-09-15') {
+  if (editionId === 'week-2026-09-01') {
+    return curateFirstWeekArchive(allArticles);
+  }
+  if (editionId === 'week-2026-09-08' || editionId === 'past-week') {
     return curatePastWeekCollection(allArticles);
   }
   return curateFreshWeekCollection(allArticles);
