@@ -223,11 +223,11 @@ export default function WeeklyCollection({
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span>Past Week Edition · Complete Archive (Sept 8 - Sept 14, 2026)</span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">PAST WEEK EDITION</span>
+                  <span>2nd Week Archive · Complete Archive (Sept 8 - Sept 14, 2026)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold">2ND WEEK ARCHIVE</span>
                 </div>
                 <div className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-relaxed">
-                  The definitive 12 highest-impact AI breakthroughs curated day-by-day across Sept 8 to Sept 14, 2026, ranked #1 through #12 with end-of-day picks.
+                  The definitive 12 highest-impact AI breakthroughs from Sept 8 to Sept 14, 2026, permanently saved into the 2nd week archive.
                 </div>
               </div>
             </div>
@@ -418,14 +418,19 @@ function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBoo
 
       {/* Content */}
       <div className="p-4 sm:p-5 flex flex-col flex-1">
-        <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 font-mono mb-2">
-          <span className="text-emerald-400 font-medium">
-            {article.savedStatusText || formatLocalShortDate(article.dateKey || article.publishedDate)}
-          </span>
-          <span className="text-zinc-600">•</span>
-          <span className="text-zinc-400">{article.views || '85k'} views</span>
-          <span className="text-zinc-600">•</span>
-          <span className="text-zinc-500 font-normal lowercase">{article.readTime}</span>
+        <div className="flex items-center justify-between gap-2 text-[11px] font-mono mb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-[10px] font-sans font-medium text-zinc-200">
+              <Sparkles size={10} className="text-amber-400" />
+              <span>Top Breakthrough</span>
+            </span>
+            <span className="text-zinc-400">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-zinc-400">
+            <span className="text-zinc-300 font-medium">{article.views} reads</span>
+            <span className="text-zinc-600">•</span>
+            <span className="text-zinc-500 font-normal">{article.readTime}</span>
+          </div>
         </div>
 
         <h3 className="text-[13px] sm:text-base font-bold text-white leading-snug group-hover:text-zinc-100 transition-colors mb-2 line-clamp-2">

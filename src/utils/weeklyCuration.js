@@ -20,72 +20,104 @@ const WEEKLY_LEDGER_STORAGE_KEY = 'readainews_weekly_saved_ledger_v25';
 
 /**
  * Returns dynamic week definitions based on the user's reference date and timezone.
+ * When a week concludes, it automatically transitions to "[N]th Week Archive".
  */
 export function getWeeksMetadata(referenceDate = new Date()) {
   const tz = getUserTimeZoneAbbr() || 'Local';
   const todayKey = getLocalDateKey(referenceDate);
 
-  // Calculate day of cycle for Sept 15 - Sept 21 (Day 1 = Sept 15, Day 7 = Sept 21)
-  let activeCycleDay = 1;
-  if (todayKey >= '2026-09-15' && todayKey <= '2026-09-21') {
-    const diffDays = Math.floor((new Date(todayKey + 'T00:00:00Z') - new Date('2026-09-15T00:00:00Z')) / 86400000);
-    activeCycleDay = Math.min(7, Math.max(1, diffDays + 1));
-  } else if (todayKey > '2026-09-21') {
-    activeCycleDay = 7;
-  }
-
-  return [
+  const WEEKS_SCHEDULE = [
     {
-      id: 'week-2026-09-15',
-      shortLabel: 'This Week (15-21 Sept)',
-      editionName: 'Current Week Collection',
-      dateRange: 'Sept 15 - Sept 21, 2026',
-      status: 'active',
-      isLocked: false,
-      cycleDay: activeCycleDay,
-      totalDays: 7,
-      badgeText: `Current Week · Day ${activeCycleDay} of 7`,
-      updateNotice: 'Updated at the end of each day with the best saved articles from the day',
-      description: `Active collection for the ongoing week (Sept 15 - Sept 21, 2026). Automatically updated at the end of each day with the 1-2 best saved breakthroughs from that day (Target: 10-12 stories by Sunday).`
+      num: 1,
+      startKey: '2026-09-01',
+      endKey: '2026-09-07',
+      shortDates: '1-7 Sept',
+      dateRange: 'Sept 1 - Sept 7, 2026'
     },
     {
-      id: 'week-2026-09-08',
-      shortLabel: 'Past Week Edition (8-14 Sept)',
-      editionName: 'Past Week Edition',
-      dateRange: 'Sept 8 - Sept 14, 2026',
-      status: 'collected',
-      isLocked: false,
-      cycleDay: 7,
-      totalDays: 7,
-      badgeText: 'Past Week Edition · Complete Archive',
-      description: 'The definitive 12 highest-impact AI breakthroughs curated day-by-day from Sept 8 to Sept 14, 2026, ranked #1 through #12.'
+      num: 2,
+      startKey: '2026-09-08',
+      endKey: '2026-09-14',
+      shortDates: '8-14 Sept',
+      dateRange: 'Sept 8 - Sept 14, 2026'
     },
     {
-      id: 'week-2026-09-01',
-      shortLabel: '1st Week Archive (1-7 Sept)',
-      editionName: '1st Week Archive',
-      dateRange: 'Sept 1 - Sept 7, 2026',
-      status: 'collected',
-      isLocked: false,
-      cycleDay: 7,
-      totalDays: 7,
-      badgeText: '1st Week Archive · Complete Archive',
-      description: 'The definitive 12 highest-impact AI breakthroughs curated from Sept 1 to Sept 7, 2026, ranked #1 through #12.'
+      num: 3,
+      startKey: '2026-09-15',
+      endKey: '2026-09-21',
+      shortDates: '15-21 Sept',
+      dateRange: 'Sept 15 - Sept 21, 2026'
     },
     {
-      id: 'week-2026-09-22',
-      shortLabel: '4th Week of Sept',
-      editionName: '4th Week of Sept',
-      dateRange: 'Sept 22 - Sept 28, 2026',
-      status: 'locked',
-      isLocked: true,
-      badgeText: 'Upcoming · Locked',
-      unlockDate: `Sunday, Sept 28, 2026 at 11:59 PM ${tz}`,
-      progressPercent: 0,
-      progressLabel: 'Scheduled Pipeline',
-      description: 'Upcoming fourth weekly edition for September 2026. Scheduled pipeline will activate following the completion of Week 3.'
+      num: 4,
+      startKey: '2026-09-22',
+      endKey: '2026-09-28',
+      shortDates: '22-28 Sept',
+      dateRange: 'Sept 22 - Sept 28, 2026'
     }
   ];
+
+  const ordinals = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th' };
+
+  return WEEKS_SCHEDULE.map(w => {
+    const isPast = todayKey > w.endKey;
+    const isActive = todayKey >= w.startKey && todayKey <= w.endKey;
+    const ord = ordinals[w.num] || `${w.num}th`;
+
+    let cycleDay = 1;
+    if (isActive) {
+      const diffDays = Math.floor((new Date(todayKey + 'T00:00:00Z') - new Date(w.startKey + 'T00:00:00Z')) / 86400000);
+      cycleDay = Math.min(7, Math.max(1, diffDays + 1));
+    } else if (isPast) {
+      cycleDay = 7;
+    }
+
+    if (isActive) {
+      return {
+        id: `week-${w.startKey}`,
+        weekNumber: w.num,
+        shortLabel: `This Week (${w.shortDates})`,
+        editionName: `Current Week Collection`,
+        dateRange: w.dateRange,
+        status: 'active',
+        isLocked: false,
+        cycleDay,
+        totalDays: 7,
+        badgeText: `Current Week · Day ${cycleDay} of 7`,
+        updateNotice: 'Updated at the end of each day with the best saved articles from the day',
+        description: `Active collection for the ongoing week (${w.dateRange}). Automatically updated at the end of each day with the 1-2 best saved breakthroughs from that day (Target: 10-12 stories by Sunday).`
+      };
+    } else if (isPast) {
+      return {
+        id: `week-${w.startKey}`,
+        weekNumber: w.num,
+        shortLabel: `${ord} Week Archive (${w.shortDates})`,
+        editionName: `${ord} Week Archive`,
+        dateRange: w.dateRange,
+        status: 'collected',
+        isLocked: false,
+        cycleDay: 7,
+        totalDays: 7,
+        badgeText: `${ord} Week Archive · Complete`,
+        description: `The definitive 12 highest-impact AI breakthroughs curated day-by-day from ${w.dateRange}, permanently archived in the ${ord.toLowerCase()} week archive.`
+      };
+    } else {
+      return {
+        id: `week-${w.startKey}`,
+        weekNumber: w.num,
+        shortLabel: `${ord} Week of Sept`,
+        editionName: `${ord} Week of Sept`,
+        dateRange: w.dateRange,
+        status: 'locked',
+        isLocked: true,
+        badgeText: 'Upcoming · Locked',
+        unlockDate: `Sunday, ${w.shortDates.split('-')[1]} Sept, 2026 at 11:59 PM ${tz}`,
+        progressPercent: 0,
+        progressLabel: 'Scheduled Pipeline',
+        description: `Upcoming ${ord.toLowerCase()} weekly edition for September 2026. Scheduled pipeline will activate following the completion of Week ${w.num - 1}.`
+      };
+    }
+  });
 }
 
 /**
@@ -134,7 +166,6 @@ export function curateDayByDayWeek(allArticles = [], startKey, endKey, maxDays =
         savedDayIndex: idx + 1,
         savedDateKey: dayKey,
         savedDayLabel: `Day ${idx + 1} of 7`,
-        savedStatusText: `Saved Day ${idx + 1} · End of Day Pick`,
         weekEdition: weekLabel || item.weekEdition || `Week Edition · ${startKey} - ${endKey}`
       });
     });
