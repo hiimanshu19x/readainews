@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Bookmark, 
@@ -31,6 +31,25 @@ export default function ArticleModal({
   const [activeGlossaryTerm, setActiveGlossaryTerm] = useState(null);
   const { dayLabel, timeAgo } = formatCardDateBadges(article?.publishedEpoch || article?.publishedDate);
 
+  // Lock background page scroll while article modal is open
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    const prevTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.touchAction = prevTouchAction;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
   if (!article) return null;
 
   const handleShare = () => {
@@ -55,14 +74,58 @@ export default function ArticleModal({
         onClick={() => { sound.playClick(); onClose(); }} 
       />
 
-      {/* Modal Dialog */}
-      <div className="relative w-full max-w-3xl max-h-[92vh] sm:max-h-[88vh] rounded-t-[28px] sm:rounded-3xl bg-[#0d0d12] border-t sm:border border-white/20 shadow-2xl overflow-hidden z-10 flex flex-col">
+      {/* Modal Dialog with Unified Smooth Scrolling */}
+      <div className="relative w-full max-w-3xl max-h-[92vh] sm:max-h-[88vh] rounded-t-[28px] sm:rounded-3xl bg-[#0d0d12] border-t sm:border border-white/20 shadow-2xl overflow-y-auto overscroll-contain z-10 flex flex-col scroll-smooth">
         
-        {/* iOS Drag Handle on Mobile */}
-        <div className="sm:hidden w-12 h-1.5 rounded-full bg-white/25 mx-auto mt-2.5 mb-1 cursor-pointer" onClick={() => onClose()} />
+        {/* Sticky Floating Controls Layer */}
+        <div className="sticky top-0 left-0 right-0 z-30 pointer-events-none p-3 sm:p-4 flex items-center justify-between">
+          {/* Source Outlet Badge */}
+          <a
+            href={getDirectOriginalUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
+            title={`Open original article on ${article.source}`}
+            className="pointer-events-auto px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs text-white font-semibold flex items-center gap-1.5 shadow-xl hover:bg-black hover:border-white/30 transition-all group"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{article.source}</span>
+            <ExternalLink size={10} className="text-zinc-400 group-hover:text-white transition-colors" />
+          </a>
 
-        {/* Header Visual Preview Image - Completely visible before the start of the article */}
-        <div className="relative w-full aspect-video max-h-[380px] sm:max-h-[440px] bg-black border-b border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center">
+          {/* Action Buttons: Share, Bookmark, Close */}
+          <div className="pointer-events-auto flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              title="Share article"
+              className="p-2 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-white active:scale-90 transition-all shadow-xl cursor-pointer"
+            >
+              {copied ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
+            </button>
+
+            <button
+              onClick={() => { sound.playClick(); onToggleBookmark(article.id); }}
+              title={isBookmarked ? "Remove bookmark" : "Save story"}
+              className="p-2 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-white active:scale-90 transition-all shadow-xl cursor-pointer"
+            >
+              <Bookmark size={14} className={isBookmarked ? "fill-white text-white" : ""} />
+            </button>
+
+            <button
+              onClick={() => { sound.playClick(); onClose(); }}
+              className="p-2 rounded-full bg-black/80 backdrop-blur-md text-zinc-300 hover:text-white border border-white/15 hover:bg-black active:scale-90 transition-all shadow-xl cursor-pointer"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* iOS Drag Handle on Mobile */}
+        <div className="sm:hidden w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-2 mb-2 cursor-pointer z-20" onClick={() => onClose()} />
+
+        {/* Complete Hero Preview Image - Scrolls up naturally with the article */}
+        <div className="relative w-full aspect-video max-h-[380px] sm:max-h-[440px] bg-black border-b border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center -mt-14 sm:-mt-16">
           {!imgError && article.imageUrl ? (
             <img 
               src={article.imageUrl} 
@@ -76,52 +139,10 @@ export default function ArticleModal({
           ) : (
             <ContextualThumbnail context={article.context || 'frontier_models'} theme={article.meshTheme} className="w-full h-full" />
           )}
-          
-          {/* Close Button */}
-          <button
-            onClick={() => { sound.playClick(); onClose(); }}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 rounded-full bg-black/70 backdrop-blur-md text-zinc-300 hover:text-white border border-white/10 hover:bg-black/90 active:scale-90 transition-all shadow-lg"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-
-          {/* Source Outlet Badge (Direct Outbound Link to Original Article) */}
-          <a
-            href={getDirectOriginalUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => { e.stopPropagation(); sound.playClick(); }}
-            title={`Open original article on ${article.source}`}
-            className="absolute top-3 left-3 sm:top-4 sm:left-4 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs text-white font-semibold flex items-center gap-1.5 shadow-md hover:bg-black hover:border-white/30 transition-all group"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{article.source}</span>
-            <ExternalLink size={10} className="text-zinc-400 group-hover:text-white transition-colors" />
-          </a>
-
-          {/* Quick Header Actions */}
-          <div className="absolute bottom-2.5 right-3 sm:bottom-3 sm:right-4 flex items-center gap-2">
-            <button
-              onClick={handleShare}
-              title="Share article"
-              className="p-2 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-white active:scale-90 transition-all"
-            >
-              {copied ? <Check size={13} className="text-emerald-400" /> : <Share2 size={13} />}
-            </button>
-
-            <button
-              onClick={() => { sound.playClick(); onToggleBookmark(article.id); }}
-              title={isBookmarked ? "Remove bookmark" : "Save story"}
-              className="p-2 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-white active:scale-90 transition-all"
-            >
-              <Bookmark size={13} className={isBookmarked ? "fill-white text-white" : ""} />
-            </button>
-          </div>
         </div>
 
-        {/* Modal Content - Scrollable Extensive 180-200 Word Journalism */}
-        <div className="p-4 sm:p-8 space-y-5 sm:space-y-6 overflow-y-auto flex-1">
+        {/* Modal Content - Scrolls together with image smoothly */}
+        <div className="p-4 sm:p-8 space-y-5 sm:space-y-6">
           
           {/* Mobile-Optimized Modern Metadata Header */}
           <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10 text-xs">
