@@ -1,10 +1,10 @@
-﻿import React, { useState } from 'react';
-import { BookOpen, Sparkles, Lightbulb, Compass, X } from 'lucide-react';
+import React from 'react';
+import { BookOpen, Sparkles, Lightbulb, X } from 'lucide-react';
 import { AI_GLOSSARY } from '../data/aiGlossary';
 import { sound } from '../utils/audio';
 
 export default function GlossaryTermCard({ termKey, matchedText, onClose }) {
-  const info = AI_GLOSSARY[termKey.toLowerCase()] || {
+  const info = AI_GLOSSARY[termKey?.toLowerCase()] || {
     term: matchedText,
     category: "Technical Concept",
     simpleDef: "Advanced algorithmic or engineering architecture utilized in contemporary AI computation.",
@@ -14,67 +14,80 @@ export default function GlossaryTermCard({ termKey, matchedText, onClose }) {
 
   return (
     <div 
-      className="relative w-full max-w-sm rounded-2xl bg-[#0f0f14] border border-white/20 p-4 sm:p-5 shadow-2xl text-left text-zinc-200 z-50 animate-deal backdrop-blur-xl"
+      className="relative w-full max-w-md rounded-3xl bg-[#0c0c10] border border-white/20 p-5 sm:p-7 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] text-left text-zinc-200 z-50 backdrop-blur-2xl animate-deal"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Top Header */}
-      <div className="flex items-center justify-between gap-3 mb-2.5 pb-2.5 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <BookOpen size={13} />
+      <div className="flex items-start justify-between gap-4 mb-4 pb-3 border-b border-white/10">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+            <BookOpen size={16} />
           </div>
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">
+          <div className="min-w-0">
+            <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-amber-400/90 font-semibold mb-0.5 truncate">
               {info.category}
             </div>
-            <h4 className="text-sm sm:text-base font-bold text-white leading-tight">
+            <h3 className="text-base sm:text-xl font-bold text-white tracking-tight leading-tight truncate">
               {info.term}
-            </h4>
+            </h3>
           </div>
         </div>
         
         {onClose && (
           <button 
             onClick={() => { sound.playClick(); onClose(); }}
-            className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-full text-zinc-400 hover:text-white bg-white/5 hover:bg-white/15 border border-white/10 transition-all shrink-0 cursor-pointer"
+            aria-label="Close"
           >
-            <X size={14} />
+            <X size={15} />
           </button>
         )}
       </div>
 
       {/* Plain English Meaning */}
-      <div className="mb-3">
-        <div className="text-[10px] uppercase font-mono text-zinc-400 font-bold mb-1 flex items-center gap-1">
+      <div className="mb-4">
+        <div className="text-[10px] sm:text-[11px] uppercase font-mono text-zinc-400 font-bold mb-1.5 flex items-center gap-1.5">
           <Sparkles size={11} className="text-amber-400" />
           <span>Plain-English Meaning</span>
         </div>
-        <p className="text-xs sm:text-sm text-zinc-100 font-medium leading-relaxed bg-black/40 p-2.5 rounded-xl border border-white/5">
+        <p className="text-xs sm:text-sm text-zinc-100 font-medium leading-relaxed bg-white/[0.04] p-3.5 rounded-2xl border border-white/5">
           {info.simpleDef}
         </p>
       </div>
 
       {/* Real-World Context */}
-      <div className="mb-3 text-[11px] sm:text-xs text-zinc-300 leading-relaxed">
-        <span className="text-zinc-500 font-mono uppercase text-[9px] block font-bold mb-0.5">Industry Context:</span>
+      <div className="mb-4 text-xs sm:text-sm text-zinc-300 leading-relaxed bg-zinc-950/60 p-3.5 rounded-2xl border border-white/5">
+        <span className="text-zinc-500 font-mono uppercase text-[10px] block font-bold mb-1 tracking-wider">
+          Industry Context:
+        </span>
         {info.context}
       </div>
 
       {/* Mental Analogy */}
       {info.analogy && (
-        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200/90 leading-snug flex items-start gap-2">
-          <Lightbulb size={13} className="text-amber-400 shrink-0 mt-0.5" />
-          <span><strong className="text-amber-300">Think of it like:</strong> {info.analogy}</span>
+        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs sm:text-sm text-amber-200/95 leading-relaxed flex items-start gap-2.5">
+          <Lightbulb size={16} className="text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <strong className="text-amber-300 font-semibold">Think of it like: </strong>
+            <span>{info.analogy}</span>
+          </div>
         </div>
       )}
+
+      {/* Footer Tap-to-dismiss hint */}
+      <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+        <span>Vocabulary Insight</span>
+        <span className="text-zinc-400">Tap anywhere outside to close</span>
+      </div>
     </div>
   );
 }
 
 /**
  * Text renderer that scans paragraphs for glossary terms and makes them interactive.
+ * Supports `seenTerms` Set to guarantee no term is ever repeated/tagged twice in the same article.
  */
-export function HighlightedArticleBody({ text, onSelectTerm }) {
+export function HighlightedArticleBody({ text, onSelectTerm, seenTerms = null }) {
   if (!text) return null;
 
   // Build sorted regex pattern of terms
@@ -88,19 +101,30 @@ export function HighlightedArticleBody({ text, onSelectTerm }) {
 
   while ((match = pattern.exec(text)) !== null) {
     const matchedTerm = match[0];
+    const termKey = matchedTerm.toLowerCase();
     const matchStart = match.index;
     const matchEnd = matchStart + matchedTerm.length;
+
+    // If this term has already been introduced/highlighted in this article, keep as regular text
+    if (seenTerms && seenTerms.has(termKey)) {
+      continue;
+    }
 
     // Add preceding text
     if (matchStart > lastIndex) {
       parts.push({ type: 'text', content: text.slice(lastIndex, matchStart) });
     }
 
+    // Mark as seen so it's NEVER repeated
+    if (seenTerms) {
+      seenTerms.add(termKey);
+    }
+
     // Add matched term
     parts.push({
       type: 'term',
       content: matchedTerm,
-      termKey: matchedTerm.toLowerCase()
+      termKey: termKey
     });
 
     lastIndex = matchEnd;
@@ -124,13 +148,13 @@ export function HighlightedArticleBody({ text, onSelectTerm }) {
               sound.playClick();
               onSelectTerm(part.termKey, part.content, e.currentTarget);
             }}
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 mx-0.5 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400 text-emerald-300 hover:text-emerald-200 font-medium text-inherit cursor-pointer transition-all duration-150 group align-baseline"
-            title="Click to view technical meaning & context"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded-md bg-white/[0.08] hover:bg-white/[0.14] border-b border-dashed border-amber-400/80 hover:border-amber-400 text-zinc-100 font-medium text-inherit cursor-pointer transition-all duration-150 group align-baseline"
+            title="Tap to view vocabulary definition & real-world context"
           >
-            <span className="underline decoration-emerald-500/50 decoration-dotted underline-offset-4 group-hover:decoration-emerald-400">
+            <span className="group-hover:text-white transition-colors">
               {part.content}
             </span>
-            <span className="text-[10px] opacity-70 text-emerald-400">ℹ</span>
+            <Sparkles size={9} className="text-amber-400/90 group-hover:text-amber-300 shrink-0" />
           </button>
         );
       })}

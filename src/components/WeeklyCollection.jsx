@@ -359,17 +359,16 @@ function WeeklyArticleCard({ article, idx, isSaved, onSelectArticle, onToggleBoo
       {/* Content */}
       <div className="p-4 sm:p-5 flex flex-col flex-1">
         <div className="flex items-center justify-between gap-2 text-[11px] font-mono mb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-[10px] font-sans font-medium text-zinc-200">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-[10px] font-sans font-medium text-zinc-200 shrink-0">
               <Sparkles size={10} className="text-amber-400" />
               <span>Top Breakthrough</span>
             </span>
-            <span className="text-zinc-400">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
+            <span className="text-zinc-400 whitespace-nowrap truncate">{formatLocalShortDate(article.dateKey || article.publishedDate)}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-zinc-400">
-            <span className="text-zinc-300 font-medium">{article.views} reads</span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-zinc-500 font-normal">{article.readTime}</span>
+          <div className="flex items-center gap-1 text-zinc-400 shrink-0">
+            <Clock size={11} className="text-zinc-500" />
+            <span className="text-zinc-400 font-normal">{article.readTime}</span>
           </div>
         </div>
 

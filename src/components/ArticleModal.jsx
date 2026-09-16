@@ -61,14 +61,14 @@ export default function ArticleModal({
         {/* iOS Drag Handle on Mobile */}
         <div className="sm:hidden w-12 h-1.5 rounded-full bg-white/25 mx-auto mt-2.5 mb-1 cursor-pointer" onClick={() => onClose()} />
 
-        {/* Header Visual Preview Image */}
-        <div className="relative w-full h-40 sm:h-56 overflow-hidden bg-zinc-950 border-b border-white/10 flex-shrink-0">
+        {/* Header Visual Preview Image - Completely visible before the start of the article */}
+        <div className="relative w-full aspect-video max-h-[380px] sm:max-h-[440px] bg-black border-b border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center">
           {!imgError && article.imageUrl ? (
             <img 
               src={article.imageUrl} 
-              alt="" 
+              alt={article.title} 
               onError={() => setImgError(true)}
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-contain bg-black" 
               loading="eager"
               fetchpriority="high"
               decoding="async"
@@ -76,7 +76,6 @@ export default function ArticleModal({
           ) : (
             <ContextualThumbnail context={article.context || 'frontier_models'} theme={article.meshTheme} className="w-full h-full" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d12] via-transparent to-black/30 pointer-events-none" />
           
           {/* Close Button */}
           <button
@@ -174,32 +173,26 @@ export default function ArticleModal({
                 <FileText size={14} className="text-white" />
                 <span>In-Depth Reporting ({article.source})</span>
               </div>
-              <span className="text-[10px] font-mono font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                Tap highlighted terms for meanings
+              <span className="text-[10px] font-mono font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
+                <Sparkles size={10} className="text-amber-400" />
+                <span>Tap underlined terms for meanings</span>
               </span>
             </div>
 
-            {/* Active Glossary Floating Card Popup */}
-            {activeGlossaryTerm && (
-              <div className="my-3 sticky top-2 z-30 shadow-2xl">
-                <GlossaryTermCard 
-                  termKey={activeGlossaryTerm.termKey}
-                  matchedText={activeGlossaryTerm.matchedText}
-                  onClose={() => setActiveGlossaryTerm(null)}
-                />
-              </div>
-            )}
-
-            {article.content.replace(/\\n/g, '\n').split(/\n\s*\n/).map((paragraph, idx) => (
-              <p key={idx} className="text-zinc-300 leading-relaxed">
-                <HighlightedArticleBody 
-                  text={paragraph.trim()} 
-                  onSelectTerm={(termKey, matchedText) => {
-                    setActiveGlossaryTerm({ termKey, matchedText });
-                  }}
-                />
-              </p>
-            ))}
+            {(() => {
+              const seenTerms = new Set();
+              return article.content.replace(/\\n/g, '\n').split(/\n\s*\n/).map((paragraph, idx) => (
+                <p key={idx} className="text-zinc-300 leading-relaxed text-sm sm:text-base">
+                  <HighlightedArticleBody 
+                    text={paragraph.trim()} 
+                    seenTerms={seenTerms}
+                    onSelectTerm={(termKey, matchedText) => {
+                      setActiveGlossaryTerm({ termKey, matchedText });
+                    }}
+                  />
+                </p>
+              ));
+            })()}
           </div>
 
           {/* KEY TECHNICAL TAKEAWAYS */}
@@ -258,6 +251,29 @@ export default function ArticleModal({
         </div>
 
       </div>
+
+      {/* Premium Vocabulary Explainer Modal Popup with Backdrop Blur */}
+      {activeGlossaryTerm && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md animate-deal"
+          onClick={(e) => {
+            e.stopPropagation();
+            sound.playClick();
+            setActiveGlossaryTerm(null);
+          }}
+        >
+          <div 
+            className="relative w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GlossaryTermCard 
+              termKey={activeGlossaryTerm.termKey}
+              matchedText={activeGlossaryTerm.matchedText}
+              onClose={() => setActiveGlossaryTerm(null)}
+            />
+          </div>
+        </div>
+      )}
 
     </div>
   );
